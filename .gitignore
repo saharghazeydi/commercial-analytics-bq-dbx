@@ -1,4 +1,4 @@
-data/
+
 *.csv
 *.parquet
 *.db
@@ -7,3 +7,23 @@ __pycache__/
 .ipynb_checkpoints/
 .env
 .venv/
+
+# Kaggle credentials (never commit)
+kaggle.json
+.kaggle/
+
+# Python tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+
+# Keep folder structure but ignore data files
+data/**
+!data/**/
+!data/**/.gitkeep
