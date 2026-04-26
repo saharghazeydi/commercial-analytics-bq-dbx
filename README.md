@@ -1,62 +1,60 @@
-# Commercial Analytics – BigQuery & Databricks
+# Commercial Analytics — BigQuery, Databricks & BI
 
-🚧 Project Status: Work in Progress
+## 🧠 Objective
+This project builds an end-to-end commercial analytics workflow to analyze e-commerce performance and support data-driven decision-making.
 
-## Objective
-This project builds an end-to-end commercial analytics workflow to analyze business performance data and produce decision-ready insights.
+The goal is to connect user behavior (GA4) with transactional data (Olist) and translate it into business insights, KPIs, and actionable recommendations.
 
-The goal is to simulate a real analytics environment where data is ingested, transformed, and prepared for BI dashboards and business reporting.
+---
 
-## Tech Stack
-- BigQuery
-- Databricks
-- SQL
-- Python
-- Power BI / Tableau (planned)
+## 📊 Data Sources
+- **GA4 BigQuery Public Dataset** (user behavior, traffic, events)
+- **Olist E-commerce Dataset** (orders, payments, customers, products)
+- **Olist Marketing Funnel Dataset** (leads, deals, funnel performance)
 
-## Project Scope
-The project focuses on building a structured analytics layer for commercial performance analysis, including revenue trends, customer behavior, and operational KPIs.
+> Note: GA4 and Olist are integrated at an aggregated level using documented assumptions, while Olist datasets are joined at row level.
 
-## Current Progress
-- Data ingestion and initial dataset preparation
-- SQL transformation layer for business metrics
-- KPI table generation for reporting
-- Data preparation for BI dashboards
+---
 
-## Planned Next Steps
-- Additional KPI modeling
-- BI dashboard development
-- Insight documentation and business interpretation
-- Final project documentation
+## 🏗️ Architecture
+- Data ingestion via Databricks (CSV → clean → BigQuery)
+- Data warehouse built in BigQuery (staging → marts)
+- SQL used for transformations and KPI modeling
+- Python used for validation and statistical analysis
+- BI dashboards built in Tableau / Power BI
 
-## Example Analytical Questions
-- How does revenue evolve over time?
-- Which customer segments drive the most value?
-- What are the key drivers of commercial performance?
+---
 
-## Repository Structure
-- `/sql` – transformation queries and metric calculations
-- `/notebooks` – exploratory analysis and experimentation
-- `/data` – processed datasets used for analytics
-- `/docs` – documentation and project notes
+## 📈 Key Capabilities
+- Multi-source data integration
+- KPI framework (conversion rate, AOV, revenue, retention)
+- Funnel analysis and channel performance tracking
+- Customer behavior analysis
+- A/B testing and experiment evaluation
 
-## Goal
-Deliver a portfolio-ready analytics case study demonstrating SQL-based analytics workflows and BI-ready data modeling.
-# Commercial Analytics (GA4 BigQuery + Olist)
+---
 
-## Business Goal
-Build a reproducible analytics warehouse (staging → marts) for acquisition + conversion KPIs using GA4 public export and Olist datasets.
+## 📊 Outputs
+- Structured warehouse tables (fact & dimension models)
+- Business-ready KPI layer
+- Interactive dashboards
+- Experiment readouts with decision recommendations
 
-## Stack
-BigQuery (SQL), Python (optional), GitHub, (later: Databricks, Tableau)
+---
 
-## Data Sources
-- GA4 Sample Ecommerce (BigQuery public dataset)
-- Olist Brazilian E-commerce (Kaggle)
-- Olist Marketing Funnel (Kaggle)
+## 🚀 Project Status
+Work in progress — currently building GA4 staging layer and validating event-level data.
 
-## Repo Structure
-- sql/ga4: GA4 staging + facts
-- sql/olist: Olist staging
-- sql/marts: star schema + KPI marts
-- docs: data dictionary + assumptions + readouts
+---
+
+## 📌 Next Steps
+- Complete GA4 modeling
+- Ingest and clean Olist datasets
+- Build star schema
+- Develop dashboards
+- Implement A/B testing layer
+
+---
+
+## 💼 Business Impact
+This project demonstrates how raw behavioral and transactional data can be transformed into decision-ready insights for marketing, product, and commercial teams.
