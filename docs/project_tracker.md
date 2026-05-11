@@ -1,21 +1,71 @@
 # Project Tracker — Commercial Analytics
 
+# Project Tracker — Commercial Analytics
+
 ## Current Phase
+
 ➡️ Phase 1A — GA4 BigQuery Staging
 
 ---
 
-## Phase 0 — Repo Setup
-- [x] Create GitHub repo
-- [x] Setup folder structure
-- [x] Add README skeleton
-- [x] Setup requirements.txt
+# Phase 0 — Repository & Environment Setup
+
+## Completed
+
+* [x] Created GitHub repository
+* [x] Established initial project folder structure
+* [x] Added README skeleton
+* [x] Configured `.gitignore`
+* [x] Added `requirements.txt`
+* [x] Connected local Windows Bootcamp environment using `git clone`
+* [x] Refactored documentation structure
+* [x] Initialized project tracking workflow
 
 ---
 
+## Current Repository Structure
+
+```text
+commercial-analytics-bq-dbx/
+│
+├── bi/
+│   └── screenshots/
+│       └── ga4/
+│
+├── data/
+│   ├── processed/
+│   └── raw/
+│       └── olist/
+│
+├── docs/
+│   ├── decisions_log.md
+│   └── project_tracker.md
+│
+├── sql/
+│   ├── ga4/
+│   │   ├── 01_data_profiling.sql
+│   │   ├── 02_stg_ga4_events.sql
+│   │   └── 03_fact_sessions_daily.sql
+│   │
+│   └── marts/
+│       ├── 01_dim_date.sql
+│       ├── 02_dim_channel.sql
+│       ├── 03_mart_channel_daily.sql
+│       ├── 04_mart_executive_daily.sql
+│       └── 05_mart_executive_enhanced.sql
+│
+├── .gitignore
+├── README.md
+└── requirements.txt
+```
+
+---
+
+
+
 ## Phase 1A — GA4 (BigQuery)
-- [x] Access GA4 public dataset
-- [x] Explore events table
+- [] Access GA4 public dataset
+- [] Explore events table
 - [ ] Create stg_ga4_events table
 - [ ] Extract session-level data
 - [ ] Extract purchase events
