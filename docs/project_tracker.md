@@ -371,6 +371,119 @@ Based on this validation step, the dataset appears suitable for:
 
 ```
 ```
+````md id="l6m2vd"
+## B1-b — Global Dataset Date Coverage Validation
+
+### Objective
+This query was used to validate the full historical date coverage available across the GA4 sample ecommerce dataset.
+
+Unlike the previous sample-window validation step, this check scanned the entire dataset without applying a `_TABLE_SUFFIX` filter in order to identify the true analytical boundaries of the available event data.
+
+This validation step helps determine:
+
+- the earliest available event date
+- the latest available event date
+- the overall historical coverage period available for analysis
+
+---
+
+## Query
+
+```sql
+-- date coverage (global)
+
+SELECT
+    MIN(PARSE_DATE('%Y%m%d', event_date)) AS global_min_date,
+    MAX(PARSE_DATE('%Y%m%d', event_date)) AS global_max_date
+
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`;
+````
+
+---
+
+## Query Result
+
+| global_min_date | global_max_date |
+| --------------- | --------------- |
+| 2020-11-01      | 2021-01-31      |
+
+---
+
+## Query Result Screenshot
+
+![GA4 Global Date Coverage](screenshots/ga4_global_date_coverage.png)
+
+---
+
+## Key Observations
+
+### 1. Dataset Historical Coverage
+
+The dataset contains event-level tracking data between:
+
+* `2020-11-01`
+* `2021-01-31`
+
+This indicates that the publicly available GA4 ecommerce dataset provides approximately three months of historical behavioral tracking data.
+
+---
+
+### 2. Limited Long-Term Historical Depth
+
+Because the dataset spans only a relatively short historical window, certain advanced analytical use cases may be limited, including:
+
+* long-term seasonality analysis
+* year-over-year comparisons
+* mature cohort retention analysis
+* long-horizon forecasting
+
+This limitation should be considered during KPI interpretation and downstream reporting design.
+
+---
+
+### 3. Dataset is Suitable for Behavioral & KPI Prototyping
+
+Despite the shorter historical range, the dataset still appears highly suitable for:
+
+* acquisition analysis
+* session-level behavior analysis
+* engagement KPI modeling
+* ecommerce event tracking
+* funnel analysis
+* dashboard prototyping
+* transformation pipeline development
+
+---
+
+### 4. Full Dataset Scan Increased Processed Data Volume
+
+Unlike the previous filtered sample-window query, this validation scanned the entire dataset and processed a larger amount of data.
+
+This reinforces the importance of:
+
+* partition-aware querying
+* selective filtering
+* query cost awareness
+
+when working with cloud warehouse environments such as BigQuery.
+
+---
+
+## Analytical Implications
+
+The dataset boundary validation confirmed that:
+
+* the dataset is event-driven and behavior-focused
+* historical coverage is relatively short-term
+* the available time range is sufficient for exploratory analytics and KPI development
+* future transformations should remain optimized for large-scale event data processing
+
+---
+![alt text](ga4_global_date_coverage.png)
+
+
+```
+```
 
 
 ---
