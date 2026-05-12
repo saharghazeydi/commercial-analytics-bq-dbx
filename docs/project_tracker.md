@@ -264,6 +264,113 @@ Based on the initial inspection, the following analytical domains appear feasibl
 ```
 ```
 
+````md id="g6y3qn"
+## B1 — Date Coverage Validation
+
+### Objective
+This query was used to validate the actual date coverage and row volume available within the selected GA4 sample window before starting downstream transformations and KPI modeling.
+
+The primary goal of this step was to confirm that:
+
+- the selected date filter was functioning correctly
+- event data existed across the full expected time range
+- the sample window contained sufficient data volume for profiling and exploratory analysis
+
+---
+
+## Query
+
+```sql
+-- Validate GA4 sample window coverage
+
+SELECT
+    MIN(PARSE_DATE('%Y%m%d', event_date)) AS min_date,
+    MAX(PARSE_DATE('%Y%m%d', event_date)) AS max_date,
+    COUNT(*) AS total_rows
+
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+
+WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131';
+````
+
+---
+
+## Query Result
+
+| min_date   | max_date   | total_rows |
+| ---------- | ---------- | ---------- |
+| 2021-01-01 | 2021-01-31 | 1,210,147  |
+
+---
+
+## Key Observations
+
+### 1. Date Coverage Successfully Validated
+
+The returned minimum and maximum dates matched the expected sample window boundaries:
+
+* minimum date: `2021-01-01`
+* maximum date: `2021-01-31`
+
+This confirms that the wildcard table filter and `_TABLE_SUFFIX` condition correctly captured the full January 2021 event range.
+
+---
+
+### 2. Sample Window Contains Sufficient Data Volume
+
+The query returned more than 1.2 million rows within the selected one-month window.
+
+This indicates that:
+
+* the dataset contains high-volume behavioral tracking data
+* the selected sample period is sufficiently large for exploratory analysis and KPI prototyping
+* downstream aggregations and transformations can be tested on realistic event-scale data
+
+---
+
+### 3. Initial Scalability Consideration
+
+Even a restricted one-month sample produced over one million records.
+
+This highlights the importance of:
+
+* partition filtering
+* selective querying
+* avoiding unnecessary `SELECT *` operations during large-scale analysis
+
+These practices are critical for controlling query cost and improving performance in cloud data warehouse environments.
+
+---
+
+### 4. Event Data is Stored at High Granularity
+
+The large row count relative to a one-month window suggests highly granular event-level tracking.
+
+This is consistent with GA4’s event-driven architecture, where:
+
+* each user interaction generates separate events
+* nested event parameters increase row complexity
+* behavioral tracking produces significantly larger datasets than traditional transactional systems
+
+---
+
+## Analytical Implications
+
+Based on this validation step, the dataset appears suitable for:
+
+* session-level analysis
+* acquisition analysis
+* engagement KPI development
+* behavioral funnel analysis
+* ecommerce event tracking
+* user segmentation analysis
+
+---
+![GA4 Date Coverage](screenshots/ga4_date_coverage.png)
+
+
+```
+```
 
 
 ---
