@@ -21,7 +21,7 @@ The goal is to connect user behavior (GA4) with transactional data (Olist) and t
 - Data warehouse built in BigQuery (staging → marts)
 - SQL used for transformations and KPI modeling
 - Python used for validation and statistical analysis
-- BI dashboards built in Tableau / Power BI
+- BI dashboards built in  Power BI
 
 ---
 
