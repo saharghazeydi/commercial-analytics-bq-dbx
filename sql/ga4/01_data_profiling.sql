@@ -1,7 +1,19 @@
 /*
-GA4 Data Profiling (Sample window: 2021-01-01 to 2021-01-31)
-Project: nike-sql-practice (Sandbox)
+GA4 Data Profiling
+Project: Commercial Analytics
+BigQuery Project ID: commercial-analytics-bq-dbx
+Dataset: commercial_analytics_us
 Source: bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*
+Sample window: 2021-01-01 to 2021-01-31
+
+Purpose:
+- Validate basic data availability and schema structure
+- Check date coverage, null rates, duplicate proxy risk, and event distribution
+- Confirm purchase and item-level event presence before staging/modeling
+
+Note:
+The sample window is used to reduce query cost while validating event-level structure.
+Global date coverage is checked separately.
 */
 
 -- A1) sample rows (structure sanity)
@@ -14,7 +26,7 @@ LIMIT 10;
 SELECT
   MIN(PARSE_DATE('%Y%m%d', event_date)) AS min_date,
   MAX(PARSE_DATE('%Y%m%d', event_date)) AS max_date,
-  COUNT(*) AS total_events
+  COUNT(*) AS total_rows
 FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131';
 
