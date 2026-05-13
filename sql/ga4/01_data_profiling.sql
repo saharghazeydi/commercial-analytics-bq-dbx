@@ -47,6 +47,9 @@ FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131';
 
 -- C2) approximate duplicate events (proxy key)
+-- C2) Approximate duplicate event check using proxy key
+-- Proxy key: user_pseudo_id + event_timestamp + event_name
+
 WITH base AS (
   SELECT
     user_pseudo_id,
@@ -54,12 +57,26 @@ WITH base AS (
     event_name
   FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
   WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
+),
+
+counts AS (
+  SELECT
+    COUNT(*) AS row_count,
+    COUNT(DISTINCT CONCAT(
+      user_pseudo_id,
+      '|',
+      CAST(event_timestamp AS STRING),
+      '|',
+      event_name
+    )) AS distinct_proxy
+  FROM base
 )
+
 SELECT
-  COUNT(*) AS row_count,
-  COUNT(DISTINCT CONCAT(user_pseudo_id,'|',CAST(event_timestamp AS STRING),'|',event_name)) AS distinct_proxy,
-  COUNT(*) - COUNT(DISTINCT CONCAT(user_pseudo_id,'|',CAST(event_timestamp AS STRING),'|',event_name)) AS duplicate_proxy_rows
-FROM base;
+  row_count,
+  distinct_proxy,
+  row_count - distinct_proxy AS duplicate_proxy_rows
+FROM counts;
 
 -- C3) invalid event_date format check
 SELECT

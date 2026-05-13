@@ -484,6 +484,305 @@ The dataset boundary validation confirmed that:
 
 ```
 ```
+````md id="z8v1pt"
+## C1 — Null Rate Validation for Core Tracking Identifiers
+
+### Objective
+This query was used to validate the completeness and reliability of core tracking identifiers within the January 2021 GA4 sample window.
+
+The goal of this step was to identify whether any critical analytical fields contained missing values that could negatively impact:
+
+- KPI calculations
+- session-level analysis
+- event sequencing
+- user-level analysis
+- downstream transformations
+
+The validation focused specifically on foundational tracking fields required for reliable behavioral analytics.
+
+---
+
+## Query
+
+```sql
+-- C1) null rates for core identifiers (sample window)
+
+SELECT
+  COUNT(*) AS total_rows,
+
+  SUM(CASE WHEN event_date IS NULL THEN 1 ELSE 0 END)
+    AS null_event_date,
+
+  SUM(CASE WHEN event_timestamp IS NULL THEN 1 ELSE 0 END)
+    AS null_event_timestamp,
+
+  SUM(CASE WHEN event_name IS NULL THEN 1 ELSE 0 END)
+    AS null_event_name,
+
+  SUM(CASE WHEN user_pseudo_id IS NULL THEN 1 ELSE 0 END)
+    AS null_user_pseudo_id
+
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+
+WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131';
+````
+
+---
+
+## Query Result
+
+| total_rows | null_event_date | null_event_timestamp | null_event_name | null_user_pseudo_id |
+| ---------- | --------------- | -------------------- | --------------- | ------------------- |
+| 1,210,147  | 0               | 0                    | 0               | 0                   |
+
+---
+
+## Query Result Screenshot
+
+![GA4 Null Rate Validation](screenshots/ga4_null_rates_core_fields.png)
+
+---
+
+## Key Observations
+
+### 1. No Missing Values Detected in Core Tracking Fields
+
+The validation confirmed that all selected core identifiers contained zero null values within the sampled dataset.
+
+The following fields showed complete coverage:
+
+* `event_date`
+* `event_timestamp`
+* `event_name`
+* `user_pseudo_id`
+
+This indicates strong structural consistency within the GA4 event tracking implementation.
+
+---
+
+### 2. Event Tracking Structure Appears Reliable
+
+Because all core event identifiers are fully populated, the dataset appears suitable for:
+
+* event-level aggregation
+* session construction
+* user-level behavioral analysis
+* engagement KPI modeling
+* time-series analysis
+
+without requiring immediate remediation for missing foundational identifiers.
+
+---
+
+### 3. User-Level Behavioral Analysis is Feasible
+
+The absence of null values in `user_pseudo_id` is particularly important because this field serves as the primary anonymous user identifier within the dataset.
+
+This supports future analysis related to:
+
+* user activity tracking
+* session behavior
+* engagement analysis
+* acquisition analysis
+* user segmentation
+
+---
+
+### 4. Timestamp Integrity Appears Consistent
+
+The complete population of `event_timestamp` confirms that event sequencing and temporal analysis can be performed reliably.
+
+This is critical for downstream analytical tasks such as:
+
+* session ordering
+* behavioral flow analysis
+* funnel analysis
+* event chronology validation
+
+---
+
+### 5. Tracking Implementation Appears Structurally Healthy
+
+The absence of missing values across key event metadata suggests that the GA4 tracking implementation was configured consistently within the observed sample window.
+
+At this stage, no major structural reliability issues were identified in the core behavioral tracking fields.
+
+---
+
+## Analytical Implications
+
+The validation results indicate that the dataset is structurally reliable for downstream analytics engineering and KPI modeling workflows.
+
+Specifically:
+
+* core identifiers are complete
+* user-level tracking is available
+* event sequencing is reliable
+* foundational event metadata is consistently populated
+
+This reduces the likelihood of major data completeness issues during transformation and reporting phases.
+
+---
+![alt text](ga4_null_rates_core_fields.png)
+
+```
+```
+````md id="j4x8pw"
+## C2 — Approximate Duplicate Event Validation Using Proxy Key
+
+### Objective
+This query was used to identify potential duplicate event records within the January 2021 GA4 sample window.
+
+Because the raw GA4 export does not provide a simple single-column event primary key, an approximate proxy key was constructed using a combination of:
+
+- `user_pseudo_id`
+- `event_timestamp`
+- `event_name`
+
+The purpose of this validation step was to evaluate whether multiple rows shared the same core event identity characteristics, which could indicate possible duplicate event records.
+
+---
+
+## Query
+
+```sql
+-- C2) Approximate duplicate event check using proxy key
+-- Proxy key: user_pseudo_id + event_timestamp + event_name
+
+WITH base AS (
+
+  SELECT
+    user_pseudo_id,
+    event_timestamp,
+    event_name
+
+  FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+
+  WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
+
+),
+
+counts AS (
+
+  SELECT
+
+    COUNT(*) AS row_count,
+
+    COUNT(DISTINCT CONCAT(
+      user_pseudo_id,
+      '|',
+      CAST(event_timestamp AS STRING),
+      '|',
+      event_name
+    )) AS distinct_proxy
+
+  FROM base
+
+)
+
+SELECT
+  row_count,
+  distinct_proxy,
+  row_count - distinct_proxy AS duplicate_proxy_rows
+
+FROM counts;
+````
+
+---
+
+## Query Result
+
+| row_count | distinct_proxy | duplicate_proxy_rows |
+| --------- | -------------- | -------------------- |
+| 1,210,147 | 1,210,147      | 0                    |
+
+---
+
+## Query Result Screenshot
+
+![GA4 Approximate Duplicate Validation](screenshots/ga4_duplicat_proxy.png)
+
+---
+
+## Key Observations
+
+### 1. No Approximate Duplicate Events Detected
+
+The validation returned zero duplicate proxy rows within the selected sample window.
+
+This indicates that no multiple rows shared the same combination of:
+
+* `user_pseudo_id`
+* `event_timestamp`
+* `event_name`
+
+based on the selected proxy key logic.
+
+---
+
+### 2. Event-Level Tracking Appears Structurally Consistent
+
+The absence of approximate duplicate events suggests that the GA4 export structure is behaving consistently at the event level within the observed sample period.
+
+This reduces the likelihood of:
+
+* inflated event counts
+* duplicated engagement metrics
+* artificial session activity inflation
+* inaccurate behavioral aggregations
+
+during downstream analysis.
+
+---
+
+### 3. Proxy Key Approach Used for Approximate Validation
+
+The duplicate validation was intentionally designed as an approximate duplicate check rather than a strict event uniqueness validation.
+
+This is important because GA4 events may contain:
+
+* nested parameters
+* repeated item records
+* additional metadata fields
+
+that are not included within the selected proxy key.
+
+As a result, the validation should be interpreted as a structural reliability check rather than an absolute event deduplication guarantee.
+
+---
+
+### 4. Dataset Appears Reliable for Event Aggregation
+
+Based on the observed results, the dataset appears suitable for:
+
+* event-level aggregation
+* engagement analysis
+* session-based KPIs
+* behavioral funnel analysis
+* traffic attribution analysis
+
+without requiring immediate duplicate remediation logic.
+
+---
+
+## Analytical Implications
+
+The duplicate validation results indicate that the sampled GA4 dataset demonstrates strong structural consistency at the behavioral event level.
+
+Specifically:
+
+* no approximate duplicate event patterns were identified
+* event tracking appears stable within the sampled period
+* downstream KPI calculations are less likely to be artificially inflated by duplicate event activity
+
+This increases confidence in the reliability of future transformation and reporting workflows.
+
+---
+
+![alt text](ga4_duplicat_proxy.png)
+
+```
+```
 
 
 ---
