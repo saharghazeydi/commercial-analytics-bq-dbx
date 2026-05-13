@@ -1082,6 +1082,175 @@ The presence of both engagement events and ecommerce progression events provides
 
 ```
 ```
+````md id="t5q9wr"
+## D2 — Purchase Presence & Revenue Validation
+
+### Objective
+This query was used to validate the existence and structural reliability of ecommerce purchase activity within the January 2021 GA4 sample window.
+
+The purpose of this profiling step was to confirm:
+
+- whether purchase events exist in the dataset
+- whether purchase revenue is populated
+- whether transaction identifiers are available
+- whether the dataset is suitable for downstream ecommerce KPI modeling
+
+This validation is important because purchase-related fields form the foundation of commercial analytics metrics such as:
+
+- revenue
+- transactions
+- conversion rate
+- average order value (AOV)
+- checkout funnel analysis
+
+---
+
+## Query
+
+```sql
+-- D2) Purchase presence and revenue validation (sample window)
+
+SELECT
+
+  COUNTIF(event_name = 'purchase') AS purchase_events,
+
+  SUM(
+    CASE
+      WHEN event_name = 'purchase'
+      THEN COALESCE(ecommerce.purchase_revenue, 0)
+      ELSE 0
+    END
+  ) AS total_purchase_revenue,
+
+  COUNT(
+    DISTINCT CASE
+      WHEN event_name = 'purchase'
+      THEN ecommerce.transaction_id
+      ELSE NULL
+    END
+  ) AS distinct_purchase_transaction_ids
+
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+
+WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131';
+````
+
+---
+
+## Query Result
+
+| purchase_events | total_purchase_revenue | distinct_purchase_transaction_ids |
+| --------------- | ---------------------- | --------------------------------- |
+| 1,204           | 57,350.0               | 895                               |
+
+---
+
+## Query Result Screenshot
+
+![GA4 Purchase Validation](screenshots/D2.png)
+
+---
+
+## Key Observations
+
+### 1. Purchase Activity Exists Within the Dataset
+
+The validation identified:
+
+* `1,204` purchase events
+
+This confirms that the dataset contains real ecommerce conversion activity and is suitable for downstream commercial analytics workflows.
+
+The presence of purchase events enables future analysis related to:
+
+* conversion performance
+* revenue generation
+* checkout behavior
+* customer purchase journeys
+
+---
+
+### 2. Purchase Revenue is Successfully Populated
+
+The query returned:
+
+* total purchase revenue = `57,350.0`
+
+This indicates that ecommerce revenue tracking is functioning and that the dataset supports revenue-based KPI modeling.
+
+The populated revenue field increases the analytical value of the dataset for:
+
+* revenue reporting
+* monetization analysis
+* AOV calculations
+* commercial performance dashboards
+
+---
+
+### 3. Transaction-Level Identifiers are Available
+
+The dataset contains:
+
+* `895` distinct purchase transaction IDs
+
+This confirms that transaction-level purchase identification is available for downstream aggregation and transaction analysis.
+
+The availability of transaction identifiers supports future work related to:
+
+* order-level analysis
+* deduplication logic
+* purchase validation
+* transaction-based KPI calculations
+
+---
+
+### 4. Purchase Events Exceed Distinct Transaction IDs
+
+The number of purchase events (`1,204`) is greater than the number of distinct transaction IDs (`895`).
+
+This suggests that:
+
+* some transactions may generate multiple purchase-related records
+* repeated item-level structures may exist
+* certain purchase events may contain duplicated transaction references
+
+At this stage, no remediation is required, but this behavior should be considered during downstream transaction-level modeling and aggregation design.
+
+---
+
+### 5. Ecommerce Tracking Implementation Appears Functional
+
+The successful population of:
+
+* purchase events
+* revenue values
+* transaction identifiers
+
+suggests that the ecommerce instrumentation within the GA4 export is functioning consistently within the sampled period.
+
+This increases confidence in the reliability of future ecommerce KPI development.
+
+---
+
+## Analytical Implications
+
+The validation results indicate that the dataset is suitable for:
+
+* ecommerce KPI modeling
+* revenue analysis
+* conversion funnel analysis
+* transaction-level reporting
+* checkout behavior analysis
+* customer purchase analysis
+
+The dataset appears to contain sufficient commercial depth for realistic analytics engineering and BI workflows.
+
+---
+
+
+
+```
+```
 
 
 

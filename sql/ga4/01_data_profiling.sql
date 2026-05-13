@@ -93,11 +93,24 @@ GROUP BY 1
 ORDER BY event_count DESC
 LIMIT 20;
 
--- D2) purchase presence + revenue (sample window)
+-- D2) Purchase presence and revenue validation (sample window)
+
 SELECT
   COUNTIF(event_name = 'purchase') AS purchase_events,
-  SUM(CASE WHEN event_name = 'purchase' THEN COALESCE(ecommerce.purchase_revenue, 0) ELSE 0 END) AS total_purchase_revenue,
-  COUNT(DISTINCT ecommerce.transaction_id) AS distinct_transaction_ids
+  SUM(
+    CASE
+      WHEN event_name = 'purchase'
+      THEN COALESCE(ecommerce.purchase_revenue, 0)
+      ELSE 0
+    END
+  ) AS total_purchase_revenue,
+  COUNT(DISTINCT
+    CASE
+      WHEN event_name = 'purchase'
+      THEN ecommerce.transaction_id
+      ELSE NULL
+    END
+  ) AS distinct_purchase_transaction_ids
 FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131';
 
