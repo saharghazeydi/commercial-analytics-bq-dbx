@@ -1247,15 +1247,185 @@ The dataset appears to contain sufficient commercial depth for realistic analyti
 
 ---
 
+````md id="n3x7vd"
+## D3 — Item Array Population Analysis by Event Type
+
+### Objective
+This query was used to analyze item-level tracking coverage across different GA4 event types within the January 2021 sample window.
+
+The purpose of this validation step was to better understand:
+
+- which events contain populated `items` arrays
+- which events do not use item-level structures
+- how ecommerce instrumentation behaves across the event taxonomy
+- whether product interaction tracking is consistently implemented
+
+Because the `items` field in GA4 is a nested repeated array structure, this analysis is important for downstream ecommerce modeling and product-level analytics.
+
+---
+
+## Query
+
+```sql
+-- D3) explain items sparsity by event type (sample window)
+
+SELECT
+
+  event_name,
+
+  COUNT(*) AS row_count,
+
+  SUM(
+    CASE
+      WHEN ARRAY_LENGTH(items) IS NULL
+           OR ARRAY_LENGTH(items) = 0
+      THEN 1
+      ELSE 0
+    END
+  ) AS no_items_row_count,
+
+  SUM(
+    CASE
+      WHEN ARRAY_LENGTH(items) > 0
+      THEN 1
+      ELSE 0
+    END
+  ) AS has_items_row_count
+
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+
+WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
+
+GROUP BY event_name
+
+ORDER BY has_items_row_count DESC, row_count DESC
+
+LIMIT 30;
+````
+
+---
+
+## Query Result Screenshot
+
+![GA4 Item Array Population Analysis](screenshots/D3.png)
+
+---
+
+## Key Observations
+
+### 1. Ecommerce-Oriented Events Consistently Contain Item Arrays
+
+Several ecommerce-related events showed strong item-level population coverage, including:
+
+* `add_to_cart`
+* `begin_checkout`
+* `select_item`
+* `purchase`
+
+For these event types, all observed rows contained populated `items` arrays.
+
+This indicates that the ecommerce instrumentation is functioning consistently for core product interaction and conversion events.
+
+---
+
+### 2. Purchase Events Contain Complete Item-Level Tracking
+
+The `purchase` event returned:
+
+* `1,204` total rows
+* `1,204` rows with populated items
+* `0` rows without items
+
+This suggests that transaction-level purchase tracking includes item-level detail consistently across the sampled dataset.
+
+This is particularly important for downstream:
+
+* product-level revenue analysis
+* basket analysis
+* item performance reporting
+* transaction decomposition
+
+---
+
+### 3. Behavioral Events Do Not Use Item Arrays
+
+High-volume behavioral events such as:
+
+* `page_view`
+* `user_engagement`
+* `scroll`
+* `session_start`
+* `first_visit`
+
+showed zero populated item arrays.
+
+This behavior is expected because these events represent general behavioral interactions rather than product-specific ecommerce activity.
+
+The results confirm that the dataset follows semantically appropriate event instrumentation patterns.
+
+---
+
+### 4. Partial Item Population Exists for Some Discovery & Promotion Events
+
+Certain event types showed mixed item-level population coverage, including:
+
+* `view_item`
+* `view_promotion`
+* `select_promotion`
+
+For example:
+
+* `view_item`
+
+  * 86,971 total rows
+  * 60,750 rows with items
+  * 26,221 rows without items
+
+This suggests that some discovery-oriented events may not consistently populate product arrays across all interactions.
+
+Possible explanations include:
+
+* differences in tracking implementation
+* partial instrumentation
+* promotional impressions without attached item metadata
+* varying frontend interaction contexts
+
+At this stage, the behavior appears explainable and does not immediately indicate a structural issue.
+
+---
+
+### 5. Nested Ecommerce Structures are Present & Usable
+
+The analysis confirms that the GA4 export includes usable nested item-level ecommerce structures for key transactional and product interaction events.
+
+This increases confidence in the feasibility of downstream:
+
+* item-level modeling
+* ecommerce fact table design
+* product performance analytics
+* basket-level aggregation
+* conversion funnel analysis
+
+---
+
+## Analytical Implications
+
+The item population analysis indicates that:
+
+* ecommerce-related events are strongly item-aware
+* behavioral events appropriately lack item arrays
+* nested product structures are available for downstream modeling
+* the dataset supports realistic product-level commercial analytics workflows
+
+The observed event behavior aligns well with expected GA4 ecommerce instrumentation patterns.
+
+---
 
 
 ```
 ```
 
 
-
-```
-```
 
 
 ---

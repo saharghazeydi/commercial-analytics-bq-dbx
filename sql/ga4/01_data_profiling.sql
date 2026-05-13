@@ -122,6 +122,6 @@ SELECT
   SUM(CASE WHEN ARRAY_LENGTH(items) > 0 THEN 1 ELSE 0 END) AS has_items_row_count
 FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
-GROUP BY 1
+GROUP BY event_name
 ORDER BY has_items_row_count DESC, row_count DESC
 LIMIT 30;
