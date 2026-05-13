@@ -85,12 +85,12 @@ SELECT
 FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131';
 
--- D1) top events (sample window)
-SELECT event_name, COUNT(*) AS cnt
+-- D1) Top event distribution (sample window)
+SELECT event_name, COUNT(*) AS event_count
 FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
 GROUP BY 1
-ORDER BY cnt DESC
+ORDER BY event_count DESC
 LIMIT 20;
 
 -- D2) purchase presence + revenue (sample window)

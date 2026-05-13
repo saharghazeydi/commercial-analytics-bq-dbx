@@ -910,6 +910,178 @@ The validation results indicate that:
 This reduces the likelihood of transformation or reporting issues caused by invalid date formatting.
 
 ---
+````md id="r8y4kp"
+## D1 — Top Event Distribution Profiling
+
+### Objective
+This query was used to identify the most frequently occurring event types within the January 2021 GA4 sample window.
+
+The purpose of this profiling step was to better understand:
+
+- the behavioral composition of the dataset
+- dominant user interaction patterns
+- ecommerce funnel event availability
+- engagement tracking structure
+- the overall richness of the GA4 event taxonomy
+
+This analysis provides an early behavioral overview of how users interact with the ecommerce platform.
+
+---
+
+## Query
+
+```sql
+-- D1) Top event distribution (sample window)
+
+SELECT
+
+  event_name,
+
+  COUNT(*) AS event_count
+
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+
+WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
+
+GROUP BY event_name
+
+ORDER BY event_count DESC
+
+LIMIT 20;
+````
+
+---
+
+## Query Result Screenshot
+
+![GA4 Top Event Distribution](screenshots/ga4_top_events_distribution.png)
+
+---
+
+## Key Observations
+
+### 1. Page View Events Dominate the Dataset
+
+The most frequent event observed was:
+
+* `page_view` → 419,004 events
+
+This indicates that the dataset is heavily behavior-oriented and contains substantial user navigation activity.
+
+The high page view volume also suggests that the dataset is suitable for:
+
+* behavioral analysis
+* page interaction analysis
+* engagement measurement
+* session flow analysis
+
+---
+
+### 2. Strong Engagement Tracking Signals are Present
+
+Several engagement-related events appeared among the top event types, including:
+
+* `user_engagement`
+* `scroll`
+* `session_start`
+
+This indicates that the GA4 implementation includes meaningful engagement instrumentation beyond simple page tracking.
+
+These events support future analysis related to:
+
+* session engagement
+* interaction depth
+* engagement quality
+* behavioral intensity
+
+---
+
+### 3. Ecommerce Funnel Events are Clearly Available
+
+The dataset includes multiple ecommerce funnel events, including:
+
+* `view_item`
+* `add_to_cart`
+* `begin_checkout`
+* `add_shipping_info`
+* `add_payment_info`
+* `purchase`
+
+This confirms that the dataset contains sufficient ecommerce behavioral depth for:
+
+* funnel analysis
+* conversion analysis
+* cart abandonment analysis
+* checkout progression analysis
+* ecommerce KPI modeling
+
+---
+
+### 4. Funnel Drop-Off Patterns are Immediately Visible
+
+A substantial volume decrease can already be observed across the funnel stages.
+
+For example:
+
+* `view_item` → 86,971 events
+* `add_to_cart` → 15,522 events
+* `begin_checkout` → 11,034 events
+* `purchase` → 1,204 events
+
+This suggests the presence of meaningful behavioral drop-off throughout the purchase journey.
+
+While no formal funnel calculations have been performed yet, the event distribution already indicates strong potential for downstream conversion funnel analysis.
+
+---
+
+### 5. Acquisition & Promotional Interaction Events Exist
+
+Promotional and discovery-related events were also observed, including:
+
+* `view_promotion`
+* `select_promotion`
+* `view_search_results`
+
+This suggests that the dataset supports future analysis related to:
+
+* promotional effectiveness
+* product discovery behavior
+* onsite search engagement
+* campaign interaction analysis
+
+---
+
+### 6. Behavioral Tracking Structure Appears Rich & Well-Instrumented
+
+The observed event taxonomy suggests that the GA4 implementation contains:
+
+* behavioral tracking
+* engagement tracking
+* ecommerce funnel instrumentation
+* promotional interaction tracking
+
+This increases the analytical flexibility of the dataset for downstream KPI development and dashboard design.
+
+---
+
+## Analytical Implications
+
+The event distribution profiling indicates that the dataset is highly suitable for:
+
+* ecommerce funnel analysis
+* behavioral segmentation
+* session engagement analysis
+* conversion KPI modeling
+* customer journey analysis
+* acquisition performance analysis
+
+The presence of both engagement events and ecommerce progression events provides a strong foundation for realistic commercial analytics workflows.
+
+---
+![alt text](ga4_top_events_distribution.png)
+
+```
+```
 
 
 
