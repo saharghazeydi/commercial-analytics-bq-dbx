@@ -783,6 +783,138 @@ This increases confidence in the reliability of future transformation and report
 
 ```
 ```
+````md id="u9v2kx"
+## C3 — Invalid `event_date` Format Validation
+
+### Objective
+This query was used to validate the structural integrity and format consistency of the `event_date` field within the January 2021 GA4 sample window.
+
+While previous validation steps confirmed that `event_date` was not null, this step focused specifically on verifying whether all values could be successfully parsed into valid date objects using the expected GA4 date format:
+
+```text
+YYYYMMDD
+````
+
+The purpose of this check was to identify any malformed or invalid date values that could negatively impact:
+
+* time-series analysis
+* date-based aggregations
+* partition filtering
+* KPI calculations
+* downstream transformation logic
+
+---
+
+## Query
+
+```sql
+-- C3) invalid event_date format check
+
+SELECT
+
+  COUNT(*) AS total_rows,
+
+  SUM(
+    CASE
+      WHEN SAFE.PARSE_DATE('%Y%m%d', event_date) IS NULL
+      THEN 1
+      ELSE 0
+    END
+  ) AS invalid_event_date_rows
+
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+
+WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131';
+```
+
+---
+
+## Query Result
+
+| total_rows | invalid_event_date_rows |
+| ---------- | ----------------------- |
+| 1,210,147  | 0                       |
+
+---
+
+## Query Result Screenshot
+
+![GA4 Invalid Event Date Validation](screenshots/c3.png)
+
+---
+
+## Key Observations
+
+### 1. No Invalid `event_date` Values Detected
+
+The validation returned zero invalid `event_date` records within the selected sample window.
+
+All observed values were successfully parsed using:
+
+```sql
+SAFE.PARSE_DATE('%Y%m%d', event_date)
+```
+
+This indicates that the date field follows the expected GA4 formatting standard consistently across the sampled dataset.
+
+---
+
+### 2. Date Field Structure Appears Reliable
+
+Because all `event_date` values were parseable into valid dates, the dataset appears structurally reliable for:
+
+* daily aggregations
+* time-series analysis
+* trend analysis
+* date-based filtering
+* downstream transformation pipelines
+
+without requiring additional remediation logic for malformed date values.
+
+---
+
+### 3. Safe Parsing Logic Used for Validation
+
+The validation intentionally used `SAFE.PARSE_DATE()` instead of `PARSE_DATE()`.
+
+This approach prevents query failure when encountering malformed values and is considered a safer production-style validation pattern for large-scale analytical datasets.
+
+If invalid values had existed, the safe parsing logic would have returned `NULL` instead of terminating the query execution.
+
+---
+
+### 4. Event Date Standardization Appears Consistent
+
+The successful parsing of all sampled records suggests that the GA4 export maintains strong date formatting consistency during ingestion and storage.
+
+This increases confidence in the reliability of future:
+
+* temporal modeling
+* partition-aware querying
+* KPI trend calculations
+* reporting workflows
+
+built on top of the dataset.
+
+---
+
+## Analytical Implications
+
+The validation results indicate that:
+
+* the `event_date` field is fully populated
+* all observed values follow the expected GA4 date structure
+* no malformed date patterns were identified
+* downstream analytical workflows can safely rely on this field for time-based analysis
+
+This reduces the likelihood of transformation or reporting issues caused by invalid date formatting.
+
+---
+
+
+
+```
+```
 
 
 ---
