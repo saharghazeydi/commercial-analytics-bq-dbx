@@ -125,3 +125,149 @@ WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
 GROUP BY event_name
 ORDER BY has_items_row_count DESC, row_count DESC
 LIMIT 30;
+
+-- D4) Daily event volume distribution (sample window)
+SELECT
+  PARSE_DATE('%Y%m%d', event_date) AS event_dt,
+  COUNT(*) AS event_count
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
+GROUP BY event_dt
+ORDER BY event_dt;
+
+-- D5) User and session volume profiling (sample window)
+
+SELECT
+  COUNT(*) AS total_rows,
+  COUNT(DISTINCT user_pseudo_id) AS unique_users,
+  COUNT(DISTINCT CONCAT(
+    user_pseudo_id,
+    '|',
+    CAST((
+      SELECT value.int_value
+      FROM UNNEST(event_params)
+      WHERE key = 'ga_session_id'
+    ) AS STRING)
+  )) AS unique_sessions
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131';
+
+-- D6) Session ID availability check (sample window)
+
+SELECT
+  COUNT(*) AS total_rows,
+
+  SUM(
+    CASE
+      WHEN (
+        SELECT value.int_value
+        FROM UNNEST(event_params)
+        WHERE key = 'ga_session_id'
+      ) IS NULL
+      THEN 1
+      ELSE 0
+    END
+  ) AS null_ga_session_id_rows,
+
+  SUM(
+    CASE
+      WHEN (
+        SELECT value.int_value
+        FROM UNNEST(event_params)
+        WHERE key = 'ga_session_id'
+      ) IS NOT NULL
+      THEN 1
+      ELSE 0
+    END
+  ) AS has_ga_session_id_rows
+
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131';
+
+-- D7) Traffic source distribution (sample window)
+
+SELECT
+  traffic_source.source,
+  traffic_source.medium,
+  traffic_source.name AS campaign_name,
+  COUNT(*) AS event_count,
+  COUNT(DISTINCT user_pseudo_id) AS unique_users
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
+GROUP BY
+  traffic_source.source,
+  traffic_source.medium,
+  traffic_source.name
+ORDER BY event_count DESC
+LIMIT 30;
+
+-- D8) Purchase transaction quality check (sample window)
+
+SELECT
+  COUNTIF(event_name = 'purchase') AS purchase_events,
+
+  COUNTIF(
+    event_name = 'purchase'
+    AND ecommerce.transaction_id IS NULL
+  ) AS purchase_events_missing_transaction_id,
+
+  COUNTIF(
+    event_name = 'purchase'
+    AND ecommerce.purchase_revenue IS NULL
+  ) AS purchase_events_missing_revenue,
+
+  COUNTIF(
+    event_name = 'purchase'
+    AND ecommerce.purchase_revenue = 0
+  ) AS purchase_events_zero_revenue,
+
+  COUNTIF(
+    event_name = 'purchase'
+    AND ecommerce.purchase_revenue < 0
+  ) AS purchase_events_negative_revenue
+
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131';
+
+-- D9) Revenue by transaction ID validation (sample window)
+
+SELECT
+  ecommerce.transaction_id,
+  COUNT(*) AS purchase_event_rows,
+  SUM(ecommerce.purchase_revenue) AS transaction_revenue
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
+  AND event_name = 'purchase'
+  AND ecommerce.transaction_id IS NOT NULL
+GROUP BY ecommerce.transaction_id
+ORDER BY purchase_event_rows DESC, transaction_revenue DESC
+LIMIT 30;
+
+-- D10) Event parameter key frequency (sample window)
+
+SELECT
+  ep.key AS event_param_key,
+  COUNT(*) AS param_occurrence_count,
+  COUNT(DISTINCT event_name) AS event_name_count
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`,
+UNNEST(event_params) AS ep
+WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
+GROUP BY ep.key
+ORDER BY param_occurrence_count DESC
+LIMIT 50;
+
+-- D11) Event parameter coverage by event type (sample window)
+
+SELECT
+  event_name,
+  ep.key AS event_param_key,
+  COUNT(*) AS param_occurrence_count
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`,
+UNNEST(event_params) AS ep
+WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
+GROUP BY
+  event_name,
+  ep.key
+ORDER BY
+  event_name,
+  param_occurrence_count DESC;
