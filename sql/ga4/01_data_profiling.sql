@@ -154,16 +154,29 @@ WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131';
 
 -- D6) Session ID availability check (sample window)
 
+WITH base AS (
+
+  SELECT
+
+    (
+      SELECT value.int_value
+      FROM UNNEST(event_params)
+      WHERE key = 'ga_session_id'
+    ) AS ga_session_id
+
+  FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+
+  WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
+
+)
+
 SELECT
+
   COUNT(*) AS total_rows,
 
   SUM(
     CASE
-      WHEN (
-        SELECT value.int_value
-        FROM UNNEST(event_params)
-        WHERE key = 'ga_session_id'
-      ) IS NULL
+      WHEN ga_session_id IS NULL
       THEN 1
       ELSE 0
     END
@@ -171,18 +184,13 @@ SELECT
 
   SUM(
     CASE
-      WHEN (
-        SELECT value.int_value
-        FROM UNNEST(event_params)
-        WHERE key = 'ga_session_id'
-      ) IS NOT NULL
+      WHEN ga_session_id IS NOT NULL
       THEN 1
       ELSE 0
     END
   ) AS has_ga_session_id_rows
 
-FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
-WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131';
+FROM base;
 
 -- D7) Traffic source distribution (sample window)
 

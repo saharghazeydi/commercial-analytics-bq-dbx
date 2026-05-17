@@ -1424,7 +1424,471 @@ The observed event behavior aligns well with expected GA4 ecommerce instrumentat
 
 ```
 ```
+````md id="v7q2nk"
+## D4 — Daily Event Volume Distribution Analysis
 
+### Objective
+This query was used to analyze the daily distribution of event activity across the January 2021 sample window.
+
+The purpose of this profiling step was to validate:
+
+- continuity of daily event ingestion
+- consistency of event tracking volume
+- presence of potential spikes or abnormal drops
+- overall temporal reliability of the dataset
+
+This validation is important before downstream KPI modeling because unexpected fluctuations in daily event volume can indicate:
+
+- ingestion interruptions
+- tracking inconsistencies
+- abnormal behavioral spikes
+- incomplete daily coverage
+
+---
+
+## Query
+
+```sql
+-- D4) Daily event volume distribution (sample window)
+
+SELECT
+
+  PARSE_DATE('%Y%m%d', event_date) AS event_dt,
+
+  COUNT(*) AS event_count
+
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+
+WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
+
+GROUP BY event_dt
+
+ORDER BY event_dt;
+````
+
+---
+
+## Query Result Screenshot
+
+![GA4 Daily Event Volume Distribution](screenshots/D4.png)
+
+---
+
+## Key Observations
+
+### 1. Continuous Daily Coverage Exists Across the Full Sample Window
+
+The dataset contains event activity for every day between:
+
+* `2021-01-01`
+* `2021-01-31`
+
+No missing dates were identified within the sampled period.
+
+This suggests that the GA4 export maintained continuous daily event ingestion throughout the observed window.
+
+---
+
+### 2. Daily Event Volume Appears Structurally Stable
+
+Daily event volume generally fluctuates between approximately:
+
+* ~22K events/day
+* ~64K events/day
+
+The observed variation appears gradual and behaviorally plausible rather than structurally broken.
+
+No catastrophic ingestion gaps or zero-event days were detected.
+
+---
+
+### 3. Weekend vs Weekday Behavioral Variation Appears Visible
+
+Lower event counts can be observed during several weekend periods, including:
+
+* January 1–3
+* January 9–10
+* January 16–17
+* January 30–31
+
+Meanwhile, higher event activity appears during several weekday periods.
+
+This suggests that the dataset likely reflects realistic ecommerce behavioral traffic patterns rather than synthetic or unstable ingestion behavior.
+
+---
+
+### 4. Temporary Mid-Month Activity Increase Observed
+
+Several higher-volume days were observed around:
+
+* January 19–22
+
+including a local peak of approximately:
+
+* `64,109` events on `2021-01-20`
+
+At this stage, the spike does not appear structurally suspicious because:
+
+* surrounding days also show elevated activity
+* event flow remains continuous
+* no abnormal zero-volume recovery pattern exists
+
+The variation may reflect normal business, promotional, or behavioral traffic fluctuations.
+
+---
+
+### 5. Dataset Appears Suitable for Daily KPI Modeling
+
+Because event activity remains consistently populated across the sample window, the dataset appears suitable for downstream:
+
+* daily KPI aggregation
+* trend analysis
+* rolling metrics
+* time-series dashboards
+* funnel trend monitoring
+* behavioral time analysis
+
+---
+
+## Analytical Implications
+
+The daily event distribution analysis indicates that:
+
+* temporal event coverage is continuous
+* no major ingestion interruptions were detected
+* daily activity levels appear behaviorally plausible
+* the dataset is suitable for time-series analytics workflows
+
+This increases confidence in the reliability of future daily aggregation models and reporting layers.
+
+---
+
+![alt text](ga4_daily_event_volume_distribution.png)
+
+```
+```
+
+````md id="q4v8nk"
+## D5 — User & Session Volume Profiling
+
+### Objective
+This query was used to profile the overall behavioral scale of the GA4 dataset by measuring:
+
+- total event activity
+- unique user volume
+- unique session volume
+
+The purpose of this profiling step was to validate whether the dataset contains sufficient user-level and session-level behavioral depth for downstream analytics workflows.
+
+This validation is particularly important because many commercial analytics KPIs depend on reliable:
+
+- user identification
+- session construction
+- behavioral grouping
+- engagement aggregation
+
+---
+
+## Query
+
+```sql
+-- D5) User and session volume profiling (sample window)
+
+SELECT
+
+  COUNT(*) AS total_rows,
+
+  COUNT(DISTINCT user_pseudo_id) AS unique_users,
+
+  COUNT(
+    DISTINCT CONCAT(
+      user_pseudo_id,
+      '|',
+      CAST((
+        SELECT value.int_value
+        FROM UNNEST(event_params)
+        WHERE key = 'ga_session_id'
+      ) AS STRING)
+    )
+  ) AS unique_sessions
+
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+
+WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131';
+````
+
+---
+
+## Query Result
+
+| total_rows | unique_users | unique_sessions |
+| ---------- | ------------ | --------------- |
+| 1,210,147  | 94,790       | 118,380         |
+
+---
+
+## Query Result Screenshot
+
+![GA4 User & Session Profiling](screenshots/ga4_user_session_volume_profiling.png)
+
+---
+
+## Key Observations
+
+### 1. Dataset Contains Significant Behavioral Activity Volume
+
+The dataset contains:
+
+* `1,210,147` total event rows
+
+This confirms that the GA4 export contains substantial behavioral interaction data suitable for large-scale analytics workflows.
+
+The event volume appears sufficient for:
+
+* engagement analysis
+* funnel analysis
+* KPI modeling
+* behavioral segmentation
+* session-level aggregation
+
+---
+
+### 2. Strong User-Level Coverage Exists
+
+The profiling identified:
+
+* `94,790` unique users
+
+This suggests that the dataset contains a meaningful behavioral user base rather than a small synthetic or low-activity sample.
+
+The observed user volume supports downstream analysis related to:
+
+* user behavior
+* engagement intensity
+* acquisition analysis
+* customer journey analysis
+* segmentation workflows
+
+---
+
+### 3. Session Volume Appears Structurally Plausible
+
+The dataset contains:
+
+* `118,380` unique sessions
+
+The session count is reasonably proportional relative to the observed user volume, suggesting that session tracking appears structurally consistent within the sampled period.
+
+No obviously abnormal session inflation patterns were identified during this validation step.
+
+---
+
+### 4. Session Extraction from Nested Event Parameters Was Successful
+
+The query successfully extracted `ga_session_id` from the nested `event_params` structure using:
+
+```sql
+UNNEST(event_params)
+```
+
+This confirms that session identifiers are accessible within the raw GA4 export and can be used for downstream:
+
+* sessionization
+* funnel analysis
+* engagement aggregation
+* attribution workflows
+* behavioral modeling
+
+---
+
+### 5. Session Construction Logic Uses Composite Session Keys
+
+The session counting logic intentionally combined:
+
+* `user_pseudo_id`
+* `ga_session_id`
+
+into a composite key.
+
+This approach was used because GA4 session IDs are not globally unique across all users.
+
+The composite session construction pattern increases reliability for downstream session-level analytics.
+
+---
+
+## Analytical Implications
+
+The profiling results indicate that:
+
+* the dataset contains substantial behavioral activity
+* user-level analysis is feasible
+* session-level aggregation is feasible
+* nested session identifiers are accessible and usable
+* the dataset supports realistic engagement and conversion analysis workflows
+
+This increases confidence in the reliability of future session-based transformation models and KPI layers.
+
+---
+
+![alt text](ga4_user_session_volume_profiling.png.png)
+
+```
+```
+````md id="2w8xsu"
+## D6 — Session ID Availability Validation
+
+### Objective
+This query was used to validate the availability and completeness of the `ga_session_id` field within the raw GA4 export.
+
+The purpose of this profiling step was to confirm whether session identifiers are consistently populated across event records before building downstream:
+
+- session-level aggregations
+- funnel analysis
+- engagement KPIs
+- attribution logic
+- behavioral session models
+
+Because many GA4 analytics workflows depend on reliable session identifiers, validating session ID completeness is a critical raw data quality step.
+
+---
+
+## Query
+
+```sql
+-- D6) Session ID availability check (sample window)
+
+WITH base AS (
+
+  SELECT
+
+    (
+      SELECT value.int_value
+      FROM UNNEST(event_params)
+      WHERE key = 'ga_session_id'
+    ) AS ga_session_id
+
+  FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+
+  WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
+
+)
+
+SELECT
+
+  COUNT(*) AS total_rows,
+
+  SUM(
+    CASE
+      WHEN ga_session_id IS NULL
+      THEN 1
+      ELSE 0
+    END
+  ) AS null_ga_session_id_rows,
+
+  SUM(
+    CASE
+      WHEN ga_session_id IS NOT NULL
+      THEN 1
+      ELSE 0
+    END
+  ) AS has_ga_session_id_rows
+
+FROM base;
+````
+
+---
+
+## Query Result
+
+| total_rows | null_ga_session_id_rows | has_ga_session_id_rows |
+| ---------- | ----------------------- | ---------------------- |
+| 1,210,147  | 0                       | 1,210,147              |
+
+---
+
+## Query Result Screenshot
+
+![GA4 Session ID Availability](screenshots/ga4_session_id_availability.png)
+
+---
+
+## Key Observations
+
+### 1. Full Session ID Coverage Was Detected
+
+The validation identified:
+
+* `0` rows with missing `ga_session_id`
+* `1,210,147` rows with populated `ga_session_id`
+
+This indicates that session identifiers are consistently available across the entire sampled event dataset.
+
+---
+
+### 2. Session Extraction from Nested Event Parameters Was Successful
+
+The query successfully extracted `ga_session_id` from the nested `event_params` structure using:
+
+```sql id="n65r8j"
+UNNEST(event_params)
+```
+
+This confirms that session-level metadata is accessible and usable within the raw GA4 export schema.
+
+---
+
+### 3. No Immediate Session Completeness Risk Was Identified
+
+Because no missing session identifiers were observed, no immediate structural risk was identified for downstream:
+
+* sessionization
+* session KPI modeling
+* engagement aggregation
+* funnel analysis
+* attribution workflows
+
+This substantially increases confidence in the reliability of future session-based analytical layers.
+
+---
+
+### 4. Dataset Appears Structurally Suitable for Session-Level Analytics
+
+The observed completeness level suggests that the GA4 export maintains stable session tracking coverage during the sampled period.
+
+This is especially important because incomplete session identifiers can cause:
+
+* broken funnel logic
+* inaccurate session counts
+* distorted engagement metrics
+* attribution inconsistencies
+
+No such structural issues were identified during this profiling step.
+
+---
+
+## Analytical Implications
+
+The profiling results indicate that:
+
+* session identifiers are fully populated
+* nested session extraction logic is reliable
+* session-based transformations are feasible
+* downstream behavioral modeling can proceed with high confidence
+
+This validation supports the reliability of future:
+
+* staging transformations
+* session-level marts
+* behavioral KPIs
+* funnel analytics
+* acquisition attribution models
+
+---
+
+
+
+```
+```
 
 
 
