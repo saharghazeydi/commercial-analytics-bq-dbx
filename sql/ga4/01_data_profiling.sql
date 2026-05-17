@@ -46,10 +46,8 @@ SELECT
 FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131';
 
-
 -- C2) Approximate duplicate event check using proxy key
 -- Proxy key: user_pseudo_id + event_timestamp + event_name
-
 WITH base AS (
   SELECT
     user_pseudo_id,
@@ -86,7 +84,9 @@ FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131';
 
 -- D1) Top event distribution (sample window)
-SELECT event_name, COUNT(*) AS event_count
+SELECT
+  event_name,
+  COUNT(*) AS event_count
 FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
 GROUP BY 1
@@ -138,7 +138,6 @@ GROUP BY event_dt
 ORDER BY event_dt;
 
 -- D5) User and session volume profiling (sample window)
-
 SELECT
   COUNT(*) AS total_rows,
   COUNT(DISTINCT user_pseudo_id) AS unique_users,
@@ -155,25 +154,18 @@ FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131';
 
 -- D6) Session ID availability check (sample window)
-
 WITH base AS (
-
   SELECT
-
     (
       SELECT value.int_value
       FROM UNNEST(event_params)
       WHERE key = 'ga_session_id'
     ) AS ga_session_id
-
   FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
-
   WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
-
 )
 
 SELECT
-
   COUNT(*) AS total_rows,
 
   SUM(
@@ -191,12 +183,10 @@ SELECT
       ELSE 0
     END
   ) AS has_ga_session_id_rows
-
 FROM base;
 
 -- D7) Event-level traffic source parameter distribution (sample window)
 -- Uses event_params source / medium / campaign instead of user-scoped traffic_source fields
-
 WITH base AS (
   SELECT
     user_pseudo_id,
@@ -218,9 +208,7 @@ WITH base AS (
       FROM UNNEST(event_params)
       WHERE key = 'campaign'
     ) AS campaign_name
-
   FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
-
   WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
 )
 
@@ -282,7 +270,6 @@ SELECT
 FROM q;
 
 -- D9) Transaction-level duplicate and revenue validation
-
 SELECT
   ecommerce.transaction_id,
   COUNT(*) AS purchase_event_rows,
@@ -299,7 +286,6 @@ ORDER BY purchase_event_rows DESC, summed_transaction_revenue DESC
 LIMIT 30;
 
 -- D10) Event parameter key frequency (sample window)
-
 SELECT
   ep.key AS event_param_key,
   COUNT(*) AS param_occurrence_count,
@@ -312,7 +298,6 @@ ORDER BY param_occurrence_count DESC
 LIMIT 50;
 
 -- D11) Event parameter coverage by event type (sample window)
-
 SELECT
   event_name,
   ep.key AS event_param_key,
