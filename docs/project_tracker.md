@@ -2249,7 +2249,135 @@ However:
 ![alt text](ga4_purchase_transaction_quality.png)
 
 ---
+````md id="72t9p1"
+### D9 — Revenue by Transaction ID Validation
 
+**Objective:**  
+Validate transaction-level purchase integrity and identify potential duplicate purchase event risks before revenue aggregation and mart development.
+
+This validation focused on:
+- duplicate purchase event detection
+- transaction-level revenue consistency
+- potential revenue inflation risk
+- transaction grain reliability
+
+---
+
+#### Validation Query
+
+```sql
+-- D9) Transaction-level duplicate and revenue validation
+
+SELECT
+  ecommerce.transaction_id,
+
+  COUNT(*) AS purchase_event_rows,
+
+  COUNT(DISTINCT ecommerce.purchase_revenue)
+    AS distinct_revenue_values,
+
+  SUM(ecommerce.purchase_revenue)
+    AS summed_transaction_revenue,
+
+  MAX(ecommerce.purchase_revenue)
+    AS max_transaction_revenue
+
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+
+WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
+  AND event_name = 'purchase'
+  AND ecommerce.transaction_id IS NOT NULL
+
+GROUP BY ecommerce.transaction_id
+
+ORDER BY
+  purchase_event_rows DESC,
+  summed_transaction_revenue DESC
+
+LIMIT 30;
+````
+
+---
+
+#### Result Snapshot
+
+![GA4 Revenue Transaction Validation](../bi/screenshots/ga4/ga4_revenue_transaction_validation.png)
+
+---
+
+#### Key Findings
+
+| Observation                                           | Result   |
+| ----------------------------------------------------- | -------- |
+| Transactions with duplicated purchase events detected | Yes      |
+| Highest duplicated purchase event count               | 2 rows   |
+| Revenue duplication pattern observed                  | Yes      |
+| Revenue inflation risk present                        | Moderate |
+| Purchase transactions with single-row integrity       | Majority |
+
+---
+
+#### Analytical Observations
+
+* Several transaction IDs contained duplicated purchase event rows (`purchase_event_rows = 2`).
+* Multiple duplicated transactions showed identical revenue values across rows.
+* In these cases, `summed_transaction_revenue` was exactly double the `max_transaction_revenue`.
+* This strongly suggests duplicate purchase event firing rather than legitimate multi-line transaction behavior.
+* The majority of transaction IDs still maintained single-row purchase integrity.
+
+Examples observed:
+
+| transaction_id | summed_transaction_revenue | max_transaction_revenue |
+| -------------- | -------------------------: | ----------------------: |
+| 145915         |                        168 |                      84 |
+| 22807          |                        166 |                      83 |
+| 87482          |                        140 |                      70 |
+| 477087         |                        110 |                      55 |
+
+This pattern indicates duplicated revenue aggregation risk if raw purchase events are summed directly.
+
+---
+
+#### Business Implications
+
+The dataset is suitable for:
+
+* ecommerce funnel analysis
+* purchase behavior analysis
+* session-level analytics
+
+However:
+
+* revenue aggregation logic requires defensive transaction deduplication
+* downstream marts should avoid naïve `SUM(purchase_revenue)` aggregation
+* transaction-level modeling may require:
+
+  * `MAX(purchase_revenue)`
+  * transaction-level deduplication
+  * row ranking logic
+  * distinct transaction aggregation strategies
+
+---
+
+#### Recommended Modeling Approach
+
+Future staging and mart layers should:
+
+* treat `transaction_id` as the business grain
+* validate duplicate purchase rows during transformation
+* explicitly document revenue deduplication assumptions
+
+---
+
+#### Status
+
+⚠ Duplicate purchase event behavior detected
+⚠ Revenue inflation risk identified and documented
+✅ Transaction-level validation completed
+
+```
+```
+![alt text](ga4_revenue_transaction_validation.png)
 ## Phase 1B — Olist Ingestion
 - [ ] Load CSVs into Databricks
 - [ ] Clean data types

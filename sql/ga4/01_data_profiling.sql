@@ -260,18 +260,21 @@ SELECT
   negative_revenue,
   ROUND(SAFE_DIVIDE(negative_revenue, purchases), 4) AS negative_rev_rate
 FROM q;
--- D9) Revenue by transaction ID validation (sample window)
+
+-- D9) Transaction-level duplicate and revenue validation
 
 SELECT
   ecommerce.transaction_id,
   COUNT(*) AS purchase_event_rows,
-  SUM(ecommerce.purchase_revenue) AS transaction_revenue
+  COUNT(DISTINCT ecommerce.purchase_revenue) AS distinct_revenue_values,
+  SUM(ecommerce.purchase_revenue) AS summed_transaction_revenue,
+  MAX(ecommerce.purchase_revenue) AS max_transaction_revenue
 FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
   AND event_name = 'purchase'
   AND ecommerce.transaction_id IS NOT NULL
 GROUP BY ecommerce.transaction_id
-ORDER BY purchase_event_rows DESC, transaction_revenue DESC
+ORDER BY purchase_event_rows DESC, summed_transaction_revenue DESC
 LIMIT 30;
 
 -- D10) Event parameter key frequency (sample window)
