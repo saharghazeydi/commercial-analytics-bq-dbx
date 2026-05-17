@@ -2378,6 +2378,198 @@ Future staging and mart layers should:
 ```
 ```
 ![alt text](ga4_revenue_transaction_validation.png)
+
+
+
+````md id="7j2k4m"
+### D10 — Event Parameter Key Frequency Profiling
+
+**Objective:**  
+Analyze the frequency and distribution of GA4 event parameters in order to identify:
+- reusable session-level parameters
+- acquisition-related tracking fields
+- ecommerce-specific attributes
+- event-scoped vs globally shared parameters
+
+This step supports future staging and feature extraction decisions during transformation modeling.
+
+---
+
+#### Validation Query
+
+```sql
+-- D10) Event parameter key frequency (sample window)
+
+SELECT
+  ep.key AS event_param_key,
+
+  COUNT(*) AS param_occurrence_count,
+
+  COUNT(DISTINCT event_name)
+    AS event_name_count
+
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`,
+UNNEST(event_params) AS ep
+
+WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
+
+GROUP BY ep.key
+
+ORDER BY param_occurrence_count DESC
+
+LIMIT 50;
+````
+
+---
+
+#### Result Snapshot
+
+![GA4 Event Parameter Frequency](../bi/screenshots/ga4/ga4_event_param_frequency.png)
+
+---
+
+#### Key Findings
+
+| Parameter Type            | Examples Identified                                    |
+| ------------------------- | ------------------------------------------------------ |
+| Session-level parameters  | `ga_session_id`, `ga_session_number`                   |
+| Navigation parameters     | `page_location`, `page_title`, `page_referrer`         |
+| Engagement parameters     | `engagement_time_msec`, `percent_scrolled`             |
+| Acquisition parameters    | `source`, `medium`, `campaign`, `gclid`                |
+| Ecommerce parameters      | `transaction_id`, `payment_type`, `coupon`, `currency` |
+| Search-related parameters | `search_term`, `unique_search_term`                    |
+
+---
+
+#### Analytical Observations
+
+* `ga_session_id` and `ga_session_number` appeared across all major event categories, confirming strong session-level tracking consistency.
+* `page_location` and `page_title` were highly prevalent, supporting page-level behavioral analysis.
+* Attribution-related parameters (`source`, `medium`, `campaign`) appeared frequently across multiple event types, making them strong candidates for acquisition modeling.
+* Ecommerce-related parameters (`transaction_id`, `payment_type`, `coupon`) appeared only in limited event scopes, indicating event-specific usage.
+* `percent_scrolled` appeared exclusively within scroll-related events, confirming event-scoped parameter behavior.
+* Search-related fields (`search_term`, `unique_search_term`) indicate that onsite search behavior is available for downstream analysis.
+
+---
+
+#### Modeling Implications
+
+The profiling results suggest a natural separation between:
+
+##### Shared / Reusable Parameters
+
+These are suitable for:
+
+* session marts
+* acquisition dimensions
+* behavioral analytics
+* reusable staging columns
+
+Examples:
+
+* `ga_session_id`
+* `source`
+* `medium`
+* `campaign`
+* `page_location`
+
+##### Event-Specific Parameters
+
+These should be extracted selectively based on business use cases.
+
+Examples:
+
+* `transaction_id`
+* `coupon`
+* `payment_type`
+* `search_term`
+* `percent_scrolled`
+
+---
+
+#### Business Implications
+
+The dataset supports:
+
+* session-based behavioral analysis
+* traffic acquisition modeling
+* ecommerce transaction analysis
+* onsite search analysis
+* engagement KPI development
+
+Additionally:
+
+* parameter extraction should be selective rather than flattening all event parameters
+* future staging logic should prioritize high-frequency reusable business fields
+
+---
+
+#### Status
+
+✅ Event parameter structure profiled
+✅ Shared vs event-scoped parameter behavior identified
+✅ Candidate fields for staging extraction documented
+
+![alt text](ga4_event_parameter_key_frequency.png)
+```
+```
+### D11 — Event Parameter Coverage by Event Type
+
+This validation step analyzed parameter coverage at the event level by flattening the `event_params` array and mapping parameter keys to individual event types.
+
+The objective was to understand:
+- which parameters are consistently associated with each event
+- how event schemas differ across behavioral actions
+- which fields are reliable candidates for downstream staging and KPI extraction
+
+Key observations from the profiling results:
+
+- Core session/navigation parameters such as:
+  - `ga_session_id`
+  - `ga_session_number`
+  - `page_location`
+  - `page_title`
+  - `session_engaged`
+
+  appeared consistently across major ecommerce events.
+
+- Commerce-related events such as:
+  - `add_payment_info`
+  - `add_shipping_info`
+  - `add_to_cart`
+
+  showed strong parameter consistency and stable event structures.
+
+- Revenue-related parameters such as:
+  - `currency`
+
+  appeared consistently within checkout-oriented events.
+
+- Acquisition parameters:
+  - `source`
+  - `medium`
+  - `campaign`
+
+  appeared only in a very small subset of rows for some ecommerce events, confirming that attribution fields are sparse at the event level and should be handled carefully during staging and attribution modeling.
+
+- Engagement-related parameters such as:
+  - `engagement_time_msec`
+  - `engaged_session_event`
+
+  were available across multiple interaction-heavy event types, supporting future engagement KPI development.
+
+Analytical implications:
+- Event schemas are not uniform across all event types.
+- Parameter extraction logic must be event-aware during staging.
+- Attribution fields should not be assumed to exist on every event row.
+- The dataset contains sufficient behavioral, session, acquisition, and commerce signals for downstream dimensional modeling and funnel analysis.
+
+Screenshot reference:
+
+```text
+bi/screenshots/ga4/ga4_event_param_coverage_by_event.png
+
+
 ## Phase 1B — Olist Ingestion
 - [ ] Load CSVs into Databricks
 - [ ] Clean data types
