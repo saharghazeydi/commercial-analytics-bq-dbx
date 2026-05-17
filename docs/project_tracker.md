@@ -1890,7 +1890,363 @@ This validation supports the reliability of future:
 ```
 ```
 
+````md id="m8q4vn"
+## D7 — Event-Level Traffic Source Distribution Profiling
 
+### Objective
+This query was used to profile acquisition and traffic source patterns across the GA4 dataset using event-level source parameters extracted from nested `event_params`.
+
+The purpose of this profiling step was to validate:
+
+- traffic source availability
+- acquisition channel structure
+- campaign parameter population
+- source/medium consistency
+- usability of acquisition metadata for downstream analytics
+
+Unlike the earlier user-scoped `traffic_source` fields, this profiling step intentionally used event-level parameters (`source`, `medium`, `campaign`) extracted from `event_params` to better reflect session/event acquisition behavior.
+
+This approach is more aligned with realistic downstream commercial analytics workflows.
+
+---
+
+## Query
+
+```sql
+-- D7) Event-level traffic source parameter distribution (sample window)
+-- Uses event_params source / medium / campaign instead of user-scoped traffic_source fields
+
+WITH base AS (
+
+  SELECT
+
+    user_pseudo_id,
+
+    (
+      SELECT value.string_value
+      FROM UNNEST(event_params)
+      WHERE key = 'source'
+    ) AS source,
+
+    (
+      SELECT value.string_value
+      FROM UNNEST(event_params)
+      WHERE key = 'medium'
+    ) AS medium,
+
+    (
+      SELECT value.string_value
+      FROM UNNEST(event_params)
+      WHERE key = 'campaign'
+    ) AS campaign_name
+
+  FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+
+  WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
+
+)
+
+SELECT
+
+  COALESCE(source, '(not set)') AS source,
+
+  COALESCE(medium, '(not set)') AS medium,
+
+  COALESCE(campaign_name, '(not set)') AS campaign_name,
+
+  COUNT(*) AS event_count,
+
+  COUNT(DISTINCT user_pseudo_id) AS unique_users
+
+FROM base
+
+GROUP BY
+  source,
+  medium,
+  campaign_name
+
+ORDER BY event_count DESC
+
+LIMIT 30;
+````
+
+---
+
+## Query Result Screenshot
+
+![GA4 Traffic Source Distribution](screenshots/ga4_traffic_source_distribution.png)
+
+---
+
+## Key Observations
+
+### 1. Large Portion of Events Have Missing Acquisition Parameters
+
+The dominant acquisition grouping was:
+
+| source      | medium      | campaign    |
+| ----------- | ----------- | ----------- |
+| `(not set)` | `(not set)` | `(not set)` |
+
+This segment generated:
+
+* `873,805` events
+* `94,757` unique users
+
+This indicates that a substantial portion of the dataset does not contain populated event-level acquisition parameters.
+
+This behavior is common in GA4 exports and may occur because:
+
+* not all events inherit acquisition metadata
+* certain behavioral events lack campaign context
+* direct/internal navigation events may not populate source parameters
+
+This does not necessarily indicate broken tracking.
+
+---
+
+### 2. Organic Google Traffic Appears as a Major Acquisition Channel
+
+The dataset shows strong organic acquisition activity from Google:
+
+| source   | medium    |
+| -------- | --------- |
+| `google` | `organic` |
+
+with approximately:
+
+* `83,604` events
+* `32,198` unique users
+
+This suggests that organic search traffic represents a significant behavioral acquisition source within the sampled dataset.
+
+---
+
+### 3. Referral Traffic Is Strongly Represented
+
+Several referral-based traffic sources appear prominently, including:
+
+* `shop.googlemerchandisestore.com`
+* `googlemerchandisestore.com`
+* `analytics.google.com`
+* `creatoracademy.youtube.com`
+* `facebook.com`
+* `mail.google.com`
+
+This indicates that referral-based navigation and cross-site acquisition activity are present and structurally populated.
+
+---
+
+### 4. Multiple Acquisition Medium Types Are Present
+
+The dataset includes several medium categories, including:
+
+* `organic`
+* `referral`
+* `email`
+* `affiliate`
+* `cpc`
+
+This confirms that the acquisition structure supports downstream:
+
+* channel segmentation
+* traffic attribution analysis
+* campaign performance analysis
+* acquisition KPI modeling
+
+---
+
+### 5. Paid & Campaign Traffic Signals Exist
+
+The profiling identified several campaign-oriented records, including:
+
+| source                    | medium      | campaign           |
+| ------------------------- | ----------- | ------------------ |
+| `google`                  | `cpc`       | `<Other>`          |
+| `Newsletter_January_2021` | `email`     | `NewYear_V1`       |
+| `Newsletter_January_2021` | `email`     | `NewYear_V2`       |
+| `Partners`                | `affiliate` | `Data Share Promo` |
+
+This confirms that campaign-level acquisition metadata is partially available within the dataset.
+
+---
+
+### 6. Some Placeholder / Data Quality Categories Exist
+
+Several values such as:
+
+* `(not set)`
+* `<Other>`
+* `(data deleted)`
+
+appear within the acquisition fields.
+
+These patterns are common in GA4 exports and should be considered during downstream KPI interpretation and channel aggregation logic.
+
+Future transformation layers may require:
+
+* normalization
+* mapping
+* fallback attribution handling
+
+---
+
+## Analytical Implications
+
+The traffic source profiling indicates that:
+
+* acquisition metadata is available and structurally usable
+* multiple channel types are represented
+* campaign-level analysis is feasible
+* organic and referral traffic dominate observed activity
+* some acquisition sparsity and placeholder values require downstream handling
+
+The dataset appears suitable for downstream:
+
+* acquisition dashboards
+* channel KPI modeling
+* conversion-by-channel analysis
+* attribution-oriented reporting workflows
+
+---
+
+![alt text](Event-level_traffic_source_distribution.png)
+
+
+```
+```
+````md
+### D8 — Purchase Transaction Quality Validation
+
+**Objective:**  
+Validate the reliability of purchase-level ecommerce tracking before downstream KPI modeling and revenue analysis.
+
+This validation focused on identifying potential ecommerce quality issues including:
+- missing transaction identifiers
+- missing purchase revenue
+- zero-value purchases
+- negative revenue anomalies
+
+---
+
+#### Validation Query
+
+```sql
+-- D8) Purchase transaction quality check
+
+WITH q AS (
+
+  SELECT
+    COUNTIF(event_name = 'purchase') AS purchases,
+
+    COUNTIF(
+      event_name = 'purchase'
+      AND ecommerce.transaction_id IS NULL
+    ) AS missing_txn_id,
+
+    COUNTIF(
+      event_name = 'purchase'
+      AND ecommerce.purchase_revenue IS NULL
+    ) AS missing_revenue,
+
+    COUNTIF(
+      event_name = 'purchase'
+      AND ecommerce.purchase_revenue = 0
+    ) AS zero_revenue,
+
+    COUNTIF(
+      event_name = 'purchase'
+      AND ecommerce.purchase_revenue < 0
+    ) AS negative_revenue
+
+  FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+
+  WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
+
+)
+
+SELECT
+  purchases,
+
+  missing_txn_id,
+
+  ROUND(SAFE_DIVIDE(missing_txn_id, purchases), 4)
+    AS missing_txn_rate,
+
+  missing_revenue,
+
+  ROUND(SAFE_DIVIDE(missing_revenue, purchases), 4)
+    AS missing_rev_rate,
+
+  zero_revenue,
+
+  ROUND(SAFE_DIVIDE(zero_revenue, purchases), 4)
+    AS zero_rev_rate,
+
+  negative_revenue,
+
+  ROUND(SAFE_DIVIDE(negative_revenue, purchases), 4)
+    AS negative_rev_rate
+
+FROM q;
+````
+
+---
+
+#### Result Snapshot
+
+![GA4 Purchase Transaction Quality](../bi/screenshots/ga4/ga4_purchase_transaction_quality.png)
+
+---
+
+#### Key Findings
+
+| Metric                      | Result |
+| --------------------------- | ------ |
+| Total purchase events       | 1,204  |
+| Missing transaction IDs     | 0      |
+| Missing transaction ID rate | 0.00%  |
+| Missing purchase revenue    | 300    |
+| Missing revenue rate        | 24.92% |
+| Zero revenue purchases      | 0      |
+| Negative revenue purchases  | 0      |
+
+---
+
+#### Analytical Observations
+
+* All purchase events contained valid transaction identifiers.
+* No zero-value or negative-value purchase events were detected.
+* Approximately 24.92% of purchase events had NULL purchase revenue values.
+* This suggests that purchase event instrumentation is partially incomplete at the revenue field level.
+* Revenue-based KPIs should therefore be interpreted carefully during downstream modeling.
+
+---
+
+#### Business Implications
+
+The dataset appears suitable for:
+
+* transaction-level modeling
+* conversion funnel analysis
+* ecommerce behavioral analytics
+
+However:
+
+* revenue completeness issues should be documented
+* downstream revenue aggregation logic should explicitly handle NULL purchase revenue values
+* KPI calculations should use defensive NULL handling (e.g., `COALESCE()`)
+
+---
+
+#### Status
+
+✅ Purchase tracking structure validated
+⚠ Revenue completeness issue identified and documented
+
+```
+```
+![alt text](ga4_purchase_transaction_quality.png)
 
 ---
 

@@ -192,51 +192,74 @@ SELECT
 
 FROM base;
 
--- D7) Traffic source distribution (sample window)
+-- D7) Event-level traffic source parameter distribution (sample window)
+-- Uses event_params source / medium / campaign instead of user-scoped traffic_source fields
+
+WITH base AS (
+  SELECT
+    user_pseudo_id,
+
+    (
+      SELECT value.string_value
+      FROM UNNEST(event_params)
+      WHERE key = 'source'
+    ) AS source,
+
+    (
+      SELECT value.string_value
+      FROM UNNEST(event_params)
+      WHERE key = 'medium'
+    ) AS medium,
+
+    (
+      SELECT value.string_value
+      FROM UNNEST(event_params)
+      WHERE key = 'campaign'
+    ) AS campaign_name
+
+  FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+
+  WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
+)
 
 SELECT
-  traffic_source.source,
-  traffic_source.medium,
-  traffic_source.name AS campaign_name,
+  COALESCE(source, '(not set)') AS source,
+  COALESCE(medium, '(not set)') AS medium,
+  COALESCE(campaign_name, '(not set)') AS campaign_name,
   COUNT(*) AS event_count,
   COUNT(DISTINCT user_pseudo_id) AS unique_users
-FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
-WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
+FROM base
 GROUP BY
-  traffic_source.source,
-  traffic_source.medium,
-  traffic_source.name
+  source,
+  medium,
+  campaign_name
 ORDER BY event_count DESC
 LIMIT 30;
 
--- D8) Purchase transaction quality check (sample window)
+-- D8) Purchase transaction quality check
+
+WITH q AS (
+  SELECT
+    COUNTIF(event_name = 'purchase') AS purchases,
+    COUNTIF(event_name = 'purchase' AND ecommerce.transaction_id IS NULL) AS missing_txn_id,
+    COUNTIF(event_name = 'purchase' AND ecommerce.purchase_revenue IS NULL) AS missing_revenue,
+    COUNTIF(event_name = 'purchase' AND ecommerce.purchase_revenue = 0) AS zero_revenue,
+    COUNTIF(event_name = 'purchase' AND ecommerce.purchase_revenue < 0) AS negative_revenue
+  FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+  WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
+)
 
 SELECT
-  COUNTIF(event_name = 'purchase') AS purchase_events,
-
-  COUNTIF(
-    event_name = 'purchase'
-    AND ecommerce.transaction_id IS NULL
-  ) AS purchase_events_missing_transaction_id,
-
-  COUNTIF(
-    event_name = 'purchase'
-    AND ecommerce.purchase_revenue IS NULL
-  ) AS purchase_events_missing_revenue,
-
-  COUNTIF(
-    event_name = 'purchase'
-    AND ecommerce.purchase_revenue = 0
-  ) AS purchase_events_zero_revenue,
-
-  COUNTIF(
-    event_name = 'purchase'
-    AND ecommerce.purchase_revenue < 0
-  ) AS purchase_events_negative_revenue
-
-FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
-WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131';
-
+  purchases,
+  missing_txn_id,
+  ROUND(SAFE_DIVIDE(missing_txn_id, purchases), 4) AS missing_txn_rate,
+  missing_revenue,
+  ROUND(SAFE_DIVIDE(missing_revenue, purchases), 4) AS missing_rev_rate,
+  zero_revenue,
+  ROUND(SAFE_DIVIDE(zero_revenue, purchases), 4) AS zero_rev_rate,
+  negative_revenue,
+  ROUND(SAFE_DIVIDE(negative_revenue, purchases), 4) AS negative_rev_rate
+FROM q;
 -- D9) Revenue by transaction ID validation (sample window)
 
 SELECT
