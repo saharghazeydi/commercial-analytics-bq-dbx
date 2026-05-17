@@ -94,9 +94,9 @@ ORDER BY event_count DESC
 LIMIT 20;
 
 -- D2) Purchase presence and revenue validation (sample window)
-
 SELECT
   COUNTIF(event_name = 'purchase') AS purchase_events,
+
   SUM(
     CASE
       WHEN event_name = 'purchase'
@@ -104,13 +104,15 @@ SELECT
       ELSE 0
     END
   ) AS total_purchase_revenue,
+
   COUNT(DISTINCT
     CASE
       WHEN event_name = 'purchase'
+        AND ecommerce.transaction_id IS NOT NULL
+        AND ecommerce.transaction_id != '(not set)'
       THEN ecommerce.transaction_id
-      ELSE NULL
     END
-  ) AS distinct_purchase_transaction_ids
+  ) AS distinct_valid_purchase_transaction_ids
 FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131';
 
@@ -237,22 +239,40 @@ ORDER BY event_count DESC
 LIMIT 30;
 
 -- D8) Purchase transaction quality check
-
 WITH q AS (
   SELECT
     COUNTIF(event_name = 'purchase') AS purchases,
-    COUNTIF(event_name = 'purchase' AND ecommerce.transaction_id IS NULL) AS missing_txn_id,
-    COUNTIF(event_name = 'purchase' AND ecommerce.purchase_revenue IS NULL) AS missing_revenue,
-    COUNTIF(event_name = 'purchase' AND ecommerce.purchase_revenue = 0) AS zero_revenue,
-    COUNTIF(event_name = 'purchase' AND ecommerce.purchase_revenue < 0) AS negative_revenue
+
+    COUNTIF(
+      event_name = 'purchase'
+      AND (
+        ecommerce.transaction_id IS NULL
+        OR ecommerce.transaction_id = '(not set)'
+      )
+    ) AS missing_or_invalid_txn_id,
+
+    COUNTIF(
+      event_name = 'purchase'
+      AND ecommerce.purchase_revenue IS NULL
+    ) AS missing_revenue,
+
+    COUNTIF(
+      event_name = 'purchase'
+      AND ecommerce.purchase_revenue = 0
+    ) AS zero_revenue,
+
+    COUNTIF(
+      event_name = 'purchase'
+      AND ecommerce.purchase_revenue < 0
+    ) AS negative_revenue
   FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
   WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
 )
 
 SELECT
   purchases,
-  missing_txn_id,
-  ROUND(SAFE_DIVIDE(missing_txn_id, purchases), 4) AS missing_txn_rate,
+  missing_or_invalid_txn_id,
+  ROUND(SAFE_DIVIDE(missing_or_invalid_txn_id, purchases), 4) AS missing_or_invalid_txn_rate,
   missing_revenue,
   ROUND(SAFE_DIVIDE(missing_revenue, purchases), 4) AS missing_rev_rate,
   zero_revenue,
@@ -273,6 +293,7 @@ FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
   AND event_name = 'purchase'
   AND ecommerce.transaction_id IS NOT NULL
+  AND ecommerce.transaction_id != '(not set)'
 GROUP BY ecommerce.transaction_id
 ORDER BY purchase_event_rows DESC, summed_transaction_revenue DESC
 LIMIT 30;
