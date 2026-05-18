@@ -89,7 +89,7 @@ SELECT
   COUNT(*) AS event_count
 FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
-GROUP BY 1
+GROUP BY event_name
 ORDER BY event_count DESC
 LIMIT 20;
 

@@ -1,5 +1,3 @@
-
-````markdown
 # Project Tracker — Commercial Analytics
 
 ## Current Phase
@@ -62,8 +60,11 @@ commercial-analytics-bq-dbx/
 │   └── raw/
 │       └── olist/
 │
-├── docs/
+├── ├── docs/
+│   ├── architecture.md
+│   ├── data_dictionary.md
 │   ├── decisions_log.md
+│   ├── kpi_definitions.md
 │   └── project_tracker.md
 │
 ├── sql/
@@ -421,7 +422,7 @@ SELECT
   COUNT(*) AS event_count
 FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
-GROUP BY 1
+GROUP BY event_name
 ORDER BY event_count DESC
 LIMIT 20;
 ```
@@ -1174,4 +1175,4 @@ Revenue aggregation should avoid naïve raw-row summation due to duplicate purch
 - [ ] Business recommendation summary
 - [ ] Final dashboard screenshots
 - [ ] Final project review checklist
-````
+
