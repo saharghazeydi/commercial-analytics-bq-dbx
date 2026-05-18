@@ -1,4 +1,3 @@
-آره، این نسخه clean و sync شده با ساختار جدیدت است. Duplicate image lines مثل `![alt text]...` را حذف کردم و همه screenshotها را با مسیر درست گذاشتم. جایگزین کل `docs/project_tracker.md` کن. 
 
 ````markdown
 # Project Tracker — Commercial Analytics
