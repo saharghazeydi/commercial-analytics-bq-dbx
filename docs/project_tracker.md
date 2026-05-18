@@ -226,7 +226,7 @@ WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131';
 |---|---|---:|
 | 2021-01-01 | 2021-01-31 | 1,210,147 |
 
-![GA4 Sample Date Coverage](../bi/screenshots/ga4/ga4_date_coverage_sample.png)
+![GA4 Sample Date Coverage](../bi/screenshots/ga4/profiling/ga4_date_coverage_sample.png)
 
 ## Key Findings
 
@@ -259,7 +259,7 @@ FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`;
 |---|---|
 | 2020-11-01 | 2021-01-31 |
 
-![GA4 Global Date Coverage](../bi/screenshots/ga4/ga4_global_date_coverage.png)
+![GA4 Global Date Coverage](../bi/screenshots/ga4/profiling/ga4_global_date_coverage.png)
 
 ## Key Findings
 
@@ -300,7 +300,7 @@ WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131';
 |---:|---:|---:|---:|---:|
 | 1,210,147 | 0 | 0 | 0 | 0 |
 
-![GA4 Null Rates Core Fields](../bi/screenshots/ga4/ga4_null_rates_core_fields.png)
+![GA4 Null Rates Core Fields](../bi/screenshots/ga4/profiling/ga4_null_rates_core_fields.png)
 
 ## Key Findings
 
@@ -364,7 +364,7 @@ FROM counts;
 |---:|---:|---:|
 | 1,210,147 | 1,210,147 | 0 |
 
-![GA4 Duplicate Proxy Validation](../bi/screenshots/ga4/ga4_duplicate_proxy.png)
+![GA4 Duplicate Proxy Validation](../bi/screenshots/ga4/profiling/ga4_duplicate_proxy.png)
 
 ## Key Findings
 
@@ -427,7 +427,7 @@ ORDER BY event_count DESC
 LIMIT 20;
 ```
 
-![GA4 Top Event Distribution](../bi/screenshots/ga4/ga4_top_events_distribution.png)
+![GA4 Top Event Distribution](../bi/screenshots/ga4/profiling/ga4_top_events_distribution.png)
 
 ## Key Findings
 
@@ -495,7 +495,7 @@ WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131';
 | Total purchase revenue | 57,350.0 |
 | Distinct valid purchase transaction IDs | 894 |
 
-![GA4 Purchase Presence Revenue](../bi/screenshots/ga4/ga4_purchase_presence_revenue.png)
+![GA4 Purchase Presence Revenue](../bi/screenshots/ga4/profiling/ga4_purchase_presence_revenue.png)
 
 ## Key Findings
 
@@ -529,7 +529,7 @@ ORDER BY has_items_row_count DESC, row_count DESC
 LIMIT 30;
 ```
 
-![GA4 Items Sparsity By Event](../bi/screenshots/ga4/ga4_items_sparsity_by_event.png)
+![GA4 Items Sparsity By Event](../bi/screenshots/ga4/profiling/ga4_items_sparsity_by_event.png)
 
 ## Key Findings
 
@@ -563,7 +563,7 @@ GROUP BY event_dt
 ORDER BY event_dt;
 ```
 
-![GA4 Daily Event Volume Distribution](../bi/screenshots/ga4/ga4_daily_event_volume_distribution.png)
+![GA4 Daily Event Volume Distribution](../bi/screenshots/ga4/profiling/ga4_daily_event_volume_distribution.png)
 
 ## Key Findings
 
@@ -614,7 +614,7 @@ WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131';
 |---:|---:|---:|
 | 1,210,147 | 94,790 | 118,380 |
 
-![GA4 User Session Volume Profiling](../bi/screenshots/ga4/ga4_user_session_volume_profiling.png)
+![GA4 User Session Volume Profiling](../bi/screenshots/ga4/profiling/ga4_user_session_volume_profiling.png)
 
 ## Key Findings
 
@@ -677,7 +677,7 @@ FROM base;
 |---:|---:|---:|
 | 1,210,147 | 0 | 1,210,147 |
 
-![GA4 Session ID Availability](../bi/screenshots/ga4/ga4_session_id_availability.png)
+![GA4 Session ID Availability](../bi/screenshots/ga4/profiling/ga4_session_id_availability.png)
 
 ## Key Findings
 
@@ -739,7 +739,7 @@ ORDER BY event_count DESC
 LIMIT 30;
 ```
 
-![GA4 Traffic Source Distribution](../bi/screenshots/ga4/ga4_traffic_source_distribution.png)
+![GA4 Traffic Source Distribution](../bi/screenshots/ga4/profiling/ga4_traffic_source_distribution.png)
 
 ## Key Findings
 
@@ -824,7 +824,7 @@ FROM q;
 | Zero revenue purchases | 0 |
 | Negative revenue purchases | 0 |
 
-![GA4 Purchase Transaction Quality](../bi/screenshots/ga4/ga4_purchase_transaction_quality.png)
+![GA4 Purchase Transaction Quality](../bi/screenshots/ga4/profiling/ga4_purchase_transaction_quality.png)
 
 ## Key Findings
 
@@ -862,7 +862,7 @@ ORDER BY purchase_event_rows DESC, summed_transaction_revenue DESC
 LIMIT 30;
 ```
 
-![GA4 Revenue Transaction Validation](../bi/screenshots/ga4/ga4_revenue_transaction_validation.png)
+![GA4 Revenue Transaction Validation](../bi/screenshots/ga4/profiling/ga4_revenue_transaction_validation.png)
 
 ## Key Findings
 
@@ -904,7 +904,7 @@ ORDER BY param_occurrence_count DESC
 LIMIT 50;
 ```
 
-![GA4 Event Parameter Key Frequency](../bi/screenshots/ga4/ga4_event_parameter_key_frequency.png)
+![GA4 Event Parameter Key Frequency](../bi/screenshots/ga4/profiling/ga4_event_parameter_key_frequency.png)
 
 ## Key Findings
 
@@ -958,7 +958,7 @@ ORDER BY
   param_occurrence_count DESC;
 ```
 
-![GA4 Event Parameter Coverage By Event](../bi/screenshots/ga4/ga4_event_parameter_coverage_by_event.png)
+![GA4 Event Parameter Coverage By Event](../bi/screenshots/ga4/profiling/ga4_event_parameter_coverage_by_event.png)
 
 ## Key Findings
 
@@ -1080,7 +1080,274 @@ Revenue aggregation should avoid naïve raw-row summation due to duplicate purch
 - [ ] Design transaction deduplication logic
 - [ ] Validate row counts after staging
 
+
+
+# Phase 1B — GA4 Staging View
+
+## Objective
+
+Create a flattened GA4 event-level staging view that converts the nested raw GA4 export into a reusable analytical layer for downstream fact tables, marts, validation checks, and BI-ready KPI modeling.
+
+The staging view preserves the raw event grain:
+
+```text
+one row per raw GA4 event
+````
+
+## Main SQL File
+
+```text
+sql/ga4/02_stg_ga4_events.sql
+```
+
+## Target View
+
+```text
+commercial-analytics-bq-dbx.commercial_analytics_us.stg_ga4_events
+```
+
+## Source Table
+
+```text
+bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*
+```
+
+## Sample Window
+
+```text
+2021-01-01 to 2021-01-31
+```
+
+## Completed
+
+* [x] Created `stg_ga4_events` view in BigQuery
+* [x] Preserved event-level grain
+* [x] Extracted core event fields
+* [x] Extracted session fields from `event_params`
+* [x] Created composite `session_key`
+* [x] Extracted page and content parameters
+* [x] Extracted engagement parameters
+* [x] Extracted acquisition parameters
+* [x] Preserved raw acquisition fields for debugging
+* [x] Extracted selected ecommerce fields
+* [x] Added item-array metadata without unnesting items
+* [x] Added ecommerce funnel event flags
+* [x] Added purchase event flags
+* [x] Added data quality flags
+* [x] Added event proxy key for duplicate validation
+
+## Key Design Decisions
+
+### Decision 1 — Preserve Event-Level Grain
+
+The staging view keeps one row per raw GA4 event. The `items` array is not unnested in this layer because unnesting would multiply rows and break event-level grain.
+
+Product-level or item-level modeling should be handled in a separate downstream fact table if needed.
+
+### Decision 2 — Use Selective Parameter Extraction
+
+Only high-value GA4 parameters were extracted from `event_params`, including:
+
+* `ga_session_id`
+* `ga_session_number`
+* `page_location`
+* `page_title`
+* `page_referrer`
+* `engagement_time_msec`
+* `session_engaged`
+* `source`
+* `medium`
+* `campaign`
+* `search_term`
+* `percent_scrolled`
+* `coupon`
+* `payment_type`
+
+This avoids flattening every GA4 parameter unnecessarily.
+
+### Decision 3 — Build Composite Session Key
+
+Session grain uses:
+
+```text
+user_pseudo_id + ga_session_id
+```
+
+because `ga_session_id` alone should not be assumed globally unique across users.
+
+### Decision 4 — Normalize Acquisition Nulls Only
+
+Acquisition fields were normalized only for null or blank values:
+
+```text
+source
+medium
+campaign
+```
+
+Blank or null values are converted to:
+
+```text
+(not set)
+```
+
+Business-level channel grouping is intentionally left for the downstream `dim_channel` or mart layer.
+
+### Decision 5 — Flag Data Quality Issues Without Filtering Rows
+
+The staging view adds quality flags but does not remove or deduplicate records.
+
+Important flags include:
+
+* `is_invalid_event_date`
+* `is_missing_user_pseudo_id`
+* `is_missing_ga_session_id`
+* `is_missing_session_key`
+* `is_invalid_purchase_transaction_id`
+* `is_missing_purchase_revenue`
+* `is_zero_purchase_revenue`
+* `is_negative_purchase_revenue`
+
+This keeps staging transparent and auditable.
+
+### Decision 6 — Revenue Deduplication Is Deferred
+
+Transaction-level revenue deduplication is not performed in staging.
+
+This is intentional because staging should remain close to the raw event export. Revenue deduplication should happen later in fact or mart logic where the business grain is clearly defined.
+
+## Initial Staging Sanity Check
+
+After creating the staging view, a quick sanity check was executed.
+
+```sql
+SELECT
+  COUNT(*) AS total_rows,
+  MIN(event_date) AS min_event_date,
+  MAX(event_date) AS max_event_date,
+  COUNT(DISTINCT session_key) AS unique_sessions,
+  COUNTIF(is_purchase_event = TRUE) AS purchase_events
+FROM `commercial-analytics-bq-dbx.commercial_analytics_us.stg_ga4_events`;
+```
+
+## Result
+
+| total_rows | min_event_date | max_event_date | unique_sessions | purchase_events |
+| ---------: | -------------- | -------------- | --------------: | --------------: |
+|  1,210,147 | 2021-01-01     | 2021-01-31     |         118,380 |           1,204 |
+
+## Key Findings
+
+* The staging view was created successfully.
+* Row volume matches the expected January 2021 profiling window.
+* Date range matches the intended sample window.
+* Session extraction is working.
+* Purchase event count matches the profiling result.
+* The view is ready for structured validation.
+
 ---
+
+# Phase 1C — GA4 Staging Validation
+
+## Objective
+
+Validate that the GA4 staging view correctly preserves raw event volume, date coverage, session logic, event taxonomy, ecommerce flags, acquisition fields, and data quality indicators.
+
+## Main SQL File
+
+```text
+sql/validation/ga4/02b_validate_stg_ga4_events.sql
+```
+
+## Screenshot Directory
+
+```text
+bi/screenshots/ga4/validation/staging/
+```
+
+## Screenshot Naming Convention
+
+| Validation Step                                      | Screenshot File                                             |
+| ---------------------------------------------------- | ----------------------------------------------------------- |
+| V1 — Raw vs staging row count validation             | `ga4_staging_validation_v01_row_count.png`                  |
+| V2 — Staging date range validation                   | `ga4_staging_validation_v02_date_range.png`                 |
+| V3 — Core field null validation                      | `ga4_staging_validation_v03_core_nulls.png`                 |
+| V4 — Session field availability validation           | `ga4_staging_validation_v04_session_availability.png`       |
+| V5 — Session volume validation                       | `ga4_staging_validation_v05_session_volume.png`             |
+| V6 — Duplicate proxy validation                      | `ga4_staging_validation_v06_duplicate_proxy.png`            |
+| V7 — Event distribution validation                   | `ga4_staging_validation_v07_event_distribution.png`         |
+| V8 — Ecommerce funnel event validation               | `ga4_staging_validation_v08_ecommerce_funnel_flags.png`     |
+| V9 — Purchase quality validation                     | `ga4_staging_validation_v09_purchase_quality.png`           |
+| V10 — Valid transaction and revenue validation       | `ga4_staging_validation_v10_valid_transactions_revenue.png` |
+| V11 — Transaction duplicate / revenue inflation risk | `ga4_staging_validation_v11_transaction_duplicate_risk.png` |
+| V12 — Acquisition field validation                   | `ga4_staging_validation_v12_acquisition_distribution.png`   |
+| V13 — Not set acquisition rate                       | `ga4_staging_validation_v13_not_set_acquisition_rate.png`   |
+| V14 — Item array validation by event type            | `ga4_staging_validation_v14_item_array_validation.png`      |
+| V15 — Engagement field validation                    | `ga4_staging_validation_v15_engagement_validation.png`      |
+| V16 — Data quality flag summary                      | `ga4_staging_validation_v16_quality_flag_summary.png`       |
+| V17 — Final staging validation status                | `ga4_staging_validation_v17_final_status.png`               |
+
+---
+
+## V1 — Raw vs Staging Row Count Validation
+
+### Objective
+
+Confirm that the staging view preserves the same number of rows as the raw GA4 event source for the January 2021 sample window.
+
+This validates that the staging transformation did not accidentally drop, duplicate, filter, or multiply event rows.
+
+### Query Reference
+
+```sql
+WITH raw_count AS (
+  SELECT
+    COUNT(*) AS raw_row_count
+  FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+  WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
+),
+
+staging_count AS (
+  SELECT
+    COUNT(*) AS staging_row_count
+  FROM `commercial-analytics-bq-dbx.commercial_analytics_us.stg_ga4_events`
+)
+
+SELECT
+  raw_row_count,
+  staging_row_count,
+  raw_row_count - staging_row_count AS row_count_difference,
+  CASE
+    WHEN raw_row_count = staging_row_count THEN 'PASS'
+    ELSE 'FAIL'
+  END AS validation_status
+FROM raw_count
+CROSS JOIN staging_count;
+```
+
+### Result
+
+| raw_row_count | staging_row_count | row_count_difference | validation_status |
+| ------------: | ----------------: | -------------------: | ----------------- |
+|     1,210,147 |         1,210,147 |                    0 | PASS              |
+
+![GA4 Staging Validation V01 Row Count](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v01_row_count.png)
+
+### Key Findings
+
+* Raw GA4 row count and staging row count match exactly.
+* No rows were lost during staging.
+* No row multiplication occurred during parameter extraction.
+* Event-level grain was preserved successfully.
+
+### Status
+
+```text
+PASS
+```
+
+---
+
 
 # Phase 1B — Olist Ingestion
 
