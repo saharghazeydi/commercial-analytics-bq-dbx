@@ -2,6 +2,7 @@
 
 ## Current Status
 
+✅ Phase 0 — Repository & Environment Setup: Completed  
 ✅ Phase 1A — GA4 Raw Data Profiling: Completed  
 ✅ Phase 1B — GA4 Staging View: Completed  
 ✅ Phase 1C — GA4 Staging Validation: Completed  
@@ -49,6 +50,8 @@ The project is designed to demonstrate:
 - [x] Added `.gitkeep` placeholders where needed
 - [x] Added GA4 profiling screenshots
 - [x] Added GA4 staging validation screenshots
+- [x] Standardized GA4 profiling screenshot names
+- [x] Reorganized GA4 staging validation screenshots
 - [x] Committed and pushed work to GitHub
 
 ---
@@ -74,32 +77,31 @@ commercial-analytics-bq-dbx/
 │       │   │   ├── ga4_profiling_d03_items_sparsity_by_event.png
 │       │   │   ├── ga4_profiling_d04_daily_event_volume_distribution.png
 │       │   │   ├── ga4_profiling_d05_user_session_volume.png
-│       │   │   ├── ga4_profiling_d06_session_id_availability.png.png
+│       │   │   ├── ga4_profiling_d06_session_id_availability.png
 │       │   │   ├── ga4_profiling_d07_traffic_source_distribution.png
-│       │   │   ├──  ga4_profiling_d08_purchase_transaction_quality.png
+│       │   │   ├── ga4_profiling_d08_purchase_transaction_quality.png
 │       │   │   ├── ga4_profiling_d09_revenue_transaction_validation.png
 │       │   │   ├── ga4_profiling_d10_event_parameter_key_frequency.png
 │       │   │   └── ga4_profiling_d11_event_parameter_coverage_by_event.png
 │       │   │
-│       │   └── validation/
-│       │       └── staging/
-│       │           ├── ga4_staging_validation_v01_row_count.png
-│       │           ├── ga4_staging_validation_v02_date_range.png
-│       │           ├── ga4_staging_validation_v03_core_nulls.png
-│       │           ├── ga4_staging_validation_v04_session_availability.png
-│       │           ├── ga4_staging_validation_v05_session_volume.png
-│       │           ├── ga4_staging_validation_v06_duplicate_proxy.png
-│       │           ├── ga4_staging_validation_v07_event_distribution.png
-│       │           ├── ga4_staging_validation_v08_ecommerce_funnel_flags.png
-│       │           ├── ga4_staging_validation_v09_purchase_quality.png
-│       │           ├── ga4_staging_validation_v10_valid_transactions_revenue.png
-│       │           ├── ga4_staging_validation_v11_transaction_duplicate_risk.png
-│       │           ├── ga4_staging_validation_v12_acquisition_distribution.png
-│       │           ├── ga4_staging_validation_v13_not_set_acquisition_rate.png
-│       │           ├── ga4_staging_validation_v14_item_array_validation.png
-│       │           ├── ga4_staging_validation_v15_engagement_validation.png
-│       │           ├── ga4_staging_validation_v16_quality_flag_summary.png
-│       │           └── ga4_staging_validation_v17_final_status.png
+│       │   └── staging_validation/
+│       │       ├── ga4_staging_validation_v01_row_count.png
+│       │       ├── ga4_staging_validation_v02_date_range.png
+│       │       ├── ga4_staging_validation_v03_core_nulls.png
+│       │       ├── ga4_staging_validation_v04_session_availability.png
+│       │       ├── ga4_staging_validation_v05_session_volume.png
+│       │       ├── ga4_staging_validation_v06_duplicate_proxy.png
+│       │       ├── ga4_staging_validation_v07_event_distribution.png
+│       │       ├── ga4_staging_validation_v08_ecommerce_funnel_flags.png
+│       │       ├── ga4_staging_validation_v09_purchase_quality.png
+│       │       ├── ga4_staging_validation_v10_valid_transactions_revenue.png
+│       │       ├── ga4_staging_validation_v11_transaction_duplicate_risk.png
+│       │       ├── ga4_staging_validation_v12_acquisition_distribution.png
+│       │       ├── ga4_staging_validation_v13_not_set_acquisition_rate.png
+│       │       ├── ga4_staging_validation_v14_item_array_validation.png
+│       │       ├── ga4_staging_validation_v15_engagement_validation.png
+│       │       ├── ga4_staging_validation_v16_quality_flag_summary.png
+│       │       └── ga4_staging_validation_v17_final_status.png
 │       │
 │       └── olist/
 │           └── .gitkeep
@@ -144,29 +146,28 @@ commercial-analytics-bq-dbx/
 
 ## Current Decision
 
-Profiling screenshots are kept with descriptive names instead of step-numbered names.
-
-This is acceptable because profiling checks were exploratory and not strictly sequential in the same way as staging validation.
-
-Current profiling screenshot pattern:
+GA4 screenshots are organized by workflow area:
 
 ```text
-ga4_<profiling_topic>.png
+bi/screenshots/ga4/profiling/
+bi/screenshots/ga4/staging_validation/
+```
+
+Profiling screenshots now use a structured phase-based naming pattern:
+
+```text
+ga4_profiling_<step>_<description>.png
 ```
 
 Example:
 
 ```text
 ga4_profiling_b01_date_coverage_sample.png
- ga4_profiling_d08_purchase_transaction_quality.png
+ga4_profiling_d08_purchase_transaction_quality.png
 ga4_profiling_d10_event_parameter_key_frequency.png
 ```
 
-## Validation Screenshot Pattern
-
-Staging validation screenshots use strict step numbering because validation was executed as a formal 17-step QA suite.
-
-Current validation screenshot pattern:
+Staging validation screenshots use a formal validation-suite naming pattern:
 
 ```text
 ga4_staging_validation_v##_description.png
@@ -179,20 +180,14 @@ ga4_staging_validation_v01_row_count.png
 ga4_staging_validation_v17_final_status.png
 ```
 
-## Optional Future Refactor
+## Rationale
 
-If stricter consistency is needed later, profiling screenshots can be renamed to:
+This naming convention keeps the project review-friendly and separates:
 
-```text
-ga4_profiling_b01_date_coverage_sample.png
-ga4_profiling_b01b_global_date_coverage.png
-ga4_profiling_c01_core_nulls.png
-ga4_profiling_c02_duplicate_proxy.png
-ga4_profiling_d01_event_distribution.png
-...
-```
-
-For now, renaming is not required because the current names are readable and already linked in documentation.
+- exploratory profiling evidence
+- formal staging validation evidence
+- future dashboard screenshots
+- future Olist screenshots
 
 ---
 
@@ -259,9 +254,9 @@ bi/screenshots/ga4/profiling/
 | D3 | Item sparsity by event | `ga4_profiling_d03_items_sparsity_by_event.png` |
 | D4 | Daily event volume | `ga4_profiling_d04_daily_event_volume_distribution.png` |
 | D5 | User and session volume | `ga4_profiling_d05_user_session_volume.png` |
-| D6 | Session ID availability | `ga4_profiling_d06_session_id_availability.png.png` |
+| D6 | Session ID availability | `ga4_profiling_d06_session_id_availability.png` |
 | D7 | Traffic source distribution | `ga4_profiling_d07_traffic_source_distribution.png` |
-| D8 | Purchase transaction quality | ` ga4_profiling_d08_purchase_transaction_quality.png` |
+| D8 | Purchase transaction quality | `ga4_profiling_d08_purchase_transaction_quality.png` |
 | D9 | Revenue transaction validation | `ga4_profiling_d09_revenue_transaction_validation.png` |
 | D10 | Event parameter key frequency | `ga4_profiling_d10_event_parameter_key_frequency.png` |
 | D11 | Event parameter coverage by event | `ga4_profiling_d11_event_parameter_coverage_by_event.png` |
@@ -514,7 +509,7 @@ Session-level marts and engagement KPIs are feasible.
 |---:|---:|---:|
 | 1,210,147 | 0 | 1,210,147 |
 
-![GA4 Session ID Availability](../bi/screenshots/ga4/profiling/ga4_profiling_d06_session_id_availability.png.png)
+![GA4 Session ID Availability](../bi/screenshots/ga4/profiling/ga4_profiling_d06_session_id_availability.png)
 
 ### Key Findings
 
@@ -559,7 +554,7 @@ Acquisition modeling should include fallback attribution handling and channel no
 | Zero revenue purchases | 0 |
 | Negative revenue purchases | 0 |
 
-![GA4 Purchase Transaction Quality](../bi/screenshots/ga4/profiling/ ga4_profiling_d08_purchase_transaction_quality.png)
+![GA4 Purchase Transaction Quality](../bi/screenshots/ga4/profiling/ga4_profiling_d08_purchase_transaction_quality.png)
 
 ### Key Findings
 
@@ -942,7 +937,7 @@ commercial-analytics-bq-dbx.commercial_analytics_us.stg_ga4_events
 ## Screenshot Directory
 
 ```text
-bi/screenshots/ga4/validation/staging/
+bi/screenshots/ga4/staging_validation/
 ```
 
 ---
@@ -979,7 +974,7 @@ bi/screenshots/ga4/validation/staging/
 |---:|---:|---:|---|
 | 1,210,147 | 1,210,147 | 0 | PASS |
 
-![GA4 Staging Validation V01 Row Count](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v01_row_count.png)
+![GA4 Staging Validation V01 Row Count](../bi/screenshots/ga4/staging_validation/ga4_staging_validation_v01_row_count.png)
 
 ### Key Findings
 
@@ -1004,7 +999,7 @@ PASS
 |---|---|---:|---:|
 | 2021-01-01 | 2021-01-31 | 31 | 1,210,147 |
 
-![GA4 Staging Validation V02 Date Range](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v02_date_range.png)
+![GA4 Staging Validation V02 Date Range](../bi/screenshots/ga4/staging_validation/ga4_staging_validation_v02_date_range.png)
 
 ### Key Findings
 
@@ -1029,7 +1024,7 @@ PASS
 |---:|---:|---:|---:|---:|---:|
 | 1,210,147 | 0 | 0 | 0 | 0 | 0 |
 
-![GA4 Staging Validation V03 Core Nulls](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v03_core_nulls.png)
+![GA4 Staging Validation V03 Core Nulls](../bi/screenshots/ga4/staging_validation/ga4_staging_validation_v03_core_nulls.png)
 
 ### Key Findings
 
@@ -1055,7 +1050,7 @@ PASS
 |---:|---:|---:|---:|---:|
 | 1,210,147 | 0 | 0 | 1,210,147 | 1,210,147 |
 
-![GA4 Staging Validation V04 Session Availability](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v04_session_availability.png)
+![GA4 Staging Validation V04 Session Availability](../bi/screenshots/ga4/staging_validation/ga4_staging_validation_v04_session_availability.png)
 
 ### Key Findings
 
@@ -1080,7 +1075,7 @@ PASS
 |---:|---:|---:|---:|
 | 1,210,147 | 94,790 | 118,380 | 10.22 |
 
-![GA4 Staging Validation V05 Session Volume](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v05_session_volume.png)
+![GA4 Staging Validation V05 Session Volume](../bi/screenshots/ga4/staging_validation/ga4_staging_validation_v05_session_volume.png)
 
 ### Key Findings
 
@@ -1105,7 +1100,7 @@ PASS
 |---:|---:|---:|---|
 | 1,210,147 | 1,210,147 | 0 | PASS |
 
-![GA4 Staging Validation V06 Duplicate Proxy](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v06_duplicate_proxy.png)
+![GA4 Staging Validation V06 Duplicate Proxy](../bi/screenshots/ga4/staging_validation/ga4_staging_validation_v06_duplicate_proxy.png)
 
 ### Key Findings
 
@@ -1139,7 +1134,7 @@ PASS
 | begin_checkout | 11,034 | 0.0091 |
 | purchase | 1,204 | 0.0010 |
 
-![GA4 Staging Validation V07 Event Distribution](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v07_event_distribution.png)
+![GA4 Staging Validation V07 Event Distribution](../bi/screenshots/ga4/staging_validation/ga4_staging_validation_v07_event_distribution.png)
 
 ### Key Findings
 
@@ -1167,7 +1162,7 @@ PASS
 | begin_checkout | 11,034 | 11,034 | 11,034 | 0 |
 | purchase | 1,204 | 1,204 | 1,204 | 1,204 |
 
-![GA4 Staging Validation V08 Ecommerce Funnel Flags](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v08_ecommerce_funnel_flags.png)
+![GA4 Staging Validation V08 Ecommerce Funnel Flags](../bi/screenshots/ga4/staging_validation/ga4_staging_validation_v08_ecommerce_funnel_flags.png)
 
 ### Key Findings
 
@@ -1192,7 +1187,7 @@ PASS
 |---:|---:|---:|---:|---:|---:|---:|
 | 1,204 | 300 | 0.2492 | 300 | 0.2492 | 0 | 0 |
 
-![GA4 Staging Validation V09 Purchase Quality](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v09_purchase_quality.png)
+![GA4 Staging Validation V09 Purchase Quality](../bi/screenshots/ga4/staging_validation/ga4_staging_validation_v09_purchase_quality.png)
 
 ### Key Findings
 
@@ -1219,7 +1214,7 @@ PASS WITH KNOWN DATA QUALITY ISSUE
 |---:|---:|---:|---:|
 | 1,204 | 904 | 894 | 57,350.0 |
 
-![GA4 Staging Validation V10 Valid Transactions Revenue](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v10_valid_transactions_revenue.png)
+![GA4 Staging Validation V10 Valid Transactions Revenue](../bi/screenshots/ga4/staging_validation/ga4_staging_validation_v10_valid_transactions_revenue.png)
 
 ### Key Findings
 
@@ -1252,7 +1247,7 @@ Example duplicated transactions:
 | 87482 | 2 | 140.0 | 70.0 | 70.0 |
 | 468655 | 2 | 110.0 | 55.0 | 55.0 |
 
-![GA4 Staging Validation V11 Transaction Duplicate Risk](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v11_transaction_duplicate_risk.png)
+![GA4 Staging Validation V11 Transaction Duplicate Risk](../bi/screenshots/ga4/staging_validation/ga4_staging_validation_v11_transaction_duplicate_risk.png)
 
 ### Key Findings
 
@@ -1284,7 +1279,7 @@ Top observed acquisition combinations:
 | `<Other>` | `<Other>` | `<Other>` | 18,065 | 6,219 | 6,293 |
 | `google` | `cpc` | `<Other>` | 5,252 | 1,840 | 1,850 |
 
-![GA4 Staging Validation V12 Acquisition Distribution](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v12_acquisition_distribution.png)
+![GA4 Staging Validation V12 Acquisition Distribution](../bi/screenshots/ga4/staging_validation/ga4_staging_validation_v12_acquisition_distribution.png)
 
 ### Key Findings
 
@@ -1310,7 +1305,7 @@ PASS WITH ATTRIBUTION SPARSITY NOTE
 |---:|---:|---:|---:|---:|---:|---:|
 | 1,210,147 | 874,947 | 0.7230 | 873,805 | 0.7221 | 873,807 | 0.7221 |
 
-![GA4 Staging Validation V13 Not Set Acquisition Rate](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v13_not_set_acquisition_rate.png)
+![GA4 Staging Validation V13 Not Set Acquisition Rate](../bi/screenshots/ga4/staging_validation/ga4_staging_validation_v13_not_set_acquisition_rate.png)
 
 ### Key Findings
 
@@ -1339,7 +1334,7 @@ PASS WITH HIGH ATTRIBUTION SPARSITY OBSERVED
 | select_item | 10,229 | 10,229 | 0 | 1.0000 |
 | purchase | 1,204 | 1,204 | 0 | 1.0000 |
 
-![GA4 Staging Validation V14 Item Array Validation](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v14_item_array_validation.png)
+![GA4 Staging Validation V14 Item Array Validation](../bi/screenshots/ga4/staging_validation/ga4_staging_validation_v14_item_array_validation.png)
 
 ### Key Findings
 
@@ -1365,7 +1360,7 @@ PASS
 | 0 | FALSE | 117,361 | 1,028 | 0.0088 |
 | NULL | NULL | 96,504 | 0 | 0.0000 |
 
-![GA4 Staging Validation V15 Engagement Validation](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v15_engagement_validation.png)
+![GA4 Staging Validation V15 Engagement Validation](../bi/screenshots/ga4/staging_validation/ga4_staging_validation_v15_engagement_validation.png)
 
 ### Key Findings
 
@@ -1390,7 +1385,7 @@ PASS
 |---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | 1,210,147 | 0 | 0 | 0 | 0 | 300 | 300 | 0 | 0 |
 
-![GA4 Staging Validation V16 Quality Flag Summary](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v16_quality_flag_summary.png)
+![GA4 Staging Validation V16 Quality Flag Summary](../bi/screenshots/ga4/staging_validation/ga4_staging_validation_v16_quality_flag_summary.png)
 
 ### Key Findings
 
@@ -1415,7 +1410,7 @@ PASS WITH PURCHASE QUALITY FLAGS OBSERVED
 |---:|---|---:|---:|---:|---:|---:|---:|---:|---:|
 | 1,210,147 | PASS | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 
-![GA4 Staging Validation V17 Final Status](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v17_final_status.png)
+![GA4 Staging Validation V17 Final Status](../bi/screenshots/ga4/staging_validation/ga4_staging_validation_v17_final_status.png)
 
 ### Key Findings
 
@@ -1551,7 +1546,7 @@ Current structure:
 
 ```text
 bi/screenshots/ga4/profiling/
-bi/screenshots/ga4/validation/staging/
+bi/screenshots/ga4/staging_validation/
 ```
 
 Reason:
@@ -1618,6 +1613,22 @@ Build downstream analytical tables using the validated GA4 staging layer.
 
 The next phase should convert event-level staging data into reusable session, channel, and commercial KPI layers.
 
+## Important Scope Note
+
+The project is still using the January 2021 sample window.
+
+This is intentional.
+
+The one-month development window is used to:
+
+- reduce query cost
+- simplify debugging
+- stabilize business logic
+- validate transformations faster
+- build reliable modeling patterns before expanding scope
+
+Full available GA4 data should only be used after the session fact table, mart logic, KPI logic, and validation checks are stable.
+
 ## Planned Tasks
 
 - [ ] Build `fact_sessions_daily`
@@ -1649,6 +1660,46 @@ After building `fact_sessions_daily`, validate:
 - revenue logic
 - attribution behavior
 - duplicate session risk
+
+---
+
+# Full Data Expansion Plan
+
+## Current Scope
+
+```text
+2021-01-01 to 2021-01-31
+```
+
+## Reason
+
+The one-month sample window is used as a controlled development sandbox.
+
+## When to Expand
+
+Expand from the one-month sample window to the full available GA4 range only after:
+
+- staging logic is stable
+- session fact table passes validation
+- mart logic is stable
+- KPI definitions are validated
+- revenue deduplication logic is implemented
+- attribution handling is documented
+
+## Full Available GA4 Range
+
+```text
+2020-11-01 to 2021-01-31
+```
+
+## Future Expansion Work
+
+- [ ] Replace hardcoded January 2021 filters with configurable date ranges
+- [ ] Re-run staging on full available GA4 range
+- [ ] Re-run validation suite on full range
+- [ ] Compare one-month metrics vs full-range metrics
+- [ ] Confirm no new data quality patterns appear
+- [ ] Update documentation if full-range findings differ
 
 ---
 
