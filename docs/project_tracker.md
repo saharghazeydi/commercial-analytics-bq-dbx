@@ -2531,6 +2531,242 @@ PASS WITH ATTRIBUTION SPARSITY NOTE
 ```
 ```
 
+````markdown
+---
+
+## V13 — “Not Set” Acquisition Rate Validation
+
+### Objective
+
+Quantify acquisition attribution sparsity after staging normalization.
+
+This validation measures how frequently the normalized acquisition dimensions contain:
+
+```text
+(not set)
+````
+
+for:
+
+* `source`
+* `medium`
+* `campaign`
+
+The purpose is to understand the completeness and analytical reliability of event-level attribution data before downstream channel modeling.
+
+### Query Reference
+
+```sql
+SELECT
+  COUNT(*) AS total_rows,
+
+  COUNTIF(source = '(not set)') AS not_set_source_rows,
+  ROUND(SAFE_DIVIDE(COUNTIF(source = '(not set)'), COUNT(*)), 4) AS not_set_source_rate,
+
+  COUNTIF(medium = '(not set)') AS not_set_medium_rows,
+  ROUND(SAFE_DIVIDE(COUNTIF(medium = '(not set)'), COUNT(*)), 4) AS not_set_medium_rate,
+
+  COUNTIF(campaign = '(not set)') AS not_set_campaign_rows,
+  ROUND(SAFE_DIVIDE(COUNTIF(campaign = '(not set)'), COUNT(*)), 4) AS not_set_campaign_rate
+FROM `commercial-analytics-bq-dbx.commercial_analytics_us.stg_ga4_events`;
+```
+
+### Result
+
+| total_rows | not_set_source_rows | not_set_source_rate | not_set_medium_rows | not_set_medium_rate | not_set_campaign_rows | not_set_campaign_rate |
+| ---------: | ------------------: | ------------------: | ------------------: | ------------------: | --------------------: | --------------------: |
+|  1,210,147 |             874,947 |              0.7230 |             873,805 |              0.7221 |               873,807 |                0.7221 |
+
+![GA4 Staging Validation V13 Not Set Acquisition Rate](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v13_not_set_acquisition_rate.png)
+
+### Key Findings
+
+* Approximately 72% of staged events contain `(not set)` acquisition values.
+* Attribution sparsity is consistent across:
+
+  * source
+  * medium
+  * campaign
+* The staging normalization logic behaved consistently across all acquisition fields.
+* The issue originates from raw GA4 event-level attribution availability rather than staging transformation errors.
+
+### Validation Interpretation
+
+This validation confirms that:
+
+* acquisition parameter extraction logic is functioning correctly
+* staging normalization preserved missing attribution states consistently
+* event-level acquisition data is highly sparse in the GA4 sample dataset
+
+The large `(not set)` share is expected because many GA4 events do not carry explicit acquisition metadata at event grain.
+
+### Business Interpretation
+
+This result is extremely important for realistic analytics interpretation.
+
+Without acknowledging attribution sparsity, downstream dashboards could produce misleading channel insights.
+
+The validation confirms that:
+
+* raw event-level attribution coverage is incomplete
+* not every event can be reliably tied to a marketing source
+* attribution-aware KPI logic must be carefully designed
+
+### Modeling Implications
+
+Future channel and attribution models should:
+
+* preserve `(not set)` as a valid business category
+* avoid silently dropping unattributed traffic
+* build explicit “Unknown / Unattributed” channel groups
+* aggregate acquisition logic at session level where appropriate
+* separate attribution completeness from channel performance
+
+### Executive Reporting Implications
+
+For executive dashboards:
+
+* unattributed traffic should remain visible
+* attribution sparsity should be documented transparently
+* channel KPIs should include methodology notes
+* comparisons across channels should account for missing attribution coverage
+
+### Technical Interpretation
+
+This validation also confirms that normalization logic behaved consistently:
+
+```text
+NULL acquisition values
+→ normalized to '(not set)'
+```
+
+This prevents downstream BI inconsistencies caused by mixed NULL handling.
+
+### Status
+
+```text
+PASS WITH HIGH ATTRIBUTION SPARSITY OBSERVED
+```
+![alt text](ga4_staging_validation_v13_not_set_acquisition_rate.png)
+---
+
+```
+```
+````markdown
+---
+
+## V14 — Item Array Validation by Event Type
+
+### Objective
+
+Validate item-array coverage by event type in the GA4 staging layer.
+
+This validation confirms that:
+
+- item metadata remains event-aware
+- the `items` array was not unnested in the staging layer
+- ecommerce events preserve item presence where expected
+- behavioral events correctly remain without item-array metadata
+
+This is important because unnesting `items` in an event-level staging table would multiply rows and break the intended event grain.
+
+### Query Reference
+
+```sql
+SELECT
+  event_name,
+  COUNT(*) AS event_rows,
+  COUNTIF(has_items = TRUE) AS rows_with_items,
+  COUNTIF(has_items = FALSE) AS rows_without_items,
+  ROUND(SAFE_DIVIDE(COUNTIF(has_items = TRUE), COUNT(*)), 4) AS item_coverage_rate
+FROM `commercial-analytics-bq-dbx.commercial_analytics_us.stg_ga4_events`
+GROUP BY event_name
+ORDER BY rows_with_items DESC, event_rows DESC
+LIMIT 30;
+````
+
+### Result
+
+| event_name       | event_rows | rows_with_items | rows_without_items | item_coverage_rate |
+| ---------------- | ---------: | --------------: | -----------------: | -----------------: |
+| view_item        |     86,971 |          60,750 |             26,221 |             0.6985 |
+| view_promotion   |     53,885 |          40,500 |             13,385 |             0.7516 |
+| add_to_cart      |     15,522 |          15,522 |                  0 |             1.0000 |
+| begin_checkout   |     11,034 |          11,034 |                  0 |             1.0000 |
+| select_item      |     10,229 |          10,229 |                  0 |             1.0000 |
+| select_promotion |      2,948 |           2,682 |                266 |             0.9098 |
+| purchase         |      1,204 |           1,204 |                  0 |             1.0000 |
+| view_item_list   |          9 |               1 |                  8 |             0.1111 |
+| page_view        |    419,004 |               0 |            419,004 |             0.0000 |
+| user_engagement  |    250,097 |               0 |            250,097 |             0.0000 |
+| scroll           |    138,997 |               0 |            138,997 |             0.0000 |
+| session_start    |    116,549 |               0 |            116,549 |             0.0000 |
+| first_visit      |     88,873 |               0 |             88,873 |             0.0000 |
+
+![GA4 Staging Validation V14 Item Array Validation](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v14_item_array_validation.png)
+
+### Key Findings
+
+* Core ecommerce events such as `add_to_cart`, `begin_checkout`, and `purchase` have full item coverage.
+* `view_item` has partial item coverage, with approximately 69.85% of rows containing item metadata.
+* `view_promotion` and `select_promotion` also show partial item coverage.
+* Behavioral events such as `page_view`, `user_engagement`, `scroll`, `session_start`, and `first_visit` correctly contain no item metadata.
+* The staging layer preserved item-array metadata without multiplying event rows.
+
+### Validation Interpretation
+
+This confirms that the staging design is correct.
+
+The staging view intentionally keeps item metadata at event level using:
+
+```text
+item_array_length
+has_items
+```
+
+instead of unnesting the `items` array.
+
+That is the right call. If `items` had been unnested in this staging layer, the row count would have been inflated and earlier row-count and duplicate-proxy validations would likely fail.
+
+### Modeling Implications
+
+Product-level or item-level analysis should not be performed directly from this event-level staging view.
+
+If product-level analytics are needed later, the project should create a separate downstream table such as:
+
+```text
+fact_ga4_items
+```
+
+or:
+
+```text
+fact_product_events
+```
+
+with a clearly documented item-level grain.
+
+### Business Implications
+
+The dataset supports ecommerce product interaction analysis, but the modeling layer must respect grain separation:
+
+* event-level staging for behavioral/session analytics
+* item-level fact table for product analytics
+* transaction-level fact table for revenue analytics
+
+Mixing these grains in one table would create inflated KPIs and unreliable reporting.
+
+### Status
+
+```text
+PASS
+```
+![alt text](ga4_staging_validation_v14_item_array_validation.png)
+---
+
+```
+```
+
 
 # Phase 1B — Olist Ingestion
 
