@@ -1414,6 +1414,82 @@ PASS
 ![alt text](ga4_staging_validation_v02_date_range.png)
 ```
 ```
+````markdown
+---
+
+## V3 — Core Field Null Validation in Staging
+
+### Objective
+
+Validate that the most important event-level fields remain fully populated after the GA4 staging transformation.
+
+This check focuses on the core fields required for downstream modeling:
+
+- `event_date`
+- `event_timestamp_utc`
+- `event_timestamp_raw`
+- `event_name`
+- `user_pseudo_id`
+
+These fields are foundational for time-series analysis, event sequencing, user-level aggregation, session modeling, and KPI construction.
+
+### Query Reference
+
+```sql
+SELECT
+  COUNT(*) AS total_rows,
+
+  COUNTIF(event_date IS NULL) AS null_event_date,
+  COUNTIF(event_timestamp_utc IS NULL) AS null_event_timestamp_utc,
+  COUNTIF(event_timestamp_raw IS NULL) AS null_event_timestamp_raw,
+  COUNTIF(event_name IS NULL) AS null_event_name,
+  COUNTIF(user_pseudo_id IS NULL) AS null_user_pseudo_id,
+
+  ROUND(SAFE_DIVIDE(COUNTIF(event_date IS NULL), COUNT(*)), 4) AS null_event_date_rate,
+  ROUND(SAFE_DIVIDE(COUNTIF(event_timestamp_utc IS NULL), COUNT(*)), 4) AS null_event_timestamp_utc_rate,
+  ROUND(SAFE_DIVIDE(COUNTIF(event_name IS NULL), COUNT(*)), 4) AS null_event_name_rate,
+  ROUND(SAFE_DIVIDE(COUNTIF(user_pseudo_id IS NULL), COUNT(*)), 4) AS null_user_pseudo_id_rate
+FROM `commercial-analytics-bq-dbx.commercial_analytics_us.stg_ga4_events`;
+````
+
+### Result
+
+| total_rows | null_event_date | null_event_timestamp_utc | null_event_timestamp_raw | null_event_name | null_user_pseudo_id | null_event_date_rate | null_event_timestamp_utc_rate | null_event_name_rate | null_user_pseudo_id_rate |
+| ---------: | --------------: | -----------------------: | -----------------------: | --------------: | ------------------: | -------------------: | ----------------------------: | -------------------: | -----------------------: |
+|  1,210,147 |               0 |                        0 |                        0 |               0 |                   0 |                  0.0 |                           0.0 |                  0.0 |                      0.0 |
+
+![GA4 Staging Validation V03 Core Nulls](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v03_core_nulls.png)
+
+### Key Findings
+
+* No null values were detected in the core staging fields.
+* Event date parsing did not introduce invalid or missing dates.
+* Event timestamps remained fully populated after transformation.
+* Event names are complete across all staged rows.
+* `user_pseudo_id` is fully populated, supporting user-level and session-level modeling.
+
+### Validation Implications
+
+This confirms that the staging layer is reliable for:
+
+* daily event aggregation
+* event sequencing
+* session construction
+* user-level behavioral analysis
+* downstream fact table development
+
+No remediation is required for core field completeness.
+
+### Status
+
+```text
+PASS
+```
+
+---
+![alt text](ga4_staging_validation_v03_core_nulls.png)
+```
+```
 
 
 # Phase 1B — Olist Ingestion
