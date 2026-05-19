@@ -2766,6 +2766,418 @@ PASS
 
 ```
 ```
+````markdown
+---
+
+## V15 — Engagement Field Validation
+
+### Objective
+
+Validate engagement-related fields in the GA4 staging layer.
+
+This validation confirms that:
+
+- `session_engaged_raw` was parsed correctly
+- boolean conversion into `is_session_engaged` behaves as expected
+- `engagement_time_msec` is available where engagement signals exist
+- engagement metadata distribution remains logically consistent after staging normalization
+
+This is important because engagement fields are frequently used later for:
+
+- session-quality KPIs
+- engaged-session metrics
+- behavioral segmentation
+- funnel quality analysis
+- retention and interaction analytics
+
+### Query Reference
+
+```sql
+SELECT
+  session_engaged_raw,
+  is_session_engaged,
+  COUNT(*) AS event_count,
+  COUNTIF(engagement_time_msec IS NOT NULL) AS rows_with_engagement_time,
+  ROUND(
+    SAFE_DIVIDE(
+      COUNTIF(engagement_time_msec IS NOT NULL),
+      COUNT(*)
+    ),
+    4
+  ) AS engagement_time_coverage_rate
+FROM `commercial-analytics-bq-dbx.commercial_analytics_us.stg_ga4_events`
+GROUP BY
+  session_engaged_raw,
+  is_session_engaged
+ORDER BY event_count DESC;
+````
+
+### Result
+
+| session_engaged_raw | is_session_engaged | event_count | rows_with_engagement_time | engagement_time_coverage_rate |
+| ------------------- | ------------------ | ----------: | ------------------------: | ----------------------------: |
+| 1                   | TRUE               |     996,282 |                   738,993 |                        0.7418 |
+| 0                   | FALSE              |     117,361 |                     1,028 |                        0.0088 |
+| NULL                | NULL               |      96,504 |                         0 |                        0.0000 |
+
+![GA4 Staging Validation V15 Engagement Validation](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v15_engagement_validation.png)
+
+### Key Findings
+
+* The majority of events are associated with engaged sessions (`996,282` rows).
+* Engagement-time metadata is strongly concentrated within engaged sessions.
+* Non-engaged sessions (`0`) contain almost no engagement time values.
+* Rows with NULL engagement fields contain no engagement-time metadata.
+* Boolean normalization from raw engagement values to `is_session_engaged` behaves consistently.
+
+### Validation Interpretation
+
+This validation confirms that engagement parsing logic in the staging layer is working correctly.
+
+The transformation successfully converted:
+
+```text
+session_engaged_raw
+```
+
+into:
+
+```text
+is_session_engaged
+```
+
+without introducing inconsistencies.
+
+The relationship between:
+
+* engaged sessions
+* engagement time
+* engagement metadata sparsity
+
+also behaves logically and aligns with expected GA4 export behavior.
+
+### Behavioral Interpretation
+
+The results indicate that:
+
+* engaged sessions contain meaningful interaction activity
+* non-engaged sessions have minimal measurable engagement
+* some events naturally lack engagement metadata entirely
+
+This is expected because GA4 engagement metrics are event-dependent and not uniformly attached to every event type.
+
+### Modeling Implications
+
+The validated fields can safely support downstream modeling for:
+
+* engaged-session KPIs
+* behavioral quality metrics
+* session scoring
+* retention analysis
+* engagement segmentation
+* funnel-quality reporting
+
+However:
+
+```text
+engagement_time_msec
+```
+
+should not be interpreted as universally available across all event categories.
+
+Future marts should therefore:
+
+* aggregate engagement carefully
+* avoid assuming complete event-level coverage
+* distinguish between engagement-capable and non-engagement event types
+
+### Business Implications
+
+The dataset now supports trustworthy engagement-oriented analytics, including:
+
+* engaged-session rate
+* average engagement per session
+* session-quality monitoring
+* behavioral depth analysis
+* interaction-quality segmentation
+
+This significantly improves the analytical usefulness of the GA4 behavioral layer.
+
+### Status
+
+```text
+PASS
+```
+![alt text](ga4_staging_validation_v15_engagement_validation.png)
+---
+
+```
+```
+````markdown
+---
+
+## V16 — Data Quality Flag Summary
+
+### Objective
+
+Create a compact summary of staging-level data quality flags.
+
+This validation provides a high-level quality overview across the most important fields and flags created in the GA4 staging layer.
+
+The purpose is to confirm whether any critical data quality problems exist after staging transformation, especially around:
+
+- event dates
+- user identifiers
+- session identifiers
+- session keys
+- purchase transaction IDs
+- purchase revenue values
+
+### Query Reference
+
+```sql
+SELECT
+  COUNT(*) AS total_rows,
+
+  COUNTIF(is_invalid_event_date = TRUE) AS invalid_event_date_rows,
+  COUNTIF(is_missing_user_pseudo_id = TRUE) AS missing_user_pseudo_id_rows,
+  COUNTIF(is_missing_ga_session_id = TRUE) AS missing_ga_session_id_rows,
+  COUNTIF(is_missing_session_key = TRUE) AS missing_session_key_rows,
+
+  COUNTIF(is_invalid_purchase_transaction_id = TRUE) AS invalid_purchase_transaction_id_rows,
+  COUNTIF(is_missing_purchase_revenue = TRUE) AS missing_purchase_revenue_rows,
+  COUNTIF(is_zero_purchase_revenue = TRUE) AS zero_purchase_revenue_rows,
+  COUNTIF(is_negative_purchase_revenue = TRUE) AS negative_purchase_revenue_rows
+FROM `commercial-analytics-bq-dbx.commercial_analytics_us.stg_ga4_events`;
+````
+
+### Result
+
+| total_rows | invalid_event_date_rows | missing_user_pseudo_id_rows | missing_ga_session_id_rows | missing_session_key_rows | invalid_purchase_transaction_id_rows | missing_purchase_revenue_rows | zero_purchase_revenue_rows | negative_purchase_revenue_rows |
+| ---------: | ----------------------: | --------------------------: | -------------------------: | -----------------------: | -----------------------------------: | ----------------------------: | -------------------------: | -----------------------------: |
+|  1,210,147 |                       0 |                           0 |                          0 |                        0 |                                  300 |                           300 |                          0 |                              0 |
+
+![GA4 Staging Validation V16 Quality Flag Summary](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v16_quality_flag_summary.png)
+
+### Key Findings
+
+* No invalid event dates were detected.
+* No missing user identifiers were detected.
+* No missing session IDs were detected.
+* No missing session keys were detected.
+* 300 purchase rows have invalid transaction IDs.
+* 300 purchase rows have missing purchase revenue.
+* No zero-revenue purchase rows were detected.
+* No negative-revenue purchase rows were detected.
+
+### Validation Interpretation
+
+The core behavioral and session fields are clean after staging transformation.
+
+The only material data quality issue remains concentrated in purchase-related fields:
+
+```text
+invalid transaction IDs = 300
+missing purchase revenue = 300
+```
+
+This confirms that the staging layer is structurally reliable, while purchase revenue modeling still requires defensive downstream logic.
+
+### Modeling Implications
+
+The staging layer is safe for:
+
+* event-level analysis
+* session-level modeling
+* behavioral analytics
+* funnel analysis
+* engagement analysis
+
+However, revenue and transaction models must still:
+
+* exclude or flag invalid transaction IDs
+* handle missing revenue explicitly
+* deduplicate valid transaction IDs downstream
+* avoid treating raw purchase rows as trusted transaction grain
+
+### Business Implications
+
+This validation protects the project from misleading ecommerce reporting.
+
+Without these flags, dashboards could incorrectly treat all purchase events as valid transactions, which would create:
+
+* inflated conversion metrics
+* unreliable revenue totals
+* distorted AOV
+* weak executive reporting credibility
+
+### Status
+
+```text
+PASS WITH PURCHASE QUALITY FLAGS OBSERVED
+```
+![alt text](ga4_staging_validation_v16_quality_flag_summary.png)
+---
+
+```
+```
+````markdown
+---
+
+## V17 — Final Staging Validation Status
+
+### Objective
+
+Create a final high-level validation summary for the GA4 staging layer.
+
+This validation consolidates the most critical staging quality checks into a single PASS/CHECK status that can be referenced later during:
+
+- mart construction
+- KPI development
+- dashboard implementation
+- executive reporting
+- future QA reviews
+
+The goal is to confirm whether the staging layer is structurally reliable and ready for downstream analytical modeling.
+
+### Query Reference
+
+```sql
+WITH checks AS (
+  SELECT
+    COUNT(*) AS total_rows,
+    COUNTIF(event_date IS NULL) AS null_event_date,
+    COUNTIF(event_timestamp_raw IS NULL) AS null_event_timestamp_raw,
+    COUNTIF(event_name IS NULL) AS null_event_name,
+    COUNTIF(user_pseudo_id IS NULL) AS null_user_pseudo_id,
+    COUNTIF(ga_session_id IS NULL) AS null_ga_session_id,
+    COUNTIF(session_key IS NULL) AS null_session_key,
+    COUNT(*) - COUNT(DISTINCT event_proxy_key) AS duplicate_proxy_rows,
+    COUNTIF(is_negative_purchase_revenue = TRUE) AS negative_purchase_revenue_rows
+  FROM `commercial-analytics-bq-dbx.commercial_analytics_us.stg_ga4_events`
+)
+
+SELECT
+  total_rows,
+
+  CASE
+    WHEN null_event_date = 0
+      AND null_event_timestamp_raw = 0
+      AND null_event_name = 0
+      AND null_user_pseudo_id = 0
+      AND null_ga_session_id = 0
+      AND null_session_key = 0
+      AND duplicate_proxy_rows = 0
+      AND negative_purchase_revenue_rows = 0
+    THEN 'PASS'
+    ELSE 'CHECK'
+  END AS staging_validation_status,
+
+  null_event_date,
+  null_event_timestamp_raw,
+  null_event_name,
+  null_user_pseudo_id,
+  null_ga_session_id,
+  null_session_key,
+  duplicate_proxy_rows,
+  negative_purchase_revenue_rows
+FROM checks;
+````
+
+### Result
+
+| total_rows | staging_validation_status | null_event_date | null_event_timestamp_raw | null_event_name | null_user_pseudo_id | null_ga_session_id | null_session_key | duplicate_proxy_rows | negative_purchase_revenue_rows |
+| ---------: | ------------------------- | --------------: | -----------------------: | --------------: | ------------------: | -----------------: | ---------------: | -------------------: | -----------------------------: |
+|  1,210,147 | PASS                      |               0 |                        0 |               0 |                   0 |                  0 |                0 |                    0 |                              0 |
+
+![GA4 Staging Validation V17 Final Status](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v17_final_status.png)
+
+### Key Findings
+
+* No critical null issues exist in core event fields.
+* No missing session identifiers were detected.
+* No duplicate proxy rows were detected.
+* No negative purchase revenue values were detected.
+* The staging layer successfully passed all structural validation conditions.
+
+### Validation Interpretation
+
+The GA4 staging layer is structurally stable and analytically reliable.
+
+Core event-level integrity has been preserved during normalization and flattening.
+
+This confirms that:
+
+* raw GA4 grain preservation was successful
+* staging transformations did not introduce structural corruption
+* session construction logic is reliable
+* event uniqueness logic behaves correctly
+* downstream analytical modeling can proceed safely
+
+### Remaining Known Observations
+
+Although the final validation status is:
+
+```text
+PASS
+```
+
+earlier validations identified expected ecommerce-specific quality characteristics:
+
+* invalid purchase transaction IDs
+* missing purchase revenue values
+* duplicate transaction appearances requiring later deduplication
+
+These are considered known behavioral properties of the GA4 export rather than staging transformation failures.
+
+Therefore:
+
+* staging quality = PASS
+* ecommerce modeling still requires defensive transaction logic downstream
+
+### Modeling Implications
+
+The staging layer is now approved for downstream development, including:
+
+* session marts
+* channel marts
+* executive KPI marts
+* ecommerce funnel modeling
+* A/B testing preparation
+* behavioral analytics
+* BI dashboard construction
+
+Future layers should continue to apply:
+
+* transaction deduplication
+* revenue normalization
+* valid purchase filtering
+
+where appropriate.
+
+### Final Staging Conclusion
+
+The GA4 staging layer successfully transformed nested raw export data into a reusable analytical foundation while preserving:
+
+* event grain
+* session integrity
+* behavioral consistency
+* acquisition metadata
+* engagement metadata
+* ecommerce event taxonomy
+
+The layer is now production-ready for downstream analytical modeling.
+
+### Status
+
+```text
+FINAL STAGING VALIDATION STATUS: PASS
+```
+![alt text](ga4_staging_validation_v17_final_status.png)
+---
+
+```
+```
 
 
 # Phase 1B — Olist Ingestion
