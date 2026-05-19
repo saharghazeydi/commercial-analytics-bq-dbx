@@ -2121,6 +2121,415 @@ PASS WITH KNOWN DATA QUALITY ISSUE
 
 ```
 ```
+````markdown
+---
+
+## V10 — Valid Transaction and Revenue Validation
+
+### Objective
+
+Validate the relationship between:
+
+- raw purchase event rows
+- purchase rows with valid transaction IDs
+- distinct valid transactions
+- aggregated purchase revenue
+
+The purpose of this validation is to distinguish between:
+
+- raw ecommerce activity
+- analytically valid transactions
+- reliable revenue-bearing purchase records
+
+This is a critical validation because GA4 purchase events can contain:
+
+- duplicated transaction IDs
+- missing transaction IDs
+- missing revenue values
+- multiple purchase rows linked to the same transaction
+
+### Query Reference
+
+```sql
+SELECT
+  COUNTIF(is_purchase_event = TRUE) AS purchase_event_rows,
+
+  COUNTIF(
+    is_purchase_event = TRUE
+    AND transaction_id IS NOT NULL
+  ) AS purchase_rows_with_valid_transaction_id,
+
+  COUNT(DISTINCT
+    CASE
+      WHEN is_purchase_event = TRUE
+        AND transaction_id IS NOT NULL
+      THEN transaction_id
+    END
+  ) AS distinct_valid_transaction_ids,
+
+  SUM(
+    CASE
+      WHEN is_purchase_event = TRUE
+      THEN COALESCE(purchase_revenue, 0)
+      ELSE 0
+    END
+  ) AS raw_purchase_revenue_sum
+FROM `commercial-analytics-bq-dbx.commercial_analytics_us.stg_ga4_events`;
+````
+
+### Result
+
+| purchase_event_rows | purchase_rows_with_valid_transaction_id | distinct_valid_transaction_ids | raw_purchase_revenue_sum |
+| ------------------: | --------------------------------------: | -----------------------------: | -----------------------: |
+|               1,204 |                                     904 |                            894 |                 57,350.0 |
+
+![GA4 Staging Validation V10 Valid Transactions Revenue](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v10_valid_transactions_revenue.png)
+
+### Key Findings
+
+* The dataset contains 1,204 raw purchase event rows.
+* Only 904 purchase rows contain valid transaction IDs.
+* Only 894 distinct valid transaction IDs exist.
+* Total raw staged purchase revenue equals 57,350.0.
+
+### Validation Interpretation
+
+This validation confirms that:
+
+* raw purchase-event volume is larger than the number of valid transactions
+* some purchase rows contain duplicated transaction IDs
+* some purchase rows contain invalid or missing transaction identifiers
+* downstream revenue logic must use transaction-level deduplication
+
+### Transaction Integrity Interpretation
+
+The difference between:
+
+```text
+purchase_event_rows = 1,204
+distinct_valid_transaction_ids = 894
+```
+
+indicates that:
+
+* not every purchase row represents a unique transaction
+* some transaction IDs appear multiple times
+* purchase-event count alone is not a reliable transaction KPI
+
+This is a common ecommerce analytics issue and must be handled carefully in downstream fact modeling.
+
+### Revenue Interpretation
+
+The staged revenue total:
+
+```text
+57,350.0
+```
+
+represents raw purchase-event revenue aggregation.
+
+However, because duplicate or repeated transaction rows may exist, downstream revenue marts should:
+
+* deduplicate valid transaction IDs
+* aggregate revenue at transaction grain
+* avoid naive row-level revenue summation
+
+### Business Implications
+
+This validation is extremely important for executive KPI integrity.
+
+Without transaction-level deduplication, the project risks:
+
+* inflated revenue reporting
+* overstated conversion metrics
+* distorted AOV calculations
+* inaccurate transaction KPIs
+
+The validation confirms that transaction-quality logic must remain part of downstream modeling.
+
+### Modeling Implications
+
+Future fact and mart layers should:
+
+* build transaction-grain revenue logic
+* separate purchase events from valid transactions
+* exclude invalid transaction IDs
+* define clear “valid transaction” KPI logic
+* implement transaction deduplication safeguards
+
+### Validation Outcome
+
+The staging layer successfully preserved transaction-quality visibility and exposed known ecommerce transaction inconsistencies correctly.
+
+### Status
+
+```text
+PASS WITH KNOWN TRANSACTION QUALITY CONSTRAINTS
+```
+![alt text](ga4_staging_validation_v10_valid_transactions_revenue.png)
+---
+
+```
+```
+````markdown
+---
+
+## V11 — Transaction Duplicate & Revenue Inflation Risk Validation
+
+### Objective
+
+Identify transaction IDs that appear across multiple purchase-event rows and evaluate potential revenue inflation risk.
+
+This validation is critical because duplicate purchase-event rows can cause:
+
+- overstated revenue
+- inflated transaction counts
+- distorted AOV metrics
+- incorrect ecommerce KPIs
+
+The goal is to confirm whether downstream transaction-level deduplication will be required before revenue aggregation.
+
+### Query Reference
+
+```sql
+SELECT
+  transaction_id,
+  COUNT(*) AS purchase_event_rows,
+  COUNT(DISTINCT purchase_revenue) AS distinct_revenue_values,
+  SUM(purchase_revenue) AS summed_transaction_revenue,
+  MAX(purchase_revenue) AS max_transaction_revenue,
+  SUM(purchase_revenue) - MAX(purchase_revenue) AS possible_revenue_overstatement
+FROM `commercial-analytics-bq-dbx.commercial_analytics_us.stg_ga4_events`
+WHERE is_purchase_event = TRUE
+  AND transaction_id IS NOT NULL
+GROUP BY transaction_id
+HAVING COUNT(*) > 1
+ORDER BY purchase_event_rows DESC, possible_revenue_overstatement DESC
+LIMIT 50;
+````
+
+### Result
+
+The validation identified multiple transaction IDs appearing across more than one purchase-event row.
+
+Example duplicated transactions:
+
+| transaction_id | purchase_event_rows | summed_transaction_revenue | max_transaction_revenue | possible_revenue_overstatement |
+| -------------- | ------------------: | -------------------------: | ----------------------: | -----------------------------: |
+| 145915         |                   2 |                      168.0 |                    84.0 |                           84.0 |
+| 22807          |                   2 |                      166.0 |                    83.0 |                           83.0 |
+| 594908         |                   2 |                      187.0 |                   113.0 |                           74.0 |
+| 87482          |                   2 |                      140.0 |                    70.0 |                           70.0 |
+| 468655         |                   2 |                      110.0 |                    55.0 |                           55.0 |
+
+![GA4 Staging Validation V11 Transaction Duplicate Risk](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v11_transaction_duplicate_risk.png)
+
+### Key Findings
+
+* Multiple transaction IDs appear across duplicated purchase-event rows.
+* Some duplicated transactions repeat the exact same revenue value.
+* Some duplicated transactions contain different revenue values across rows.
+* Raw revenue aggregation can materially overstate actual transaction revenue.
+
+### Validation Interpretation
+
+This validation confirms that raw purchase-event rows cannot safely be treated as transaction-grain records.
+
+The following risk pattern was identified:
+
+```text
+same transaction_id
+→ multiple purchase rows
+→ repeated or conflicting revenue values
+→ possible revenue inflation
+```
+
+Example:
+
+```text
+transaction_id = 145915
+summed_transaction_revenue = 168
+max_transaction_revenue = 84
+possible_overstatement = 84
+```
+
+This indicates that naive revenue summation would double-count revenue for this transaction.
+
+### Revenue Integrity Implications
+
+The validation confirms that downstream modeling must implement transaction-level deduplication before calculating:
+
+* total revenue
+* average order value (AOV)
+* transaction counts
+* conversion value metrics
+* channel revenue attribution
+
+Without deduplication, executive KPIs would become materially overstated.
+
+### Technical Interpretation
+
+The duplicated transaction behavior may originate from:
+
+* repeated purchase-event firing
+* GA4 ecommerce export behavior
+* multi-row transaction recording
+* partial transaction updates
+* duplicate client-side event tracking
+
+This is a known real-world ecommerce analytics issue and not necessarily a staging transformation failure.
+
+### Modeling Implications
+
+Future fact and mart layers should:
+
+* aggregate revenue at transaction grain
+* deduplicate transaction IDs
+* define a trusted transaction-revenue selection strategy
+* avoid direct purchase-row summation
+* isolate valid canonical transaction records
+
+Potential downstream strategies include:
+
+```text
+MAX(purchase_revenue)
+```
+
+or:
+
+```text
+ROW_NUMBER() OVER(PARTITION BY transaction_id ...)
+```
+
+to isolate a single canonical transaction row.
+
+### Business Implications
+
+This validation protects the project from one of the most dangerous ecommerce analytics failures:
+
+```text
+silent revenue inflation
+```
+
+By surfacing the issue early in staging validation, the project ensures:
+
+* trustworthy revenue KPIs
+* reliable executive reporting
+* accurate funnel monetization analysis
+* defensible downstream business metrics
+
+### Status
+
+```text
+PASS WITH CONFIRMED REVENUE DEDUPLICATION REQUIREMENT
+```
+![alt text](ga4_staging_validation_v11_transaction_duplicate_risk.png)
+---
+
+```
+```
+````markdown
+---
+
+## V12 — Acquisition Field Validation
+
+### Objective
+
+Inspect the normalized acquisition fields in the GA4 staging layer.
+
+This validation reviews the distribution of:
+
+- `source`
+- `medium`
+- `campaign`
+
+The purpose is to confirm that acquisition parameters were successfully extracted from `event_params`, normalized into usable fields, and preserved for downstream channel and attribution modeling.
+
+### Query Reference
+
+```sql
+SELECT
+  source,
+  medium,
+  campaign,
+  COUNT(*) AS event_count,
+  COUNT(DISTINCT user_pseudo_id) AS unique_users,
+  COUNT(DISTINCT session_key) AS unique_sessions
+FROM `commercial-analytics-bq-dbx.commercial_analytics_us.stg_ga4_events`
+GROUP BY
+  source,
+  medium,
+  campaign
+ORDER BY event_count DESC
+LIMIT 50;
+````
+
+### Result
+
+The staged acquisition fields show a mix of unattributed, organic, referral, direct, CPC, affiliate, and email traffic patterns.
+
+Top observed acquisition combinations include:
+
+| source                           | medium           | campaign         | event_count | unique_users | unique_sessions |
+| -------------------------------- | ---------------- | ---------------- | ----------: | -----------: | --------------: |
+| `(not set)`                      | `(not set)`      | `(not set)`      |     873,805 |       94,757 |         118,330 |
+| `shop.googlemerchandisestore...` | `referral`       | `(referral)`     |     158,458 |       21,904 |          29,224 |
+| `google`                         | `organic`        | `(organic)`      |      83,604 |       32,198 |          35,183 |
+| `(direct)`                       | `(none)`         | `(direct)`       |      28,697 |        8,950 |           9,400 |
+| `<Other>`                        | `<Other>`        | `<Other>`        |      18,065 |        6,219 |           6,293 |
+| `<Other>`                        | `referral`       | `(referral)`     |      13,655 |        4,862 |           5,282 |
+| `googlemerchandisestore.com`     | `referral`       | `(referral)`     |       6,676 |        4,246 |           4,769 |
+| `(data deleted)`                 | `(data deleted)` | `(data deleted)` |       6,148 |        1,560 |           1,755 |
+| `google`                         | `cpc`            | `<Other>`        |       5,252 |        1,840 |           1,850 |
+| `analytics.google.com`           | `referral`       | `(referral)`     |       3,662 |        1,442 |           1,772 |
+
+![GA4 Staging Validation V12 Acquisition Distribution](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v12_acquisition_distribution.png)
+
+### Key Findings
+
+* Acquisition fields were successfully extracted and normalized in the staging layer.
+* The largest acquisition bucket is `(not set) / (not set) / (not set)`.
+* Referral and organic traffic sources are clearly visible.
+* Direct traffic is represented by `(direct) / (none) / (direct)`.
+* Paid traffic appears through `google / cpc`.
+* Email traffic appears through newsletter-related campaigns.
+* Affiliate traffic appears through `Partners / affiliate`.
+
+### Validation Interpretation
+
+The acquisition extraction logic is technically working, but attribution sparsity is significant.
+
+The large `(not set)` bucket indicates that many events do not carry event-level acquisition parameters. This is not a staging failure; it reflects the structure and sparsity of event-level GA4 acquisition data.
+
+### Modeling Implications
+
+Downstream acquisition modeling should not rely blindly on raw event-level source, medium, and campaign values.
+
+Future channel modeling should:
+
+* preserve `(not set)` as a valid attribution state
+* define fallback channel logic
+* group low-volume values such as `<Other>`
+* handle `(data deleted)` explicitly
+* map direct, organic, referral, paid, email, and affiliate traffic consistently
+* build business channel grouping in `dim_channel` or mart logic, not inside staging
+
+### Business Implications
+
+This validation confirms that acquisition data can support channel analysis, but with clear caveats.
+
+For executive reporting, the project should avoid overclaiming channel attribution precision because a large share of events is unattributed at the event level.
+
+### Status
+
+```text
+PASS WITH ATTRIBUTION SPARSITY NOTE
+```
+![alt text](ga4_staging_validation_v12_acquisition_distribution.png)
+---
+
+```
+```
 
 
 # Phase 1B — Olist Ingestion
