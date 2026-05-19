@@ -1490,6 +1490,270 @@ PASS
 ![alt text](ga4_staging_validation_v03_core_nulls.png)
 ```
 ```
+````markdown
+---
+
+## V4 — Session Field Availability Validation
+
+### Objective
+
+Validate that the session-related fields remain fully populated after staging transformation.
+
+This validation focuses on the two most important session identifiers:
+
+- `ga_session_id`
+- `session_key`
+
+The purpose of this check is to confirm that session extraction logic is functioning correctly and that downstream session-level modeling can safely rely on these fields.
+
+### Query Reference
+
+```sql
+SELECT
+  COUNT(*) AS total_rows,
+
+  COUNTIF(ga_session_id IS NULL) AS null_ga_session_id,
+  COUNTIF(session_key IS NULL) AS null_session_key,
+
+  COUNTIF(ga_session_id IS NOT NULL) AS populated_ga_session_id,
+  COUNTIF(session_key IS NOT NULL) AS populated_session_key,
+
+  ROUND(SAFE_DIVIDE(COUNTIF(ga_session_id IS NULL), COUNT(*)), 4) AS null_ga_session_id_rate,
+  ROUND(SAFE_DIVIDE(COUNTIF(session_key IS NULL), COUNT(*)), 4) AS null_session_key_rate
+FROM `commercial-analytics-bq-dbx.commercial_analytics_us.stg_ga4_events`;
+````
+
+### Result
+
+| total_rows | null_ga_session_id | null_session_key | populated_ga_session_id | populated_session_key | null_ga_session_id_rate | null_session_key_rate |
+| ---------: | -----------------: | ---------------: | ----------------------: | --------------------: | ----------------------: | --------------------: |
+|  1,210,147 |                  0 |                0 |               1,210,147 |             1,210,147 |                     0.0 |                   0.0 |
+
+![GA4 Staging Validation V04 Session Availability](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v04_session_availability.png)
+
+### Key Findings
+
+* All staged events contain a valid `ga_session_id`.
+* All staged events contain a valid composite `session_key`.
+* No session identifier loss occurred during parameter extraction.
+* Session-level grain remains stable after staging transformation.
+
+### Validation Implications
+
+This confirms that the staging layer is reliable for:
+
+* session-level aggregation
+* session KPI construction
+* session-to-user relationship modeling
+* traffic acquisition attribution
+* funnel progression analysis
+* downstream session fact table generation
+
+The composite session key strategy:
+
+```text
+user_pseudo_id + ga_session_id
+```
+
+was successfully populated across the full dataset.
+
+### Technical Interpretation
+
+The result also confirms that:
+
+* `event_params` extraction logic worked correctly
+* session parameter parsing remained stable
+* no unintended null propagation occurred during transformation
+* the staging layer preserved session continuity successfully
+
+### Status
+
+```text
+PASS
+```
+![alt text](ga4_staging_validation_v04_session_availability.png)
+---
+
+```
+```
+````markdown
+---
+
+## V5 — Session Volume Validation
+
+### Objective
+
+Validate that the session volume extracted from the staging layer remains stable, internally consistent, and analytically plausible.
+
+This validation focuses on:
+
+- total event volume
+- unique user count
+- unique session count
+- average event activity per session
+
+The goal is to confirm that session extraction logic did not introduce abnormal session inflation or unexpected session sparsity.
+
+### Query Reference
+
+```sql
+SELECT
+  COUNT(*) AS total_event_rows,
+  COUNT(DISTINCT user_pseudo_id) AS unique_users,
+  COUNT(DISTINCT session_key) AS unique_sessions,
+  ROUND(SAFE_DIVIDE(COUNT(*), COUNT(DISTINCT session_key)), 2) AS avg_events_per_session
+FROM `commercial-analytics-bq-dbx.commercial_analytics_us.stg_ga4_events`;
+````
+
+### Result
+
+| total_event_rows | unique_users | unique_sessions | avg_events_per_session |
+| ---------------: | -----------: | --------------: | ---------------------: |
+|        1,210,147 |       94,790 |         118,380 |                  10.22 |
+
+![GA4 Staging Validation V05 Session Volume](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v05_session_volume.png)
+
+### Key Findings
+
+* The staging layer contains over 1.21 million event rows.
+* Approximately 94.8K unique users were identified.
+* Approximately 118.4K unique sessions were constructed successfully.
+* The average number of events per session is approximately 10.22.
+
+### Validation Interpretation
+
+The session volume distribution appears realistic and internally consistent for ecommerce behavioral analytics.
+
+The results suggest that:
+
+* session extraction logic is functioning correctly
+* session inflation is not occurring
+* session fragmentation is not occurring
+* composite session keys are stable
+* downstream session-level aggregation is reliable
+
+### Business Interpretation
+
+An average of approximately 10 events per session is analytically plausible for GA4 ecommerce browsing behavior because sessions commonly include:
+
+* page views
+* scroll activity
+* session engagement events
+* product interactions
+* cart interactions
+* checkout progression
+* purchase activity
+
+This indicates healthy behavioral continuity across the staged dataset.
+
+### Validation Implications
+
+The staging layer is suitable for:
+
+* session KPI modeling
+* funnel analysis
+* behavioral analytics
+* session attribution
+* engagement analysis
+* downstream fact session table construction
+
+### Status
+
+```text
+PASS
+```
+![alt text](ga4_staging_validation_v05_session_volume.png)
+---
+
+```
+```
+````markdown
+---
+
+## V6 — Duplicate Proxy Validation in Staging
+
+### Objective
+
+Validate that the GA4 staging transformation did not accidentally introduce duplicate event rows.
+
+Because GA4 raw exports do not provide a guaranteed globally unique event identifier, a proxy event key was constructed for duplicate detection using:
+
+```text
+user_pseudo_id + event_timestamp_raw + event_name
+````
+
+This validation checks whether staging transformations, parameter extraction logic, or event flattening introduced unintended row multiplication.
+
+### Query Reference
+
+```sql
+SELECT
+  COUNT(*) AS row_count,
+  COUNT(DISTINCT event_proxy_key) AS distinct_event_proxy_keys,
+  COUNT(*) - COUNT(DISTINCT event_proxy_key) AS duplicate_proxy_rows,
+  CASE
+    WHEN COUNT(*) = COUNT(DISTINCT event_proxy_key) THEN 'PASS'
+    ELSE 'CHECK'
+  END AS validation_status
+FROM `commercial-analytics-bq-dbx.commercial_analytics_us.stg_ga4_events`;
+```
+
+### Result
+
+| row_count | distinct_event_proxy_keys | duplicate_proxy_rows | validation_status |
+| --------: | ------------------------: | -------------------: | ----------------- |
+| 1,210,147 |                 1,210,147 |                    0 | PASS              |
+
+![GA4 Staging Validation V06 Duplicate Proxy](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v06_duplicate_proxy.png)
+
+### Key Findings
+
+* No duplicate proxy rows were detected in the staging layer.
+* Event-level grain was preserved successfully.
+* Parameter extraction logic did not multiply event rows.
+* The staging transformation remained one-to-one with the raw event structure.
+
+### Validation Interpretation
+
+This result is especially important because GA4 datasets contain nested and repeated structures.
+
+Incorrect handling of:
+
+* `UNNEST(event_params)`
+* `UNNEST(items)`
+* repeated ecommerce arrays
+
+can easily create silent row multiplication.
+
+The validation confirms that:
+
+* no accidental Cartesian expansion occurred
+* item arrays were handled safely
+* event parameter extraction remained row-safe
+* the staging layer preserved raw event integrity
+
+### Technical Implications
+
+This validation significantly reduces downstream risk for:
+
+* revenue inflation
+* session inflation
+* duplicate funnel events
+* distorted conversion metrics
+* inaccurate KPI aggregation
+
+The result confirms that downstream fact and mart layers can safely aggregate staged events without hidden duplication introduced during staging.
+
+### Status
+
+```text
+PASS
+```
+![alt text](ga4_staging_validation_v06_duplicate_proxy.png)
+---
+
+```
+```
 
 
 # Phase 1B — Olist Ingestion
