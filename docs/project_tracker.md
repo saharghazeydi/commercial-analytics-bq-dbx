@@ -1332,6 +1332,7 @@ CROSS JOIN staging_count;
 |     1,210,147 |         1,210,147 |                    0 | PASS              |
 
 ![GA4 Staging Validation V01 Row Count](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v01_row_count.png)
+![alt text](ga4_staging_validation_v01_row_count.png)
 
 ### Key Findings
 
@@ -1347,6 +1348,72 @@ PASS
 ```
 
 ---
+````markdown
+---
+
+## V2 — Staging Date Range Validation
+
+### Objective
+
+Validate that the staging view preserves the correct date coverage from the January 2021 GA4 sample window.
+
+This validation confirms that:
+
+- the staging transformation did not accidentally exclude dates
+- no unexpected dates were introduced
+- daily event continuity remains intact
+- the intended sample window was preserved correctly
+
+### Query Reference
+
+```sql
+SELECT
+  MIN(event_date) AS min_event_date,
+  MAX(event_date) AS max_event_date,
+  COUNT(DISTINCT event_date) AS distinct_event_dates,
+  COUNT(*) AS total_rows
+FROM `commercial-analytics-bq-dbx.commercial_analytics_us.stg_ga4_events`;
+````
+
+### Result
+
+| min_event_date | max_event_date | distinct_event_dates | total_rows |
+| -------------- | -------------- | -------------------: | ---------: |
+| 2021-01-01     | 2021-01-31     |                   31 |  1,210,147 |
+
+![GA4 Staging Validation V02 Date Range](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v02_date_range.png)
+
+### Key Findings
+
+* The staging view preserved the full intended January 2021 sample window.
+* All 31 expected event dates are present.
+* No missing or unexpected dates were detected.
+* Event continuity remains stable after staging transformation.
+* Total row volume remains aligned with earlier profiling and staging sanity checks.
+
+### Validation Implications
+
+This confirms that:
+
+* date parsing logic is functioning correctly
+* staging transformations did not filter event dates unintentionally
+* the staging layer is safe for:
+
+  * time-series aggregation
+  * rolling KPI calculations
+  * daily trend analysis
+  * downstream session modeling
+
+### Status
+
+```text
+PASS
+```
+
+---
+![alt text](ga4_staging_validation_v02_date_range.png)
+```
+```
 
 
 # Phase 1B — Olist Ingestion
