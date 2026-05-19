@@ -1754,6 +1754,373 @@ PASS
 
 ```
 ```
+````markdown
+---
+
+## V7 — Event Distribution Validation
+
+### Objective
+
+Validate that the staging layer preserved the original GA4 event taxonomy and behavioral event distribution after transformation.
+
+This validation checks whether:
+
+- event names were preserved correctly
+- event extraction logic remained stable
+- no unexpected event inflation occurred
+- ecommerce funnel events remain visible
+- behavioral event hierarchy remains analytically plausible
+
+The purpose is to confirm that the staging layer accurately reflects the original behavioral structure of the GA4 export.
+
+### Query Reference
+
+```sql
+SELECT
+  event_name,
+  COUNT(*) AS event_count,
+  ROUND(SAFE_DIVIDE(COUNT(*), SUM(COUNT(*)) OVER ()), 4) AS event_share
+FROM `commercial-analytics-bq-dbx.commercial_analytics_us.stg_ga4_events`
+GROUP BY event_name
+ORDER BY event_count DESC
+LIMIT 30;
+````
+
+### Result
+
+| event_name          | event_count | event_share |
+| ------------------- | ----------: | ----------: |
+| page_view           |     419,004 |      0.3462 |
+| user_engagement     |     250,097 |      0.2067 |
+| scroll              |     138,997 |      0.1149 |
+| session_start       |     116,549 |      0.0963 |
+| first_visit         |      88,873 |      0.0734 |
+| view_item           |      86,971 |      0.0719 |
+| view_promotion      |      53,885 |      0.0445 |
+| add_to_cart         |      15,522 |      0.0128 |
+| begin_checkout      |      11,034 |      0.0091 |
+| select_item         |      10,229 |      0.0085 |
+| view_search_results |       7,815 |      0.0065 |
+| add_shipping_info   |       3,952 |      0.0033 |
+| select_promotion    |       2,948 |      0.0024 |
+| add_payment_info    |       2,841 |      0.0023 |
+| purchase            |       1,204 |      0.0010 |
+
+![GA4 Staging Validation V07 Event Distribution](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v07_event_distribution.png)
+
+### Key Findings
+
+* Behavioral events dominate the dataset as expected.
+* `page_view` is the largest event category, representing approximately 34.6% of all staged events.
+* Engagement-related events (`user_engagement`, `scroll`) remain highly represented.
+* Session initialization events (`session_start`, `first_visit`) appear at realistic volume levels.
+* Ecommerce funnel events remain visible and logically distributed across the conversion funnel.
+
+### Ecommerce Funnel Interpretation
+
+The staged event distribution reflects a realistic ecommerce funnel progression:
+
+```text
+view_item
+→ add_to_cart
+→ begin_checkout
+→ add_shipping_info
+→ add_payment_info
+→ purchase
+```
+
+Event counts decrease naturally across the funnel stages, which indicates:
+
+* no major funnel distortion
+* no accidental event duplication
+* no missing downstream ecommerce events
+* stable behavioral continuity
+
+### Validation Interpretation
+
+This validation confirms that:
+
+* event taxonomy was preserved successfully
+* staging transformations did not alter event classifications
+* event extraction logic remained stable
+* event-level grain remains analytically reliable
+* downstream behavioral and funnel analytics can safely rely on the staged layer
+
+### Business Interpretation
+
+The distribution also suggests that the sample behaves like a realistic ecommerce environment:
+
+* large browsing activity
+* moderate engagement activity
+* progressively smaller funnel conversion stages
+* relatively low final purchase volume compared to browsing volume
+
+This is consistent with real-world ecommerce user behavior.
+
+### Validation Implications
+
+The staging layer is suitable for:
+
+* funnel analysis
+* behavioral analytics
+* engagement modeling
+* ecommerce KPI tracking
+* conversion analysis
+* downstream session and channel marts
+
+### Status
+
+```text
+PASS
+```
+![alt text](ga4_staging_validation_v07_event_distribution.png)
+---
+
+```
+```
+````markdown
+---
+
+## V8 — Ecommerce Funnel Event Validation
+
+### Objective
+
+Validate that ecommerce funnel events were correctly classified and flagged during the staging transformation process.
+
+This validation focuses on the core ecommerce funnel events:
+
+- `view_item`
+- `add_to_cart`
+- `begin_checkout`
+- `purchase`
+
+The purpose is to confirm that:
+
+- ecommerce funnel event classification logic is working correctly
+- item-related events preserve item presence appropriately
+- purchase events are correctly identified
+- downstream funnel analytics can safely rely on the staging layer
+
+### Query Reference
+
+```sql
+SELECT
+  event_name,
+  COUNT(*) AS event_count,
+  COUNTIF(is_ecommerce_funnel_event = TRUE) AS ecommerce_funnel_flagged_rows,
+  COUNTIF(has_items = TRUE) AS rows_with_items,
+  COUNTIF(is_purchase_event = TRUE) AS purchase_flagged_rows
+FROM `commercial-analytics-bq-dbx.commercial_analytics_us.stg_ga4_events`
+WHERE event_name IN (
+  'view_item',
+  'add_to_cart',
+  'begin_checkout',
+  'purchase'
+)
+GROUP BY event_name
+ORDER BY event_count DESC;
+````
+
+### Result
+
+| event_name     | event_count | ecommerce_funnel_flagged_rows | rows_with_items | purchase_flagged_rows |
+| -------------- | ----------: | ----------------------------: | --------------: | --------------------: |
+| view_item      |      86,971 |                        86,971 |          60,750 |                     0 |
+| add_to_cart    |      15,522 |                        15,522 |          15,522 |                     0 |
+| begin_checkout |      11,034 |                        11,034 |          11,034 |                     0 |
+| purchase       |       1,204 |                         1,204 |           1,204 |                 1,204 |
+
+![GA4 Staging Validation V08 Ecommerce Funnel Flags](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v08_ecommerce_funnel_flags.png)
+
+### Key Findings
+
+* All ecommerce funnel events were correctly flagged.
+* All `purchase` events were correctly identified by the `is_purchase_event` flag.
+* Funnel event classification remained fully consistent across the staged dataset.
+* Item presence remains strongly associated with downstream ecommerce funnel stages.
+
+### Funnel Behavior Interpretation
+
+The staged dataset reflects a realistic ecommerce funnel progression:
+
+```text
+view_item
+→ add_to_cart
+→ begin_checkout
+→ purchase
+```
+
+Event counts decrease naturally across the funnel stages:
+
+| Funnel Stage   | Event Count |
+| -------------- | ----------: |
+| view_item      |      86,971 |
+| add_to_cart    |      15,522 |
+| begin_checkout |      11,034 |
+| purchase       |       1,204 |
+
+This indicates:
+
+* realistic conversion attrition
+* stable ecommerce event continuity
+* no major funnel distortion
+* no unexpected event inflation
+
+### Item Presence Interpretation
+
+The validation also confirms expected item behavior:
+
+* `add_to_cart`
+* `begin_checkout`
+* `purchase`
+
+all maintain full item association.
+
+The lower item coverage observed for `view_item` events is analytically plausible because some product-view interactions in GA4 ecommerce datasets may not fully populate item arrays consistently.
+
+### Validation Interpretation
+
+This validation confirms that:
+
+* ecommerce funnel classification logic is functioning correctly
+* purchase event identification is reliable
+* item metadata survived staging transformation safely
+* event-level ecommerce semantics were preserved successfully
+
+### Business Implications
+
+The staging layer is now suitable for:
+
+* ecommerce funnel conversion analysis
+* add-to-cart rate modeling
+* checkout abandonment analysis
+* purchase conversion KPI tracking
+* downstream ecommerce mart development
+
+### Technical Implications
+
+This validation significantly reduces downstream risk for:
+
+* missing purchase attribution
+* broken funnel sequencing
+* incorrect conversion metrics
+* item-level aggregation distortion
+* purchase-event misclassification
+
+### Status
+
+```text
+PASS
+```
+![alt text](ga4_staging_validation_v08_ecommerce_funnel_flags.png)
+---
+
+```
+```
+````markdown
+---
+
+## V9 — Purchase Quality Validation
+
+### Objective
+
+Validate purchase-event quality after staging transformation.
+
+This validation checks whether the staged purchase flags correctly capture known ecommerce data quality issues identified during profiling:
+
+- invalid or missing transaction IDs
+- missing purchase revenue
+- zero purchase revenue
+- negative purchase revenue
+
+The purpose is to confirm that purchase-related data quality risks are visible in the staging layer before downstream revenue and conversion modeling.
+
+### Query Reference
+
+```sql
+SELECT
+  COUNTIF(is_purchase_event = TRUE) AS purchase_events,
+
+  COUNTIF(is_invalid_purchase_transaction_id = TRUE) AS invalid_purchase_transaction_id_events,
+  ROUND(
+    SAFE_DIVIDE(
+      COUNTIF(is_invalid_purchase_transaction_id = TRUE),
+      COUNTIF(is_purchase_event = TRUE)
+    ),
+    4
+  ) AS invalid_purchase_transaction_id_rate,
+
+  COUNTIF(is_missing_purchase_revenue = TRUE) AS missing_purchase_revenue_events,
+  ROUND(
+    SAFE_DIVIDE(
+      COUNTIF(is_missing_purchase_revenue = TRUE),
+      COUNTIF(is_purchase_event = TRUE)
+    ),
+    4
+  ) AS missing_purchase_revenue_rate,
+
+  COUNTIF(is_zero_purchase_revenue = TRUE) AS zero_purchase_revenue_events,
+  COUNTIF(is_negative_purchase_revenue = TRUE) AS negative_purchase_revenue_events
+FROM `commercial-analytics-bq-dbx.commercial_analytics_us.stg_ga4_events`;
+````
+
+### Result
+
+| purchase_events | invalid_purchase_transaction_id_events | invalid_purchase_transaction_id_rate | missing_purchase_revenue_events | missing_purchase_revenue_rate | zero_purchase_revenue_events | negative_purchase_revenue_events |
+| --------------: | -------------------------------------: | -----------------------------------: | ------------------------------: | ----------------------------: | ---------------------------: | -------------------------------: |
+|           1,204 |                                    300 |                               0.2492 |                             300 |                        0.2492 |                            0 |                                0 |
+
+![GA4 Staging Validation V09 Purchase Quality](../bi/screenshots/ga4/validation/staging/ga4_staging_validation_v09_purchase_quality.png)
+
+### Key Findings
+
+* The staging layer contains 1,204 purchase events.
+* 300 purchase events have invalid or missing transaction IDs.
+* 300 purchase events have missing purchase revenue.
+* Invalid transaction ID rate is 24.92%.
+* Missing purchase revenue rate is 24.92%.
+* No zero-revenue purchase events were detected.
+* No negative-revenue purchase events were detected.
+
+### Validation Interpretation
+
+This confirms that the staging layer correctly preserved and exposed the purchase quality issues identified during raw profiling.
+
+The result is important because purchase events are not all equally reliable for revenue modeling. A meaningful portion of purchase events lack valid transaction and revenue information, so downstream revenue logic must avoid treating every raw purchase event as a valid transaction.
+
+### Modeling Implications
+
+Revenue and transaction models should:
+
+* exclude or separately flag invalid purchase transaction IDs
+* avoid counting `(not set)` transaction IDs as valid transactions
+* avoid naive raw purchase-row revenue summation
+* use transaction-level deduplication in downstream fact or mart logic
+* separate purchase-event volume from valid transaction count
+
+### Business Implications
+
+This result means that purchase-event count and valid revenue-generating transaction count are not the same metric.
+
+For reporting, the project should distinguish between:
+
+* purchase events
+* valid transactions
+* revenue-bearing transactions
+* excluded or flagged purchase events
+
+This distinction prevents inflated or misleading ecommerce KPI reporting.
+
+### Status
+
+```text
+PASS WITH KNOWN DATA QUALITY ISSUE
+```
+![alt text](ga4_staging_validation_v09_purchase_quality.png)
+---
+
+```
+```
 
 
 # Phase 1B — Olist Ingestion
