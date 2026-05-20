@@ -1692,6 +1692,262 @@ Expand from the one-month sample window to the full available GA4 range only aft
 2020-11-01 to 2021-01-31
 ```
 
+---
+
+# Phase 2A — GA4 Session Fact Modeling
+
+## Status
+
+✅ Completed
+
+## Objective
+
+Build a daily session-level fact table from the validated GA4 staging layer.
+
+The purpose of this phase is to convert event-level GA4 data into a stable session-level analytical table that supports downstream commercial KPIs, acquisition analysis, funnel reporting, engagement metrics, and revenue-safe reporting.
+
+## Main SQL File
+
+```text
+sql/ga4/03_fact_sessions_daily.sql
+```
+
+## Target Table
+
+```text
+commercial-analytics-bq-dbx.commercial_analytics_us.fact_sessions_daily
+```
+
+## Source View
+
+```text
+commercial-analytics-bq-dbx.commercial_analytics_us.stg_ga4_events
+```
+
+## Grain
+
+```text
+one row per event_date + session_key
+```
+
+## Screenshot Directory
+
+```text
+bi/screenshots/ga4/session_fact/
+```
+
+---
+
+## Modeling Logic Implemented
+
+The session fact table includes:
+
+- session identifiers
+- user identifier
+- session start and end timestamps
+- session duration
+- session-level acquisition fields
+- event counts
+- engagement metrics
+- ecommerce funnel indicators
+- purchase event indicators
+- valid transaction count
+- deduplicated revenue
+- purchase quality flags
+
+---
+
+## Key Modeling Decisions
+
+### Session Grain
+
+The table is modeled at:
+
+```text
+event_date + session_key
+```
+
+This supports daily reporting while preserving session-level analytical logic.
+
+### Acquisition Rollup
+
+Session-level acquisition fields are selected from the first available event within the session:
+
+```text
+session_source
+session_medium
+session_campaign
+```
+
+### Revenue Deduplication
+
+Revenue is not calculated by naïvely summing raw purchase rows.
+
+Instead, purchase revenue is deduplicated at transaction level using:
+
+```text
+event_date + session_key + transaction_id
+```
+
+and:
+
+```sql
+MAX(purchase_revenue)
+```
+
+This avoids revenue inflation caused by duplicated purchase event rows.
+
+---
+
+# Session Fact Pre-Creation Checks
+
+Before creating the final table, the modeling logic was tested step-by-step in BigQuery.
+
+---
+
+## F1 — Session Base Summary Check
+
+### Purpose
+
+Validate the session-level aggregation before creating the final fact table.
+
+### Result
+
+| session_rows | distinct_sessions | min_event_date | max_event_date | avg_events_per_session |
+|---:|---:|---|---|---:|
+| 118,618 | 118,380 | 2021-01-01 | 2021-01-31 | 10.20 |
+
+![GA4 Session Fact F01 Session Summary](../bi/screenshots/ga4/session_fact/ga4_session_fact_f01_session_summary.png)![alt text](ga4_session_fact_f01_session_summary.png)
+
+### Key Findings
+
+- Session-level aggregation was successfully created from staging.
+- Date coverage remains aligned with the January 2021 development window.
+- Average events per session remains consistent with staging validation.
+- A small difference exists between `session_rows` and `distinct_sessions`, indicating some sessions may span multiple dates or contain cross-date behavior.
+
+### Interpretation
+
+This difference is acceptable for daily session reporting because the intended grain is:
+
+```text
+event_date + session_key
+```
+
+rather than `session_key` alone.
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## F2 — Transaction Revenue Deduplication Check
+
+### Purpose
+
+Validate transaction-level revenue deduplication before creating the final session fact table.
+
+### Result
+
+| transaction_rows | distinct_transaction_ids | deduplicated_revenue |
+|---:|---:|---:|
+| 895 | 894 | 56,880.0 |
+
+![GA4 Session Fact F02 Revenue Deduplication](../bi/screenshots/ga4/session_fact/ga4_session_fact_f02_revenue_deduplication.png)![alt text](ga4_session_fact_f02_revenue_deduplication.png)
+
+### Key Findings
+
+- Valid transaction rows were successfully identified.
+- Distinct valid transaction IDs remain aligned with earlier staging validation.
+- Deduplicated revenue equals 56,880.0.
+- This differs from raw purchase revenue because duplicated transaction rows were controlled.
+
+### Interpretation
+
+The check confirms that revenue inflation risk identified during staging validation is handled in the session fact model.
+
+This is a critical improvement over naïve raw purchase revenue summation.
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+# Final Table Creation
+
+## Status
+
+✅ Completed
+
+The final `fact_sessions_daily` table was created after the session aggregation and revenue deduplication checks passed.
+
+## Final Modeling Outcome
+
+The table is now ready for downstream:
+
+- session KPI validation
+- channel marts
+- executive daily marts
+- conversion analysis
+- revenue-safe KPI modeling
+- BI-ready reporting layers
+
+---
+
+# Phase 2A Summary
+
+## Completed
+
+- [x] Reviewed old `fact_sessions_daily` logic
+- [x] Replaced outdated project references
+- [x] Rebuilt the fact model using validated staging fields
+- [x] Added session-level grain logic
+- [x] Added acquisition rollup logic
+- [x] Added engagement metrics
+- [x] Added ecommerce funnel metrics
+- [x] Added purchase quality flags
+- [x] Added transaction-level revenue deduplication
+- [x] Tested `session_base`
+- [x] Tested session summary output
+- [x] Tested transaction revenue logic
+- [x] Tested revenue deduplication output
+- [x] Tested final model output before table creation
+- [x] Created `fact_sessions_daily`
+
+---
+
+# Next Step
+
+## Phase 2B — Session Fact Validation
+
+The next step is to create a dedicated validation SQL file for `fact_sessions_daily`.
+
+Suggested file:
+
+```text
+sql/validation/ga4/03b_validate_fact_sessions_daily.sql
+```
+
+Validation should include:
+
+- row count validation
+- session grain validation
+- date coverage validation
+- duplicate session-key/date validation
+- revenue consistency validation
+- purchase session validation
+- acquisition distribution validation
+- engagement metric validation
+- final fact validation status
+
+
+
 ## Future Expansion Work
 
 - [ ] Replace hardcoded January 2021 filters with configurable date ranges
