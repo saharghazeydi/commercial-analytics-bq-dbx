@@ -6,8 +6,10 @@
 ✅ Phase 1A — GA4 Raw Data Profiling: Completed  
 ✅ Phase 1B — GA4 Staging View: Completed  
 ✅ Phase 1C — GA4 Staging Validation: Completed  
+✅ Phase 2A — GA4 Session Fact Modeling: Completed  
+✅ Phase 2B — GA4 Session Fact Validation: Completed  
 
-➡️ Next Phase: Phase 2 — Session & Commercial Mart Construction
+➡️ Next Phase: Phase 2C — Date & Channel Dimension Construction
 
 ---
 
@@ -29,33 +31,6 @@ The project is designed to demonstrate:
 
 ---
 
-# Phase 0 — Repository & Environment Setup
-
-## Status
-
-✅ Completed
-
-## Completed Tasks
-
-- [x] Created GitHub repository
-- [x] Established project folder structure
-- [x] Added README skeleton
-- [x] Configured `.gitignore`
-- [x] Added `requirements.txt`
-- [x] Connected local Windows Bootcamp environment using `git clone`
-- [x] Refactored documentation structure
-- [x] Initialized project tracking workflow
-- [x] Created GA4 profiling script
-- [x] Created GA4 screenshot directories
-- [x] Added `.gitkeep` placeholders where needed
-- [x] Added GA4 profiling screenshots
-- [x] Added GA4 staging validation screenshots
-- [x] Standardized GA4 profiling screenshot names
-- [x] Reorganized GA4 staging validation screenshots
-- [x] Committed and pushed work to GitHub
-
----
-
 # Current Repository Structure
 
 ```text
@@ -68,40 +43,9 @@ commercial-analytics-bq-dbx/
 │       │
 │       ├── ga4/
 │       │   ├── profiling/
-│       │   │   ├── ga4_profiling_b01_date_coverage_sample.png
-│       │   │   ├── ga4_profiling_b01b_global_date_coverage.png
-│       │   │   ├── ga4_profiling_c01_core_nulls.png
-│       │   │   ├── ga4_profiling_c02_duplicate_proxy.png
-│       │   │   ├── ga4_profiling_d01_event_distribution.png
-│       │   │   ├── ga4_profiling_d02_purchase_presence_revenue.png
-│       │   │   ├── ga4_profiling_d03_items_sparsity_by_event.png
-│       │   │   ├── ga4_profiling_d04_daily_event_volume_distribution.png
-│       │   │   ├── ga4_profiling_d05_user_session_volume.png
-│       │   │   ├── ga4_profiling_d06_session_id_availability.png
-│       │   │   ├── ga4_profiling_d07_traffic_source_distribution.png
-│       │   │   ├── ga4_profiling_d08_purchase_transaction_quality.png
-│       │   │   ├── ga4_profiling_d09_revenue_transaction_validation.png
-│       │   │   ├── ga4_profiling_d10_event_parameter_key_frequency.png
-│       │   │   └── ga4_profiling_d11_event_parameter_coverage_by_event.png
-│       │   │
+│       │   ├── session_fact/
+│       │   ├── session_fact_validation/
 │       │   └── staging_validation/
-│       │       ├── ga4_staging_validation_v01_row_count.png
-│       │       ├── ga4_staging_validation_v02_date_range.png
-│       │       ├── ga4_staging_validation_v03_core_nulls.png
-│       │       ├── ga4_staging_validation_v04_session_availability.png
-│       │       ├── ga4_staging_validation_v05_session_volume.png
-│       │       ├── ga4_staging_validation_v06_duplicate_proxy.png
-│       │       ├── ga4_staging_validation_v07_event_distribution.png
-│       │       ├── ga4_staging_validation_v08_ecommerce_funnel_flags.png
-│       │       ├── ga4_staging_validation_v09_purchase_quality.png
-│       │       ├── ga4_staging_validation_v10_valid_transactions_revenue.png
-│       │       ├── ga4_staging_validation_v11_transaction_duplicate_risk.png
-│       │       ├── ga4_staging_validation_v12_acquisition_distribution.png
-│       │       ├── ga4_staging_validation_v13_not_set_acquisition_rate.png
-│       │       ├── ga4_staging_validation_v14_item_array_validation.png
-│       │       ├── ga4_staging_validation_v15_engagement_validation.png
-│       │       ├── ga4_staging_validation_v16_quality_flag_summary.png
-│       │       └── ga4_staging_validation_v17_final_status.png
 │       │
 │       └── olist/
 │           └── .gitkeep
@@ -126,7 +70,8 @@ commercial-analytics-bq-dbx/
 │   │
 │   ├── validation/
 │   │   └── ga4/
-│   │       └── 02b_validate_stg_ga4_events.sql
+│   │       ├── 02b_validate_stg_ga4_events.sql
+│   │       └── 03b_validate_fact_sessions_daily.sql
 │   │
 │   └── marts/
 │       ├── 01_dim_date.sql
@@ -142,52 +87,68 @@ commercial-analytics-bq-dbx/
 
 ---
 
-# Screenshot Naming Decision
-
-## Current Decision
+# Screenshot Naming Convention
 
 GA4 screenshots are organized by workflow area:
 
 ```text
 bi/screenshots/ga4/profiling/
 bi/screenshots/ga4/staging_validation/
+bi/screenshots/ga4/session_fact/
+bi/screenshots/ga4/session_fact_validation/
 ```
 
-Profiling screenshots now use a structured phase-based naming pattern:
+## Profiling
 
 ```text
 ga4_profiling_<step>_<description>.png
 ```
 
-Example:
-
-```text
-ga4_profiling_b01_date_coverage_sample.png
-ga4_profiling_d08_purchase_transaction_quality.png
-ga4_profiling_d10_event_parameter_key_frequency.png
-```
-
-Staging validation screenshots use a formal validation-suite naming pattern:
+## Staging Validation
 
 ```text
 ga4_staging_validation_v##_description.png
 ```
 
-Example:
+## Session Fact Pre-Creation Checks
 
 ```text
-ga4_staging_validation_v01_row_count.png
-ga4_staging_validation_v17_final_status.png
+ga4_session_fact_f##_description.png
 ```
 
-## Rationale
+## Session Fact Validation
 
-This naming convention keeps the project review-friendly and separates:
+```text
+ga4_session_fact_validation_v##_description.png
+```
 
-- exploratory profiling evidence
-- formal staging validation evidence
-- future dashboard screenshots
-- future Olist screenshots
+---
+
+# Phase 0 — Repository & Environment Setup
+
+## Status
+
+✅ Completed
+
+## Completed Tasks
+
+- [x] Created GitHub repository
+- [x] Established project folder structure
+- [x] Added README skeleton
+- [x] Configured `.gitignore`
+- [x] Added `requirements.txt`
+- [x] Connected local Windows Bootcamp environment using `git clone`
+- [x] Refactored documentation structure
+- [x] Initialized project tracking workflow
+- [x] Created GA4 profiling SQL file
+- [x] Created GA4 screenshot directories
+- [x] Added `.gitkeep` placeholders where needed
+- [x] Added GA4 profiling screenshots
+- [x] Added GA4 staging validation screenshots
+- [x] Added GA4 session fact screenshots
+- [x] Added GA4 session fact validation screenshots
+- [x] Standardized screenshot naming conventions
+- [x] Committed and pushed work to GitHub
 
 ---
 
@@ -241,7 +202,7 @@ bi/screenshots/ga4/profiling/
 
 ---
 
-# GA4 Profiling Screenshot Inventory
+## GA4 Profiling Screenshot Inventory
 
 | Step | Topic | Screenshot |
 |---|---|---|
@@ -273,22 +234,13 @@ Validate the raw GA4 table structure before downstream transformation and KPI mo
 
 - GA4 uses daily sharded event tables following the `events_YYYYMMDD` naming pattern.
 - The dataset follows an event-driven behavioral schema.
-- Key nested structures include:
-  - `event_params`
-  - `items`
-  - `ecommerce`
+- Key nested structures include `event_params`, `items`, and `ecommerce`.
 - Primary anonymous user tracking relies on `user_pseudo_id`.
 - Ecommerce fields are event-specific and should not be expected across all event types.
 
 ### Analytical Implications
 
-The dataset supports:
-
-- behavioral analytics
-- session analysis
-- acquisition analysis
-- ecommerce funnel analysis
-- KPI prototyping
+The dataset supports behavioral analytics, session analysis, acquisition analysis, ecommerce funnel analysis, and KPI prototyping.
 
 ---
 
@@ -324,11 +276,7 @@ The dataset supports:
 
 - The public GA4 dataset contains approximately three months of historical data.
 - The dataset is suitable for KPI prototyping and dashboard development.
-- The dataset is limited for:
-  - long-term seasonality analysis
-  - year-over-year comparison
-  - mature cohort analysis
-  - long-horizon forecasting
+- The dataset is limited for long-term seasonality, year-over-year comparison, mature cohort analysis, and long-horizon forecasting.
 
 ---
 
@@ -411,12 +359,7 @@ Top behavioral and ecommerce events include:
 
 ### Analytical Implications
 
-The dataset supports:
-
-- ecommerce funnel analysis
-- engagement KPI modeling
-- behavioral segmentation
-- customer journey analysis
+The dataset supports ecommerce funnel analysis, engagement KPI modeling, behavioral segmentation, and customer journey analysis.
 
 ---
 
@@ -453,9 +396,7 @@ The dataset supports:
 
 ### Modeling Implications
 
-Item-level extraction logic should remain event-aware.
-
-Product-level modeling should be handled separately from event-level staging to avoid row multiplication.
+Item-level extraction logic should remain event-aware. Product-level modeling should be handled separately from event-level staging to avoid row multiplication.
 
 ---
 
@@ -471,11 +412,7 @@ Product-level modeling should be handled separately from event-level staging to 
 
 ### Modeling Implications
 
-Dataset is suitable for:
-
-- daily KPI aggregation
-- rolling metrics
-- time-series dashboarding
+Dataset is suitable for daily KPI aggregation, rolling metrics, and time-series dashboarding.
 
 ---
 
@@ -526,12 +463,7 @@ Session-level marts and engagement KPIs are feasible.
 ### Key Findings
 
 - Event-level acquisition metadata was successfully extracted.
-- Major channel types observed:
-  - organic
-  - referral
-  - email
-  - affiliate
-  - cpc
+- Major channel types observed include organic, referral, email, affiliate, and cpc.
 - `(not set)` values require downstream normalization logic.
 
 ### Modeling Implications
@@ -577,12 +509,7 @@ Acquisition modeling should include fallback attribution handling and channel no
 
 ### Recommended Modeling Approach
 
-Future marts should:
-
-- treat valid `transaction_id` as the business grain
-- apply transaction-level deduplication
-- avoid naïve raw-row revenue summation
-- use defensive logic such as `MAX(purchase_revenue)` or row ranking when needed
+Future marts should treat valid `transaction_id` as the business grain, apply transaction-level deduplication, avoid naïve raw-row revenue summation, and use defensive logic such as `MAX(purchase_revenue)` or row ranking when needed.
 
 ---
 
@@ -629,15 +556,11 @@ Future staging should selectively extract reusable high-value parameters instead
 
 ### Modeling Implications
 
-Downstream staging should not assume every parameter exists for every event.
-
-Extraction logic should be based on event type and business use case.
+Downstream staging should not assume every parameter exists for every event. Extraction logic should be based on event type and business use case.
 
 ---
 
-# Phase 1A Summary
-
-## Completed
+## Phase 1A Summary
 
 - [x] Raw structure inspection
 - [x] Sample date coverage validation
@@ -663,17 +586,11 @@ Extraction logic should be based on event type and business use case.
 
 ## Decision 1 — Use January 2021 as Profiling Window
 
-January 2021 was selected to balance:
-
-- sufficient event scale
-- manageable BigQuery scan cost
-- realistic profiling coverage
+January 2021 was selected to balance sufficient event scale, manageable BigQuery scan cost, and realistic profiling coverage.
 
 ## Decision 2 — Build Event-Aware Staging Logic
 
-GA4 event schemas differ significantly by event type.
-
-Extraction logic should remain selective and event-aware.
+GA4 event schemas differ significantly by event type. Extraction logic should remain selective and event-aware.
 
 ## Decision 3 — Use Composite Session Keys
 
@@ -839,17 +756,11 @@ bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*
 
 ## Decision 1 — Preserve Event-Level Grain
 
-The staging view keeps one row per raw GA4 event.
-
-The `items` array is not unnested in this layer because unnesting would multiply rows and break event-level grain.
-
-Product-level or item-level modeling should be handled in a separate downstream fact table if needed.
+The staging view keeps one row per raw GA4 event. The `items` array is not unnested in this layer because unnesting would multiply rows and break event-level grain.
 
 ## Decision 2 — Use Selective Parameter Extraction
 
-Only high-value GA4 parameters were extracted from `event_params`.
-
-This avoids flattening every GA4 parameter unnecessarily and keeps staging readable, maintainable, and business-driven.
+Only high-value GA4 parameters were extracted from `event_params`. This keeps staging readable, maintainable, and business-driven.
 
 ## Decision 3 — Build Composite Session Key
 
@@ -863,9 +774,7 @@ because `ga_session_id` alone should not be assumed globally unique across users
 
 ## Decision 4 — Normalize Acquisition Nulls Only
 
-Acquisition fields were normalized only for null or blank values.
-
-Blank or null values are converted to:
+Acquisition fields were normalized only for null or blank values. Blank or null values are converted to:
 
 ```text
 (not set)
@@ -875,25 +784,15 @@ Business-level channel grouping is intentionally left for the downstream `dim_ch
 
 ## Decision 5 — Flag Data Quality Issues Without Filtering Rows
 
-The staging view adds quality flags but does not remove or deduplicate records.
-
-This keeps staging transparent and auditable.
+The staging view adds quality flags but does not remove or deduplicate records. This keeps staging transparent and auditable.
 
 ## Decision 6 — Revenue Deduplication Is Deferred
 
-Transaction-level revenue deduplication is not performed in staging.
-
-This is intentional because staging should remain close to the raw event export.
-
-Revenue deduplication should happen later in fact or mart logic where the business grain is clearly defined.
+Transaction-level revenue deduplication is not performed in staging because staging should remain close to the raw event export. Revenue deduplication should happen later in fact or mart logic where the business grain is clearly defined.
 
 ---
 
 # Initial Staging Sanity Check
-
-## Query Purpose
-
-Confirm that the staging view was created successfully and contains expected high-level metrics.
 
 ## Result
 
@@ -942,7 +841,7 @@ bi/screenshots/ga4/staging_validation/
 
 ---
 
-# GA4 Staging Validation Screenshot Inventory
+## GA4 Staging Validation Screenshot Inventory
 
 | Step | Validation Check | Screenshot File |
 |---|---|---|
@@ -1420,17 +1319,6 @@ PASS WITH PURCHASE QUALITY FLAGS OBSERVED
 - No negative purchase revenue values were detected.
 - The staging layer successfully passed all structural validation conditions.
 
-### Final Staging Conclusion
-
-The GA4 staging layer successfully transformed nested raw export data into a reusable analytical foundation while preserving:
-
-- event grain
-- session integrity
-- behavioral consistency
-- acquisition metadata
-- engagement metadata
-- ecommerce event taxonomy
-
 ### Status
 
 ```text
@@ -1439,9 +1327,7 @@ FINAL STAGING VALIDATION STATUS: PASS
 
 ---
 
-# Phase 1C Summary
-
-## Completed
+## Phase 1C Summary
 
 - [x] Created GA4 staging validation SQL file
 - [x] Built 17 validation checks
@@ -1472,8 +1358,8 @@ FINAL STAGING VALIDATION STATUS: PASS
 | Area | Issue | Impact | Handling |
 |---|---|---|---|
 | Historical coverage | Dataset limited to 2020-11-01 through 2021-01-31 | Limited long-term seasonality and YoY analysis | Use for KPI prototyping and short-range behavioral analysis |
-| Acquisition fields | High `(not set)` rate around 72% | Channel attribution is incomplete at event grain | Preserve `(not set)` and handle in channel mart |
-| Revenue completeness | 300 purchase events have missing revenue | Revenue KPIs require caution | Flag and exclude from trusted revenue logic |
+| Acquisition fields | High `(not set)` rate around 72% at event grain and 77% at session grain | Channel attribution is incomplete | Preserve `(not set)` and handle explicitly in channel mart |
+| Revenue completeness | 300 purchase events have missing revenue | Revenue KPIs require caution | Flag and exclude from trusted transaction revenue logic |
 | Transaction IDs | 300 purchase events have missing or invalid transaction IDs | Invalid transactions should not count as valid orders | Use cleaned `transaction_id` and validity flags |
 | Purchase duplication | Some transaction IDs appear in multiple purchase rows | Raw revenue summation can inflate revenue | Deduplicate at transaction grain downstream |
 | Item arrays | Item coverage varies by event type | Product analytics requires separate grain | Do not unnest items in event-level staging |
@@ -1493,15 +1379,11 @@ Revenue should not be calculated directly from raw purchase rows without transac
 
 ## Rule 3 — Keep `(not set)` Visible
 
-Do not silently drop unattributed events.
-
-Attribution gaps should remain visible in downstream BI.
+Do not silently drop unattributed events. Attribution gaps should remain visible in downstream BI.
 
 ## Rule 4 — Separate Event and Item Modeling
 
-The event-level staging view should not unnest `items`.
-
-If product-level analysis is needed, create a separate item-level fact table.
+The event-level staging view should not unnest `items`. If product-level analysis is needed, create a separate item-level fact table.
 
 ## Rule 5 — Build Channel Logic Outside Staging
 
@@ -1510,187 +1392,6 @@ Channel grouping should be implemented in `dim_channel` or downstream marts, not
 ## Rule 6 — Use Validation Before Modeling
 
 Every downstream table should have at least one validation step before it is considered complete.
-
----
-
-# Project Decisions Log Summary
-
-## Decision — Use January 2021 as Initial Development Window
-
-Reason:
-
-- manageable BigQuery scan cost
-- enough event volume
-- full 31-day coverage
-- realistic ecommerce behavior
-
-## Decision — Use BigQuery as Core Warehouse
-
-Reason:
-
-- public GA4 dataset is native to BigQuery
-- SQL-first workflow fits analytics engineering
-- clean integration with BI and documentation
-
-## Decision — Use Event-Level Staging View
-
-Reason:
-
-- preserves raw GA4 behavior
-- keeps transformations auditable
-- allows downstream marts to define business grain separately
-
-## Decision — Store Screenshots by Workflow Area
-
-Current structure:
-
-```text
-bi/screenshots/ga4/profiling/
-bi/screenshots/ga4/staging_validation/
-```
-
-Reason:
-
-- avoids mixing profiling and validation evidence
-- makes project review easier
-- improves documentation clarity
-
----
-
-# Current Project Health
-
-## Technical Health
-
-✅ Good
-
-Reasons:
-
-- repository structure is clear
-- raw profiling is complete
-- staging view is complete
-- validation suite is complete
-- screenshots are organized
-- BigQuery work is backed by GitHub documentation
-
-## Analytics Engineering Health
-
-✅ Strong
-
-Reasons:
-
-- grain is documented
-- validation checks are explicit
-- data quality risks are surfaced
-- downstream modeling requirements are clear
-- revenue deduplication risk is documented
-
-## Portfolio Readiness
-
-🟡 In Progress
-
-Reason:
-
-The foundation is strong, but the project still needs:
-
-- session fact table
-- dimensional marts
-- KPI layer
-- BI dashboards
-- final README
-- business narrative
-
----
-
-# Next Phase — Phase 2: Session & Commercial Mart Construction
-
-## Status
-
-➡️ Planned / Next
-
-## Objective
-
-Build downstream analytical tables using the validated GA4 staging layer.
-
-The next phase should convert event-level staging data into reusable session, channel, and commercial KPI layers.
-
-## Important Scope Note
-
-The project is still using the January 2021 sample window.
-
-This is intentional.
-
-The one-month development window is used to:
-
-- reduce query cost
-- simplify debugging
-- stabilize business logic
-- validate transformations faster
-- build reliable modeling patterns before expanding scope
-
-Full available GA4 data should only be used after the session fact table, mart logic, KPI logic, and validation checks are stable.
-
-## Planned Tasks
-
-- [ ] Build `fact_sessions_daily`
-- [ ] Validate session-level grain
-- [ ] Build `dim_date`
-- [ ] Build `dim_channel`
-- [ ] Build `mart_channel_daily`
-- [ ] Build `mart_executive_daily`
-- [ ] Build `mart_executive_enhanced`
-- [ ] Add transaction deduplication logic where revenue is modeled
-- [ ] Validate KPI consistency against staging
-- [ ] Document mart grain and assumptions
-
-## Immediate Next SQL File
-
-```text
-sql/ga4/03_fact_sessions_daily.sql
-```
-
-## Immediate Next Validation Need
-
-After building `fact_sessions_daily`, validate:
-
-- row grain
-- date coverage
-- session counts
-- user counts
-- purchase session counts
-- revenue logic
-- attribution behavior
-- duplicate session risk
-
----
-
-# Full Data Expansion Plan
-
-## Current Scope
-
-```text
-2021-01-01 to 2021-01-31
-```
-
-## Reason
-
-The one-month sample window is used as a controlled development sandbox.
-
-## When to Expand
-
-Expand from the one-month sample window to the full available GA4 range only after:
-
-- staging logic is stable
-- session fact table passes validation
-- mart logic is stable
-- KPI definitions are validated
-- revenue deduplication logic is implemented
-- attribution handling is documented
-
-## Full Available GA4 Range
-
-```text
-2020-11-01 to 2021-01-31
-```
 
 ---
 
@@ -1799,44 +1500,24 @@ This avoids revenue inflation caused by duplicated purchase event rows.
 
 ---
 
-# Session Fact Pre-Creation Checks
+## Session Fact Pre-Creation Checks
 
-Before creating the final table, the modeling logic was tested step-by-step in BigQuery.
-
----
-
-## F1 — Session Base Summary Check
-
-### Purpose
-
-Validate the session-level aggregation before creating the final fact table.
-
-### Result
+### F1 — Session Base Summary Check
 
 | session_rows | distinct_sessions | min_event_date | max_event_date | avg_events_per_session |
 |---:|---:|---|---|---:|
 | 118,618 | 118,380 | 2021-01-01 | 2021-01-31 | 10.20 |
 
-![GA4 Session Fact F01 Session Summary](../bi/screenshots/ga4/session_fact/ga4_session_fact_f01_session_summary.png)![alt text](ga4_session_fact_f01_session_summary.png)
+![GA4 Session Fact F01 Session Summary](../bi/screenshots/ga4/session_fact/ga4_session_fact_f01_session_summary.png)
 
-### Key Findings
+#### Key Findings
 
 - Session-level aggregation was successfully created from staging.
 - Date coverage remains aligned with the January 2021 development window.
 - Average events per session remains consistent with staging validation.
 - A small difference exists between `session_rows` and `distinct_sessions`, indicating some sessions may span multiple dates or contain cross-date behavior.
 
-### Interpretation
-
-This difference is acceptable for daily session reporting because the intended grain is:
-
-```text
-event_date + session_key
-```
-
-rather than `session_key` alone.
-
-### Status
+#### Status
 
 ```text
 PASS
@@ -1844,34 +1525,22 @@ PASS
 
 ---
 
-## F2 — Transaction Revenue Deduplication Check
-
-### Purpose
-
-Validate transaction-level revenue deduplication before creating the final session fact table.
-
-### Result
+### F2 — Transaction Revenue Deduplication Check
 
 | transaction_rows | distinct_transaction_ids | deduplicated_revenue |
 |---:|---:|---:|
 | 895 | 894 | 56,880.0 |
 
-![GA4 Session Fact F02 Revenue Deduplication](../bi/screenshots/ga4/session_fact/ga4_session_fact_f02_revenue_deduplication.png)![alt text](ga4_session_fact_f02_revenue_deduplication.png)
+![GA4 Session Fact F02 Revenue Deduplication](../bi/screenshots/ga4/session_fact/ga4_session_fact_f02_revenue_deduplication.png)
 
-### Key Findings
+#### Key Findings
 
 - Valid transaction rows were successfully identified.
 - Distinct valid transaction IDs remain aligned with earlier staging validation.
 - Deduplicated revenue equals 56,880.0.
 - This differs from raw purchase revenue because duplicated transaction rows were controlled.
 
-### Interpretation
-
-The check confirms that revenue inflation risk identified during staging validation is handled in the session fact model.
-
-This is a critical improvement over naïve raw purchase revenue summation.
-
-### Status
+#### Status
 
 ```text
 PASS
@@ -1879,7 +1548,7 @@ PASS
 
 ---
 
-# Final Table Creation
+## Final Table Creation
 
 ## Status
 
@@ -1889,20 +1558,11 @@ The final `fact_sessions_daily` table was created after the session aggregation 
 
 ## Final Modeling Outcome
 
-The table is now ready for downstream:
-
-- session KPI validation
-- channel marts
-- executive daily marts
-- conversion analysis
-- revenue-safe KPI modeling
-- BI-ready reporting layers
+The table is ready for downstream session KPI validation, channel marts, executive daily marts, conversion analysis, revenue-safe KPI modeling, and BI-ready reporting layers.
 
 ---
 
-# Phase 2A Summary
-
-## Completed
+## Phase 2A Summary
 
 - [x] Reviewed old `fact_sessions_daily` logic
 - [x] Replaced outdated project references
@@ -1922,40 +1582,62 @@ The table is now ready for downstream:
 
 ---
 
-# Next Step
+# Phase 2B — GA4 Session Fact Validation
 
-## Phase 2B — Session Fact Validation
+## Status
 
-The next step is to create a dedicated validation SQL file for `fact_sessions_daily`.
+✅ Completed
 
-Suggested file:
+## Objective
+
+Validate the `fact_sessions_daily` table after session-level modeling.
+
+This validation phase confirms that the session fact table has the correct grain, expected date coverage, no critical nulls, controlled revenue logic, documented attribution sparsity, and sufficient quality for downstream mart development.
+
+## Validation SQL File
 
 ```text
 sql/validation/ga4/03b_validate_fact_sessions_daily.sql
 ```
 
-Validation should include:
+## Target Table
 
-- row count validation
-- session grain validation
-- date coverage validation
-- duplicate session-key/date validation
-- revenue consistency validation
-- purchase session validation
-- acquisition distribution validation
-- engagement metric validation
-- final fact validation status
+```text
+commercial-analytics-bq-dbx.commercial_analytics_us.fact_sessions_daily
+```
 
-حق با توئه؛ من بد گفتم. **FSV1 و FSV4 باید در project tracker بیایند، فقط screenshot برایشان نمی‌گذاریم.** این نسخه درست است:
+## Screenshot Directory
 
-````markdown
+```text
+bi/screenshots/ga4/session_fact_validation/
+```
+
+---
+
+## Session Fact Validation Screenshot Inventory
+
+| Step | Validation Check | Screenshot File | Stored |
+|---|---|---|---|
+| FSV1 | Fact table row count | Not stored | No |
+| FSV2 | Session grain uniqueness | `ga4_session_fact_validation_v02_grain_uniqueness.png` | Yes |
+| FSV3 | Date coverage | `ga4_session_fact_validation_v03_date_coverage.png` | Yes |
+| FSV4 | Null critical fields | Not stored | No |
+| FSV5 | Session duration distribution | Not stored | No |
+| FSV6 | Event count distribution | Not stored | No |
+| FSV7 | Acquisition distribution | `ga4_session_fact_validation_v07_acquisition_distribution.png` | Yes |
+| FSV8 | Not set acquisition rate | `ga4_session_fact_validation_v08_not_set_acquisition_rate.png` | Yes |
+| FSV9 | Engagement coverage | Not stored | No |
+| FSV10 | Funnel event validation | `ga4_session_fact_validation_v10_funnel_validation.png` | Yes |
+| FSV11 | Purchase session behavior | Not stored | No |
+| FSV12 | Revenue integrity | `ga4_session_fact_validation_v12_revenue_integrity.png` | Yes |
+| FSV13 | Revenue outlier inspection | Not stored | No |
+| FSV14 | Purchase quality flags | Not stored | No |
+| FSV15 | Daily session trend | `ga4_session_fact_validation_v15_daily_session_trend.png` | Yes |
+| FSV16 | Final validation status | `ga4_session_fact_validation_v16_final_status.png` | Yes |
+
 ---
 
 ## FSV1 — Fact Table Row Count
-
-### Purpose
-
-Confirm that `fact_sessions_daily` was created successfully and contains the expected number of session-level rows.
 
 ### Result
 
@@ -1973,7 +1655,7 @@ Confirm that `fact_sessions_daily` was created successfully and contains the exp
 
 ```text
 Not stored. This was a basic row-count sanity check.
-````
+```
 
 ### Status
 
@@ -1985,27 +1667,19 @@ PASS
 
 ## FSV2 — Session Grain Uniqueness Validation
 
-### Purpose
-
-Confirm that the fact table contains one row per:
-
-```text
-event_date + session_key
-```
-
 ### Result
 
 | total_rows | distinct_session_grain | duplicate_session_grain_rows |
-| ---------: | ---------------------: | ---------------------------: |
-|    118,618 |                118,618 |                            0 |
+|---:|---:|---:|
+| 118,618 | 118,618 | 0 |
 
-![GA4 Session Fact Validation V02 Grain Uniqueness](../bi/screenshots/ga4/session_fact_validation/ga4_session_fact_validation_v02_grain_uniqueness.png)![alt text](ga4_session_fact_validation_v02_grain_uniqueness.png)
+![GA4 Session Fact Validation V02 Grain Uniqueness](../bi/screenshots/ga4/session_fact_validation/ga4_session_fact_validation_v02_grain_uniqueness.png)
 
 ### Key Findings
 
-* Total rows match the distinct session grain count.
-* No duplicate rows exist at the intended grain.
-* The table preserves the intended daily session-level grain.
+- Total rows match the distinct session grain count.
+- No duplicate rows exist at the intended grain.
+- The table preserves the intended daily session-level grain.
 
 ### Status
 
@@ -2017,23 +1691,19 @@ PASS
 
 ## FSV3 — Date Coverage Validation
 
-### Purpose
-
-Confirm that the session fact table covers the expected January 2021 development window.
-
 ### Result
 
 | min_event_date | max_event_date | distinct_dates |
-| -------------- | -------------- | -------------: |
-| 2021-01-01     | 2021-01-31     |             31 |
+|---|---|---:|
+| 2021-01-01 | 2021-01-31 | 31 |
 
-![GA4 Session Fact Validation V03 Date Coverage](../bi/screenshots/ga4/session_fact_validation/ga4_session_fact_validation_v03_date_coverage.png)![alt text](ga4_session_fact_validation_v03_date_coverage.png)
+![GA4 Session Fact Validation V03 Date Coverage](../bi/screenshots/ga4/session_fact_validation/ga4_session_fact_validation_v03_date_coverage.png)
 
 ### Key Findings
 
-* The session fact table covers the full January 2021 window.
-* All 31 expected dates are present.
-* Date coverage remains consistent with the staging layer and raw profiling window.
+- The session fact table covers the full January 2021 window.
+- All 31 expected dates are present.
+- Date coverage remains consistent with the staging layer and raw profiling window.
 
 ### Status
 
@@ -2045,22 +1715,18 @@ PASS
 
 ## FSV4 — Null Critical Field Validation
 
-### Purpose
-
-Validate that required analytical fields are populated in the session fact table.
-
 ### Result
 
 | total_rows | null_event_date | null_session_key | null_user_pseudo_id | null_session_start | null_session_end | null_session_source | null_session_medium | null_session_campaign |
-| ---------: | --------------: | ---------------: | ------------------: | -----------------: | ---------------: | ------------------: | ------------------: | --------------------: |
-|    118,618 |               0 |                0 |                   0 |                  0 |                0 |                   0 |                   0 |                     0 |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 118,618 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 
 ### Key Findings
 
-* No null values exist in critical session identifiers.
-* Session start and end timestamps are fully populated.
-* Acquisition fields are fully populated after `(not set)` normalization.
-* The table is structurally safe for downstream KPI modeling.
+- No null values exist in critical session identifiers.
+- Session start and end timestamps are fully populated.
+- Acquisition fields are fully populated after `(not set)` normalization.
+- The table is structurally safe for downstream KPI modeling.
 
 ### Screenshot
 
@@ -2074,23 +1740,9 @@ Not stored. This was a basic structural null check.
 PASS
 ```
 
-```
-```
-بله، طبق تصمیم قبلی:
-
-```text
-FSV5 و FSV6 → در tracker می‌آیند، ولی screenshot لازم ندارند.
-FSV7 و FSV8 → هم در tracker می‌آیند، هم screenshot لازم دارند.
-```
-
-````markdown
 ---
 
 ## FSV5 — Session Duration Validation
-
-### Purpose
-
-Inspect the distribution of session duration values in `fact_sessions_daily`.
 
 ### Result
 
@@ -2103,13 +1755,13 @@ Inspect the distribution of session duration values in `fact_sessions_daily`.
 - No negative session durations were detected.
 - Some sessions have zero duration, which is expected in GA4-style behavioral data.
 - Average session duration is 164.66 seconds.
-- The maximum session duration is high and should be treated as a possible long-session/outlier behavior, not as a modeling failure.
+- The maximum session duration is high and should be treated as possible long-session/outlier behavior, not as a modeling failure.
 
 ### Screenshot
 
 ```text
 Not stored. This was a supporting distribution check.
-````
+```
 
 ### Status
 
@@ -2121,22 +1773,18 @@ PASS
 
 ## FSV6 — Event Count Validation
 
-### Purpose
-
-Inspect event-count distribution per session.
-
 ### Result
 
 | min_events_per_session | max_events_per_session | avg_events_per_session | zero_event_sessions |
-| ---------------------: | ---------------------: | ---------------------: | ------------------: |
-|                      1 |                  1,007 |                  10.20 |                   0 |
+|---:|---:|---:|---:|
+| 1 | 1,007 | 10.20 | 0 |
 
 ### Key Findings
 
-* Every session contains at least one event.
-* No zero-event sessions were detected.
-* Average events per session remains consistent with earlier staging validation.
-* The maximum event count indicates possible high-activity sessions, but does not break the model.
+- Every session contains at least one event.
+- No zero-event sessions were detected.
+- Average events per session remains consistent with earlier staging validation.
+- The maximum event count indicates possible high-activity sessions, but does not break the model.
 
 ### Screenshot
 
@@ -2154,31 +1802,27 @@ PASS
 
 ## FSV7 — Acquisition Distribution Validation
 
-### Purpose
-
-Inspect normalized session-level acquisition fields.
-
 ### Result
 
 Top acquisition combinations:
 
-| session_source                   | session_medium | session_campaign | sessions | session_share |
-| -------------------------------- | -------------- | ---------------- | -------: | ------------: |
-| `(not set)`                      | `(not set)`    | `(not set)`      |   91,291 |        0.7696 |
-| `google`                         | `organic`      | `(organic)`      |   12,430 |        0.1048 |
-| `shop.googlemerchandisestore...` | `referral`     | `(referral)`     |    3,712 |        0.0313 |
-| `(direct)`                       | `(none)`       | `(direct)`       |    3,175 |        0.0268 |
-| `<Other>`                        | `<Other>`      | `<Other>`        |    2,011 |        0.0170 |
+| session_source | session_medium | session_campaign | sessions | session_share |
+|---|---|---|---:|---:|
+| `(not set)` | `(not set)` | `(not set)` | 91,291 | 0.7696 |
+| `google` | `organic` | `(organic)` | 12,430 | 0.1048 |
+| `shop.googlemerchandisestore...` | `referral` | `(referral)` | 3,712 | 0.0313 |
+| `(direct)` | `(none)` | `(direct)` | 3,175 | 0.0268 |
+| `<Other>` | `<Other>` | `<Other>` | 2,011 | 0.0170 |
 
-![GA4 Session Fact Validation V07 Acquisition Distribution](../bi/screenshots/ga4/session_fact_validation/ga4_session_fact_validation_v07_acquisition_distribution.png)![alt text](ga4_session_fact_validation_v07_acquisition_distribution.png)
+![GA4 Session Fact Validation V07 Acquisition Distribution](../bi/screenshots/ga4/session_fact_validation/ga4_session_fact_validation_v07_acquisition_distribution.png)
 
 ### Key Findings
 
-* Session-level acquisition rollup works correctly.
-* `(not set)` remains the dominant acquisition bucket.
-* Organic Google traffic is the largest identifiable acquisition source.
-* Referral, direct, CPC, affiliate, and email traffic are visible in the session fact layer.
-* Attribution sparsity remains a source-data limitation and should stay visible in downstream marts.
+- Session-level acquisition rollup works correctly.
+- `(not set)` remains the dominant acquisition bucket.
+- Organic Google traffic is the largest identifiable acquisition source.
+- Referral, direct, CPC, affiliate, and email traffic are visible in the session fact layer.
+- Attribution sparsity remains a source-data limitation and should stay visible in downstream marts.
 
 ### Status
 
@@ -2190,24 +1834,20 @@ PASS WITH ATTRIBUTION SPARSITY OBSERVED
 
 ## FSV8 — Not Set Acquisition Rate Validation
 
-### Purpose
-
-Quantify attribution sparsity in session-level acquisition fields.
-
 ### Result
 
 | total_sessions | not_set_source_sessions | not_set_source_rate | not_set_medium_sessions | not_set_medium_rate | not_set_campaign_sessions | not_set_campaign_rate |
-| -------------: | ----------------------: | ------------------: | ----------------------: | ------------------: | ------------------------: | --------------------: |
-|        118,618 |                  91,472 |              0.7711 |                  91,291 |              0.7696 |                    91,292 |                0.7696 |
+|---:|---:|---:|---:|---:|---:|---:|
+| 118,618 | 91,472 | 0.7711 | 91,291 | 0.7696 | 91,292 | 0.7696 |
 
-![GA4 Session Fact Validation V08 Not Set Acquisition Rate](../bi/screenshots/ga4/session_fact_validation/ga4_session_fact_validation_v08_not_set_acquisition_rate.png)![alt text](ga4_session_fact_validation_v08_not_set_acquisition_rate.png)
+![GA4 Session Fact Validation V08 Not Set Acquisition Rate](../bi/screenshots/ga4/session_fact_validation/ga4_session_fact_validation_v08_not_set_acquisition_rate.png)
 
 ### Key Findings
 
-* Around 77% of sessions have `(not set)` source values.
-* Around 77% of sessions have `(not set)` medium and campaign values.
-* Attribution sparsity increased slightly at session grain compared with event-grain staging validation.
-* This confirms that downstream channel reporting must include an explicit unattributed/unknown bucket.
+- Around 77% of sessions have `(not set)` source values.
+- Around 77% of sessions have `(not set)` medium and campaign values.
+- Attribution sparsity increased slightly at session grain compared with event-grain staging validation.
+- Downstream channel reporting must include an explicit unattributed/unknown bucket.
 
 ### Status
 
@@ -2215,20 +1855,9 @@ Quantify attribution sparsity in session-level acquisition fields.
 PASS WITH HIGH ATTRIBUTION SPARSITY OBSERVED
 ```
 
-```
-```
-درست:
-`FSV9` و `FSV11` در tracker می‌آیند، **ولی screenshot لازم ندارند**.
-`FSV10` و `FSV12` هم در tracker می‌آیند، **هم screenshot دارند**.
-
-````markdown
 ---
 
 ## FSV9 — Engagement Validation
-
-### Purpose
-
-Inspect engagement metric coverage in the session fact table.
 
 ### Result
 
@@ -2247,7 +1876,7 @@ Inspect engagement metric coverage in the session fact table.
 
 ```text
 Not stored. This was a supporting engagement coverage check.
-````
+```
 
 ### Status
 
@@ -2259,24 +1888,20 @@ PASS
 
 ## FSV10 — Funnel Event Validation
 
-### Purpose
-
-Validate that ecommerce funnel event counts were preserved after session-level aggregation.
-
 ### Result
 
 | total_view_item_events | total_add_to_cart_events | total_begin_checkout_events | total_purchase_events |
-| ---------------------: | -----------------------: | --------------------------: | --------------------: |
-|                 86,971 |                   15,522 |                      11,034 |                 1,204 |
+|---:|---:|---:|---:|
+| 86,971 | 15,522 | 11,034 | 1,204 |
 
-![GA4 Session Fact Validation V10 Funnel Validation](../bi/screenshots/ga4/session_fact_validation/ga4_session_fact_validation_v10_funnel_validation.png)![alt text](ga4_session_fact_validation_v10_funnel_validation.png)
+![GA4 Session Fact Validation V10 Funnel Validation](../bi/screenshots/ga4/session_fact_validation/ga4_session_fact_validation_v10_funnel_validation.png)
 
 ### Key Findings
 
-* Funnel event totals match the staging-level validation outputs.
-* `view_item`, `add_to_cart`, `begin_checkout`, and `purchase` counts were preserved.
-* Session-level aggregation did not lose ecommerce funnel events.
-* The fact table is safe for downstream funnel KPI modeling.
+- Funnel event totals match the staging-level validation outputs.
+- `view_item`, `add_to_cart`, `begin_checkout`, and `purchase` counts were preserved.
+- Session-level aggregation did not lose ecommerce funnel events.
+- The fact table is safe for downstream funnel KPI modeling.
 
 ### Status
 
@@ -2288,22 +1913,18 @@ PASS
 
 ## FSV11 — Purchase Session Validation
 
-### Purpose
-
-Inspect purchase-session behavior after transaction and revenue logic were applied.
-
 ### Result
 
 | purchase_sessions | avg_transactions_per_purchase_session | avg_purchase_session_revenue | max_purchase_session_revenue |
-| ----------------: | ------------------------------------: | ---------------------------: | ---------------------------: |
-|             1,116 |                                  0.80 |                        50.97 |                      1,200.0 |
+|---:|---:|---:|---:|
+| 1,116 | 0.80 | 50.97 | 1,200.0 |
 
 ### Key Findings
 
-* 1,116 sessions contained at least one purchase event.
-* Average valid transactions per purchase session is below 1 because some purchase sessions contain invalid transaction IDs or missing revenue.
-* Average purchase-session revenue is 50.97.
-* The maximum purchase-session revenue is 1,200.0.
+- 1,116 sessions contained at least one purchase event.
+- Average valid transactions per purchase session is below 1 because some purchase sessions contain invalid transaction IDs or missing revenue.
+- Average purchase-session revenue is 50.97.
+- The maximum purchase-session revenue is 1,200.0.
 
 ### Screenshot
 
@@ -2321,25 +1942,21 @@ PASS WITH KNOWN PURCHASE QUALITY LIMITATIONS
 
 ## FSV12 — Revenue Integrity Validation
 
-### Purpose
-
-Validate that deduplicated transaction revenue logic works correctly in the session fact table.
-
 ### Result
 
 | total_valid_transactions | total_deduplicated_revenue | negative_revenue_sessions | zero_revenue_purchase_sessions |
-| -----------------------: | -------------------------: | ------------------------: | -----------------------------: |
-|                      895 |                   56,880.0 |                         0 |                            270 |
+|---:|---:|---:|---:|
+| 895 | 56,880.0 | 0 | 270 |
 
-![GA4 Session Fact Validation V12 Revenue Integrity](../bi/screenshots/ga4/session_fact_validation/ga4_session_fact_validation_v12_revenue_integrity.png)![alt text](ga4_session_fact_validation_v12_revenue_integrity.png)
+![GA4 Session Fact Validation V12 Revenue Integrity](../bi/screenshots/ga4/session_fact_validation/ga4_session_fact_validation_v12_revenue_integrity.png)
 
 ### Key Findings
 
-* Total valid transactions equal 895 after session-level aggregation.
-* Deduplicated revenue equals 56,880.0.
-* No negative revenue sessions were detected.
-* 270 purchase sessions have purchase activity but zero deduplicated revenue, which aligns with the known invalid transaction ID / missing revenue issue identified during staging validation.
-* Revenue inflation risk is controlled by transaction-level deduplication.
+- Total valid transactions equal 895 after session-level aggregation.
+- Deduplicated revenue equals 56,880.0.
+- No negative revenue sessions were detected.
+- 270 purchase sessions have purchase activity but zero deduplicated revenue, aligned with the invalid transaction ID / missing revenue issue identified during staging validation.
+- Revenue inflation risk is controlled by transaction-level deduplication.
 
 ### Status
 
@@ -2347,23 +1964,9 @@ Validate that deduplicated transaction revenue logic works correctly in the sess
 PASS WITH KNOWN PURCHASE QUALITY LIMITATIONS
 ```
 
-```
-```
-درست طبق همان استاندارد:
-
-```text
-FSV13 و FSV14 → در tracker می‌آیند، ولی screenshot لازم ندارند.
-FSV15 و FSV16 → در tracker می‌آیند و screenshot هم دارند.
-```
-
-````markdown
 ---
 
 ## FSV13 — Revenue Outlier Inspection
-
-### Purpose
-
-Inspect the highest revenue sessions after transaction-level revenue deduplication.
 
 ### Key Findings
 
@@ -2376,7 +1979,7 @@ Inspect the highest revenue sessions after transaction-level revenue deduplicati
 
 ```text
 Not stored. This was a supporting revenue outlier inspection.
-````
+```
 
 ### Status
 
@@ -2388,23 +1991,19 @@ PASS
 
 ## FSV14 — Purchase Quality Flag Validation
 
-### Purpose
-
-Inspect purchase-related quality flags carried from the staging layer into the session fact table.
-
 ### Result
 
 | invalid_transaction_id_events | missing_purchase_revenue_events | zero_purchase_revenue_events | negative_purchase_revenue_events |
-| ----------------------------: | ------------------------------: | ---------------------------: | -------------------------------: |
-|                           300 |                             300 |                            0 |                                0 |
+|---:|---:|---:|---:|
+| 300 | 300 | 0 | 0 |
 
 ### Key Findings
 
-* 300 purchase events have invalid transaction IDs.
-* 300 purchase events have missing purchase revenue.
-* No zero-revenue purchase events were detected.
-* No negative-revenue purchase events were detected.
-* These values match the known purchase-quality issues identified during staging validation.
+- 300 purchase events have invalid transaction IDs.
+- 300 purchase events have missing purchase revenue.
+- No zero-revenue purchase events were detected.
+- No negative-revenue purchase events were detected.
+- These values match the known purchase-quality issues identified during staging validation.
 
 ### Screenshot
 
@@ -2422,22 +2021,18 @@ PASS WITH KNOWN PURCHASE QUALITY LIMITATIONS
 
 ## FSV15 — Daily Session Trend Validation
 
-### Purpose
-
-Inspect daily session, transaction, revenue, and transaction-rate behavior across the January 2021 development window.
-
 ### Result
 
 The daily trend output contains 31 rows, covering each date from 2021-01-01 to 2021-01-31.
 
-![GA4 Session Fact Validation V15 Daily Session Trend](../bi/screenshots/ga4/session_fact_validation/ga4_session_fact_validation_v15_daily_session_trend.png)![alt text](ga4_session_fact_validation_v15_daily_session_trend.png)
+![GA4 Session Fact Validation V15 Daily Session Trend](../bi/screenshots/ga4/session_fact_validation/ga4_session_fact_validation_v15_daily_session_trend.png)
 
 ### Key Findings
 
-* All 31 dates are present in the daily session trend.
-* Daily sessions, transactions, revenue, and transactions-per-session are populated.
-* Revenue and transaction activity vary by day, which is expected for ecommerce behavior.
-* 2021-01-31 shows zero transactions and zero revenue, which should be monitored but does not break validation.
+- All 31 dates are present in the daily session trend.
+- Daily sessions, transactions, revenue, and transactions-per-session are populated.
+- Revenue and transaction activity vary by day, which is expected for ecommerce behavior.
+- 2021-01-31 shows zero transactions and zero revenue, which should be monitored but does not break validation.
 
 ### Status
 
@@ -2449,25 +2044,21 @@ PASS
 
 ## FSV16 — Final Fact Validation Status
 
-### Purpose
-
-Provide a high-level PASS/CHECK summary for the `fact_sessions_daily` table.
-
 ### Result
 
 | total_rows | fact_validation_status | null_event_date | null_session_key | null_user_pseudo_id | duplicate_session_grain_rows | negative_revenue_sessions |
-| ---------: | ---------------------- | --------------: | ---------------: | ------------------: | ---------------------------: | ------------------------: |
-|    118,618 | PASS                   |               0 |                0 |                   0 |                            0 |                         0 |
+|---:|---|---:|---:|---:|---:|---:|
+| 118,618 | PASS | 0 | 0 | 0 | 0 | 0 |
 
-![GA4 Session Fact Validation V16 Final Status](../bi/screenshots/ga4/session_fact_validation/ga4_session_fact_validation_v16_final_status.png)![alt text](ga4_session_fact_validation_v16_final_status.png)
+![GA4 Session Fact Validation V16 Final Status](../bi/screenshots/ga4/session_fact_validation/ga4_session_fact_validation_v16_final_status.png)
 
 ### Key Findings
 
-* Final validation status is `PASS`.
-* No null values exist in critical grain fields.
-* No duplicate session-grain rows were detected.
-* No negative revenue sessions were detected.
-* The session fact table is validated and ready for downstream mart construction.
+- Final validation status is `PASS`.
+- No null values exist in critical grain fields.
+- No duplicate session-grain rows were detected.
+- No negative revenue sessions were detected.
+- The session fact table is validated and ready for downstream mart construction.
 
 ### Status
 
@@ -2475,13 +2066,138 @@ Provide a high-level PASS/CHECK summary for the `fact_sessions_daily` table.
 FINAL SESSION FACT VALIDATION STATUS: PASS
 ```
 
+---
+
+## Phase 2B Summary
+
+- [x] Created session fact validation SQL file
+- [x] Validated fact table row count
+- [x] Validated session grain uniqueness
+- [x] Validated date coverage
+- [x] Validated critical null fields
+- [x] Validated session duration behavior
+- [x] Validated event count behavior
+- [x] Validated acquisition distribution
+- [x] Quantified session-level attribution sparsity
+- [x] Validated engagement coverage
+- [x] Validated ecommerce funnel event totals
+- [x] Validated purchase session behavior
+- [x] Validated revenue integrity
+- [x] Inspected revenue outliers
+- [x] Validated purchase quality flags
+- [x] Validated daily session trend
+- [x] Produced final session fact validation status
+- [x] Saved selected validation screenshots
+- [x] Pushed validation outputs to GitHub
+
+---
+
+# Full Data Expansion Plan
+
+## Current Scope
+
+```text
+2021-01-01 to 2021-01-31
 ```
+
+## Reason
+
+The one-month sample window is used as a controlled development sandbox to reduce query cost, simplify debugging, stabilize business logic, validate transformations faster, and build reliable modeling patterns before expanding scope.
+
+## When to Expand
+
+Expand from the one-month sample window to the full available GA4 range only after:
+
+- staging logic is stable
+- session fact table passes validation
+- mart logic is stable
+- KPI definitions are validated
+- revenue deduplication logic is implemented
+- attribution handling is documented
+
+## Full Available GA4 Range
+
+```text
+2020-11-01 to 2021-01-31
 ```
 
+---
 
+# Next Phase — Phase 2C: Date & Channel Dimension Construction
 
+## Status
 
-## Future Expansion Work
+➡️ Planned / Next
+
+## Objective
+
+Build reusable dimension tables that support clean downstream mart construction and BI-ready reporting.
+
+## Planned SQL Files
+
+```text
+sql/marts/01_dim_date.sql
+sql/marts/02_dim_channel.sql
+```
+
+## Planned Tasks
+
+- [ ] Build `dim_date`
+- [ ] Validate date range and date attributes
+- [ ] Build `dim_channel`
+- [ ] Define channel grouping rules
+- [ ] Preserve `(not set)` as an explicit unknown/unattributed bucket
+- [ ] Validate channel classification logic
+
+---
+
+# Phase 2D — Channel Daily Mart
+
+## Status
+
+⬜ Planned
+
+## Planned SQL File
+
+```text
+sql/marts/03_mart_channel_daily.sql
+```
+
+## Planned Tasks
+
+- [ ] Build daily channel-level mart
+- [ ] Aggregate sessions by date and channel
+- [ ] Add transactions and deduplicated revenue
+- [ ] Calculate conversion metrics
+- [ ] Validate mart totals against `fact_sessions_daily`
+
+---
+
+# Phase 2E — Executive Daily Mart
+
+## Status
+
+⬜ Planned
+
+## Planned SQL Files
+
+```text
+sql/marts/04_mart_executive_daily.sql
+sql/marts/05_mart_executive_enhanced.sql
+```
+
+## Planned Tasks
+
+- [ ] Build executive daily KPI mart
+- [ ] Add revenue, sessions, transactions, conversion rate, and engagement metrics
+- [ ] Add rolling 7-day metrics
+- [ ] Add week-over-week comparison logic
+- [ ] Validate KPI consistency
+- [ ] Prepare BI-ready outputs
+
+---
+
+# Future Expansion Work
 
 - [ ] Replace hardcoded January 2021 filters with configurable date ranges
 - [ ] Re-run staging on full available GA4 range
@@ -2496,105 +2212,121 @@ FINAL SESSION FACT VALIDATION STATUS: PASS
 
 ## Phase 3 — Olist Ingestion
 
-### Planned Tasks
+⬜ Planned
 
-- [ ] Load Olist CSVs into Databricks
-- [ ] Clean data types
-- [ ] Create curated Olist datasets
-- [ ] Export transformed datasets into BigQuery
-- [ ] Store Olist screenshots in `bi/screenshots/olist/`
+Planned work:
 
----
+- ingest Olist ecommerce CSVs
+- profile Olist orders, customers, products, sellers, payments, and reviews
+- convert raw CSVs into reusable warehouse tables
+- document grain and join logic
+- validate transactional completeness
 
-## Phase 4 — Data Quality Layer
+## Phase 4 — Multi-Source Commercial Mart
 
-### Planned Tasks
+⬜ Planned
 
-- [ ] Validate duplicates
-- [ ] Validate primary and foreign keys
-- [ ] Validate NULL patterns
-- [ ] Validate date coverage
-- [ ] Document data quality issues
+Planned work:
 
----
+- integrate GA4 behavioral/acquisition layer with Olist commercial data at an aggregate level
+- document integration limitations
+- avoid artificial row-level joins where no natural key exists
+- build commercial KPI marts
 
-## Phase 5 — Modeling & Integration
+## Phase 5 — BI Layer
 
-### Planned Tasks
+⬜ Planned
 
-- [ ] Create dimensional models
-- [ ] Build fact tables
-- [ ] Create commercial marts
-- [ ] Integrate GA4 behavioral data with commercial modeling layer
-- [ ] Integrate Olist transactional data
-- [ ] Document source limitations and join assumptions
-- [ ] Build acquisition-to-revenue analytical logic where appropriate
+Planned work:
 
----
+- build Power BI dashboards
+- create executive overview page
+- create acquisition/channel performance page
+- create ecommerce funnel page
+- create revenue and transaction quality page
+- add documentation screenshots
 
-## Phase 6 — KPI Layer
+## Phase 6 — A/B Testing Layer
 
-### Planned Tasks
+⬜ Planned
 
-- [ ] Define conversion KPIs
-- [ ] Define revenue KPIs
-- [ ] Define AOV logic
-- [ ] Define engagement KPIs
-- [ ] Create executive KPI layer
-- [ ] Validate KPI logic
+Planned work:
 
----
+- define experiment framework
+- build assignment logic
+- calculate treatment vs control KPIs
+- evaluate absolute and relative lift
+- document ship / no-ship recommendation
 
-## Phase 7 — BI Layer
+## Phase 7 — Final Packaging
 
-### Planned Tasks
+⬜ Planned
 
-- [ ] Build Executive dashboard
-- [ ] Build Funnel dashboard
-- [ ] Build Acquisition dashboard
-- [ ] Export dashboard screenshots
-- [ ] Store dashboard screenshots in `bi/screenshots/dashboards/`
+Planned work:
 
----
-
-## Phase 8 — A/B Testing Layer
-
-### Planned Tasks
-
-- [ ] Define experiment framework
-- [ ] Build assignment logic
-- [ ] Calculate treatment vs control KPIs
-- [ ] Evaluate absolute and relative lift
-- [ ] Make ship / no-ship recommendation
-
----
-
-## Phase 9 — Final Packaging
-
-### Planned Tasks
-
-- [ ] Final README
-- [ ] Architecture diagram
-- [ ] Data dictionary
-- [ ] KPI definitions
-- [ ] Business recommendation summary
-- [ ] Final dashboard screenshots
-- [ ] Final project review checklist
+- finalize README
+- clean documentation
+- validate repo navigation
+- polish screenshots
+- summarize business outcomes
+- prepare project for resume and interview use
 
 ---
 
 # Final Notes
 
-The GA4 profiling, staging, and staging validation phases are now complete.
+## Current Project Health
 
-The project has a reliable analytical foundation and is ready to move into downstream modeling.
+### Technical Health
 
-The most important risks to carry forward are:
+✅ Strong
 
-- attribution sparsity
-- transaction duplication
+Reasons:
+
+- repository structure is clear
+- raw profiling is complete
+- staging view is complete
+- staging validation suite is complete
+- session fact table is complete
+- session fact validation suite is complete
+- selected screenshots are organized by workflow area
+- BigQuery work is backed by GitHub documentation
+
+### Analytics Engineering Health
+
+✅ Strong
+
+Reasons:
+
+- grain is documented
+- validation checks are explicit
+- data quality risks are surfaced
+- revenue deduplication is implemented
+- attribution sparsity is documented
+- downstream modeling requirements are clear
+
+### Portfolio Readiness
+
+🟡 In Progress
+
+Reason:
+
+The analytics foundation is strong, but the project still needs:
+
+- date and channel dimensions
+- commercial marts
+- executive KPI layer
+- BI dashboards
+- final README polish
+- business narrative
+
+## Most Important Data Risks to Preserve in Future Work
+
+Future marts and dashboards must continue to explicitly handle:
+
+- high attribution sparsity
+- invalid transaction IDs
 - missing purchase revenue
+- duplicate purchase transaction rows
 - transaction-level revenue deduplication
-- strict grain separation between event, session, item, and transaction layers
-
-These risks are documented and should be explicitly handled in future marts and BI reporting.
+- strict separation between event, session, item, and transaction grains
