@@ -2217,6 +2217,138 @@ PASS WITH HIGH ATTRIBUTION SPARSITY OBSERVED
 
 ```
 ```
+درست:
+`FSV9` و `FSV11` در tracker می‌آیند، **ولی screenshot لازم ندارند**.
+`FSV10` و `FSV12` هم در tracker می‌آیند، **هم screenshot دارند**.
+
+````markdown
+---
+
+## FSV9 — Engagement Validation
+
+### Purpose
+
+Inspect engagement metric coverage in the session fact table.
+
+### Result
+
+| total_sessions | engaged_sessions | engaged_session_rate | avg_engagement_time_msec | max_engagement_time_msec |
+|---:|---:|---:|---:|---:|
+| 118,618 | 111,357 | 0.9388 | 49,413.60 | 53,156,838 |
+
+### Key Findings
+
+- 93.88% of sessions are marked as engaged.
+- Engagement fields were successfully carried from staging into the session fact table.
+- Average engagement time is populated and usable for downstream session engagement KPIs.
+- The maximum engagement time is high and should be treated as potential long-session/outlier behavior, not a table failure.
+
+### Screenshot
+
+```text
+Not stored. This was a supporting engagement coverage check.
+````
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## FSV10 — Funnel Event Validation
+
+### Purpose
+
+Validate that ecommerce funnel event counts were preserved after session-level aggregation.
+
+### Result
+
+| total_view_item_events | total_add_to_cart_events | total_begin_checkout_events | total_purchase_events |
+| ---------------------: | -----------------------: | --------------------------: | --------------------: |
+|                 86,971 |                   15,522 |                      11,034 |                 1,204 |
+
+![GA4 Session Fact Validation V10 Funnel Validation](../bi/screenshots/ga4/session_fact_validation/ga4_session_fact_validation_v10_funnel_validation.png)![alt text](ga4_session_fact_validation_v10_funnel_validation.png)
+
+### Key Findings
+
+* Funnel event totals match the staging-level validation outputs.
+* `view_item`, `add_to_cart`, `begin_checkout`, and `purchase` counts were preserved.
+* Session-level aggregation did not lose ecommerce funnel events.
+* The fact table is safe for downstream funnel KPI modeling.
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## FSV11 — Purchase Session Validation
+
+### Purpose
+
+Inspect purchase-session behavior after transaction and revenue logic were applied.
+
+### Result
+
+| purchase_sessions | avg_transactions_per_purchase_session | avg_purchase_session_revenue | max_purchase_session_revenue |
+| ----------------: | ------------------------------------: | ---------------------------: | ---------------------------: |
+|             1,116 |                                  0.80 |                        50.97 |                      1,200.0 |
+
+### Key Findings
+
+* 1,116 sessions contained at least one purchase event.
+* Average valid transactions per purchase session is below 1 because some purchase sessions contain invalid transaction IDs or missing revenue.
+* Average purchase-session revenue is 50.97.
+* The maximum purchase-session revenue is 1,200.0.
+
+### Screenshot
+
+```text
+Not stored. This was a supporting purchase-session behavior check.
+```
+
+### Status
+
+```text
+PASS WITH KNOWN PURCHASE QUALITY LIMITATIONS
+```
+
+---
+
+## FSV12 — Revenue Integrity Validation
+
+### Purpose
+
+Validate that deduplicated transaction revenue logic works correctly in the session fact table.
+
+### Result
+
+| total_valid_transactions | total_deduplicated_revenue | negative_revenue_sessions | zero_revenue_purchase_sessions |
+| -----------------------: | -------------------------: | ------------------------: | -----------------------------: |
+|                      895 |                   56,880.0 |                         0 |                            270 |
+
+![GA4 Session Fact Validation V12 Revenue Integrity](../bi/screenshots/ga4/session_fact_validation/ga4_session_fact_validation_v12_revenue_integrity.png)![alt text](ga4_session_fact_validation_v12_revenue_integrity.png)
+
+### Key Findings
+
+* Total valid transactions equal 895 after session-level aggregation.
+* Deduplicated revenue equals 56,880.0.
+* No negative revenue sessions were detected.
+* 270 purchase sessions have purchase activity but zero deduplicated revenue, which aligns with the known invalid transaction ID / missing revenue issue identified during staging validation.
+* Revenue inflation risk is controlled by transaction-level deduplication.
+
+### Status
+
+```text
+PASS WITH KNOWN PURCHASE QUALITY LIMITATIONS
+```
+
+```
+```
 
 
 

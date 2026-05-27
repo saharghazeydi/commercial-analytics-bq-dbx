@@ -205,12 +205,12 @@ FROM `commercial-analytics-bq-dbx.commercial_analytics_us.fact_sessions_daily`;
 SELECT
   COUNT(*) AS total_sessions,
 
-  COUNTIF(is_engaged_session = TRUE)
+  COUNTIF(is_engaged_session = 1)
     AS engaged_sessions,
 
   ROUND(
     SAFE_DIVIDE(
-      COUNTIF(is_engaged_session = TRUE),
+      COUNTIF(is_engaged_session = 1),
       COUNT(*)
     ),
     4
@@ -268,8 +268,7 @@ SELECT
 
 FROM `commercial-analytics-bq-dbx.commercial_analytics_us.fact_sessions_daily`
 
-WHERE has_purchase_event = TRUE;
-
+WHERE has_purchase_event = 1;
 
 
 -- ============================================================
@@ -286,7 +285,7 @@ SELECT
     AS negative_revenue_sessions,
 
   COUNTIF(
-    has_purchase_event = TRUE
+    has_purchase_event = 1
     AND deduplicated_revenue = 0
   ) AS zero_revenue_purchase_sessions
 
