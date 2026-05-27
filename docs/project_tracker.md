@@ -1946,6 +1946,279 @@ Validation should include:
 - engagement metric validation
 - final fact validation status
 
+حق با توئه؛ من بد گفتم. **FSV1 و FSV4 باید در project tracker بیایند، فقط screenshot برایشان نمی‌گذاریم.** این نسخه درست است:
+
+````markdown
+---
+
+## FSV1 — Fact Table Row Count
+
+### Purpose
+
+Confirm that `fact_sessions_daily` was created successfully and contains the expected number of session-level rows.
+
+### Result
+
+| total_fact_rows |
+|---:|
+| 118,618 |
+
+### Key Findings
+
+- The fact table was created successfully.
+- The table contains 118,618 session-level rows.
+- Row volume is consistent with the expected January 2021 session aggregation output.
+
+### Screenshot
+
+```text
+Not stored. This was a basic row-count sanity check.
+````
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## FSV2 — Session Grain Uniqueness Validation
+
+### Purpose
+
+Confirm that the fact table contains one row per:
+
+```text
+event_date + session_key
+```
+
+### Result
+
+| total_rows | distinct_session_grain | duplicate_session_grain_rows |
+| ---------: | ---------------------: | ---------------------------: |
+|    118,618 |                118,618 |                            0 |
+
+![GA4 Session Fact Validation V02 Grain Uniqueness](../bi/screenshots/ga4/session_fact_validation/ga4_session_fact_validation_v02_grain_uniqueness.png)![alt text](ga4_session_fact_validation_v02_grain_uniqueness.png)
+
+### Key Findings
+
+* Total rows match the distinct session grain count.
+* No duplicate rows exist at the intended grain.
+* The table preserves the intended daily session-level grain.
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## FSV3 — Date Coverage Validation
+
+### Purpose
+
+Confirm that the session fact table covers the expected January 2021 development window.
+
+### Result
+
+| min_event_date | max_event_date | distinct_dates |
+| -------------- | -------------- | -------------: |
+| 2021-01-01     | 2021-01-31     |             31 |
+
+![GA4 Session Fact Validation V03 Date Coverage](../bi/screenshots/ga4/session_fact_validation/ga4_session_fact_validation_v03_date_coverage.png)![alt text](ga4_session_fact_validation_v03_date_coverage.png)
+
+### Key Findings
+
+* The session fact table covers the full January 2021 window.
+* All 31 expected dates are present.
+* Date coverage remains consistent with the staging layer and raw profiling window.
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## FSV4 — Null Critical Field Validation
+
+### Purpose
+
+Validate that required analytical fields are populated in the session fact table.
+
+### Result
+
+| total_rows | null_event_date | null_session_key | null_user_pseudo_id | null_session_start | null_session_end | null_session_source | null_session_medium | null_session_campaign |
+| ---------: | --------------: | ---------------: | ------------------: | -----------------: | ---------------: | ------------------: | ------------------: | --------------------: |
+|    118,618 |               0 |                0 |                   0 |                  0 |                0 |                   0 |                   0 |                     0 |
+
+### Key Findings
+
+* No null values exist in critical session identifiers.
+* Session start and end timestamps are fully populated.
+* Acquisition fields are fully populated after `(not set)` normalization.
+* The table is structurally safe for downstream KPI modeling.
+
+### Screenshot
+
+```text
+Not stored. This was a basic structural null check.
+```
+
+### Status
+
+```text
+PASS
+```
+
+```
+```
+بله، طبق تصمیم قبلی:
+
+```text
+FSV5 و FSV6 → در tracker می‌آیند، ولی screenshot لازم ندارند.
+FSV7 و FSV8 → هم در tracker می‌آیند، هم screenshot لازم دارند.
+```
+
+````markdown
+---
+
+## FSV5 — Session Duration Validation
+
+### Purpose
+
+Inspect the distribution of session duration values in `fact_sessions_daily`.
+
+### Result
+
+| min_session_duration | max_session_duration | avg_session_duration | negative_duration_sessions | zero_duration_sessions |
+|---:|---:|---:|---:|---:|
+| 0 | 72,560 | 164.66 | 0 | 14,098 |
+
+### Key Findings
+
+- No negative session durations were detected.
+- Some sessions have zero duration, which is expected in GA4-style behavioral data.
+- Average session duration is 164.66 seconds.
+- The maximum session duration is high and should be treated as a possible long-session/outlier behavior, not as a modeling failure.
+
+### Screenshot
+
+```text
+Not stored. This was a supporting distribution check.
+````
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## FSV6 — Event Count Validation
+
+### Purpose
+
+Inspect event-count distribution per session.
+
+### Result
+
+| min_events_per_session | max_events_per_session | avg_events_per_session | zero_event_sessions |
+| ---------------------: | ---------------------: | ---------------------: | ------------------: |
+|                      1 |                  1,007 |                  10.20 |                   0 |
+
+### Key Findings
+
+* Every session contains at least one event.
+* No zero-event sessions were detected.
+* Average events per session remains consistent with earlier staging validation.
+* The maximum event count indicates possible high-activity sessions, but does not break the model.
+
+### Screenshot
+
+```text
+Not stored. This was a supporting distribution check.
+```
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## FSV7 — Acquisition Distribution Validation
+
+### Purpose
+
+Inspect normalized session-level acquisition fields.
+
+### Result
+
+Top acquisition combinations:
+
+| session_source                   | session_medium | session_campaign | sessions | session_share |
+| -------------------------------- | -------------- | ---------------- | -------: | ------------: |
+| `(not set)`                      | `(not set)`    | `(not set)`      |   91,291 |        0.7696 |
+| `google`                         | `organic`      | `(organic)`      |   12,430 |        0.1048 |
+| `shop.googlemerchandisestore...` | `referral`     | `(referral)`     |    3,712 |        0.0313 |
+| `(direct)`                       | `(none)`       | `(direct)`       |    3,175 |        0.0268 |
+| `<Other>`                        | `<Other>`      | `<Other>`        |    2,011 |        0.0170 |
+
+![GA4 Session Fact Validation V07 Acquisition Distribution](../bi/screenshots/ga4/session_fact_validation/ga4_session_fact_validation_v07_acquisition_distribution.png)![alt text](ga4_session_fact_validation_v07_acquisition_distribution.png)
+
+### Key Findings
+
+* Session-level acquisition rollup works correctly.
+* `(not set)` remains the dominant acquisition bucket.
+* Organic Google traffic is the largest identifiable acquisition source.
+* Referral, direct, CPC, affiliate, and email traffic are visible in the session fact layer.
+* Attribution sparsity remains a source-data limitation and should stay visible in downstream marts.
+
+### Status
+
+```text
+PASS WITH ATTRIBUTION SPARSITY OBSERVED
+```
+
+---
+
+## FSV8 — Not Set Acquisition Rate Validation
+
+### Purpose
+
+Quantify attribution sparsity in session-level acquisition fields.
+
+### Result
+
+| total_sessions | not_set_source_sessions | not_set_source_rate | not_set_medium_sessions | not_set_medium_rate | not_set_campaign_sessions | not_set_campaign_rate |
+| -------------: | ----------------------: | ------------------: | ----------------------: | ------------------: | ------------------------: | --------------------: |
+|        118,618 |                  91,472 |              0.7711 |                  91,291 |              0.7696 |                    91,292 |                0.7696 |
+
+![GA4 Session Fact Validation V08 Not Set Acquisition Rate](../bi/screenshots/ga4/session_fact_validation/ga4_session_fact_validation_v08_not_set_acquisition_rate.png)![alt text](ga4_session_fact_validation_v08_not_set_acquisition_rate.png)
+
+### Key Findings
+
+* Around 77% of sessions have `(not set)` source values.
+* Around 77% of sessions have `(not set)` medium and campaign values.
+* Attribution sparsity increased slightly at session grain compared with event-grain staging validation.
+* This confirms that downstream channel reporting must include an explicit unattributed/unknown bucket.
+
+### Status
+
+```text
+PASS WITH HIGH ATTRIBUTION SPARSITY OBSERVED
+```
+
+```
+```
+
+
 
 
 ## Future Expansion Work
