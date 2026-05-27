@@ -2349,6 +2349,134 @@ PASS WITH KNOWN PURCHASE QUALITY LIMITATIONS
 
 ```
 ```
+درست طبق همان استاندارد:
+
+```text
+FSV13 و FSV14 → در tracker می‌آیند، ولی screenshot لازم ندارند.
+FSV15 و FSV16 → در tracker می‌آیند و screenshot هم دارند.
+```
+
+````markdown
+---
+
+## FSV13 — Revenue Outlier Inspection
+
+### Purpose
+
+Inspect the highest revenue sessions after transaction-level revenue deduplication.
+
+### Key Findings
+
+- Highest revenue session is 1,200.0.
+- High-revenue sessions are visible and traceable by `event_date`, `session_key`, `session_source`, and `session_medium`.
+- No negative or structurally invalid revenue values were observed in the outlier inspection.
+- This check supports revenue QA but does not require a stored screenshot.
+
+### Screenshot
+
+```text
+Not stored. This was a supporting revenue outlier inspection.
+````
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## FSV14 — Purchase Quality Flag Validation
+
+### Purpose
+
+Inspect purchase-related quality flags carried from the staging layer into the session fact table.
+
+### Result
+
+| invalid_transaction_id_events | missing_purchase_revenue_events | zero_purchase_revenue_events | negative_purchase_revenue_events |
+| ----------------------------: | ------------------------------: | ---------------------------: | -------------------------------: |
+|                           300 |                             300 |                            0 |                                0 |
+
+### Key Findings
+
+* 300 purchase events have invalid transaction IDs.
+* 300 purchase events have missing purchase revenue.
+* No zero-revenue purchase events were detected.
+* No negative-revenue purchase events were detected.
+* These values match the known purchase-quality issues identified during staging validation.
+
+### Screenshot
+
+```text
+Not stored. This was a supporting purchase quality flag check.
+```
+
+### Status
+
+```text
+PASS WITH KNOWN PURCHASE QUALITY LIMITATIONS
+```
+
+---
+
+## FSV15 — Daily Session Trend Validation
+
+### Purpose
+
+Inspect daily session, transaction, revenue, and transaction-rate behavior across the January 2021 development window.
+
+### Result
+
+The daily trend output contains 31 rows, covering each date from 2021-01-01 to 2021-01-31.
+
+![GA4 Session Fact Validation V15 Daily Session Trend](../bi/screenshots/ga4/session_fact_validation/ga4_session_fact_validation_v15_daily_session_trend.png)![alt text](ga4_session_fact_validation_v15_daily_session_trend.png)
+
+### Key Findings
+
+* All 31 dates are present in the daily session trend.
+* Daily sessions, transactions, revenue, and transactions-per-session are populated.
+* Revenue and transaction activity vary by day, which is expected for ecommerce behavior.
+* 2021-01-31 shows zero transactions and zero revenue, which should be monitored but does not break validation.
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## FSV16 — Final Fact Validation Status
+
+### Purpose
+
+Provide a high-level PASS/CHECK summary for the `fact_sessions_daily` table.
+
+### Result
+
+| total_rows | fact_validation_status | null_event_date | null_session_key | null_user_pseudo_id | duplicate_session_grain_rows | negative_revenue_sessions |
+| ---------: | ---------------------- | --------------: | ---------------: | ------------------: | ---------------------------: | ------------------------: |
+|    118,618 | PASS                   |               0 |                0 |                   0 |                            0 |                         0 |
+
+![GA4 Session Fact Validation V16 Final Status](../bi/screenshots/ga4/session_fact_validation/ga4_session_fact_validation_v16_final_status.png)![alt text](ga4_session_fact_validation_v16_final_status.png)
+
+### Key Findings
+
+* Final validation status is `PASS`.
+* No null values exist in critical grain fields.
+* No duplicate session-grain rows were detected.
+* No negative revenue sessions were detected.
+* The session fact table is validated and ready for downstream mart construction.
+
+### Status
+
+```text
+FINAL SESSION FACT VALIDATION STATUS: PASS
+```
+
+```
+```
 
 
 
