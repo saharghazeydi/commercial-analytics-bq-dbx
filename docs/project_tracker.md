@@ -2463,6 +2463,378 @@ Phase 2D — dim_channel
 
 ```
 ```
+دقیقاً؛ فقط اسکرین‌شات‌های `CV2`, `CV6`, `CV7`, `CV8` را در markdown می‌آوریم. `CV1`, `CV3`, `CV4`, `CV5` فقط مستند می‌شوند.
+
+````markdown
+---
+
+# Phase 2D — dim_channel
+
+## Status
+
+✅ Completed
+
+## Objective
+
+Create a reusable acquisition channel dimension from session-level GA4 acquisition fields.
+
+The `dim_channel` table standardizes source, medium, and campaign combinations into reusable channel groups for downstream marts and BI reporting.
+
+## Main SQL File
+
+```text
+sql/marts/02_dim_channel.sql
+````
+
+## Target Table
+
+```text
+commercial-analytics-bq-dbx.commercial_analytics_us.dim_channel
+```
+
+## Grain
+
+```text
+one row per source + medium + campaign combination
+```
+
+## Key Fields Created
+
+* `channel_key`
+* `source`
+* `medium`
+* `campaign`
+* `channel_group`
+* `has_not_set_value`
+* `has_data_deleted_value`
+* `has_other_value`
+
+## Modeling Decision
+
+A dedicated channel dimension was created instead of repeatedly classifying acquisition fields inside marts.
+
+The classification logic prioritizes `Data Deleted` before `Other`, because privacy/data-deletion values represent a more important data quality condition than generic `<Other>` buckets.
+
+## Status
+
+```text
+DIM_CHANNEL BUILD STATUS: COMPLETED
+```
+
+---
+
+# Phase 2D Validation — dim_channel
+
+## Status
+
+✅ Completed
+
+## Validation SQL File
+
+```text
+sql/validation/ga4/05b_validate_dim_channel.sql
+```
+
+## Target Table
+
+```text
+commercial-analytics-bq-dbx.commercial_analytics_us.dim_channel
+```
+
+## Screenshot Directory
+
+```text
+bi/screenshots/ga4/dim_channel_validation/
+```
+
+---
+
+## CV1 — Channel Row Count Validation
+
+### Purpose
+
+Confirm that `dim_channel` was created successfully and contains rows.
+
+### Result
+
+| total_channel_rows |
+| -----------------: |
+|                 66 |
+
+### Key Findings
+
+* The channel dimension contains 66 distinct acquisition combinations.
+* The table was created successfully.
+
+### Screenshot
+
+```text
+Not stored. This was a basic row-count sanity check.
+```
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## CV2 — Channel Grain Uniqueness Validation
+
+### Purpose
+
+Confirm that `dim_channel` contains one row per `channel_key`.
+
+### Result
+
+| total_rows | distinct_channel_keys | duplicate_channel_key_rows |
+| ---------: | --------------------: | -------------------------: |
+|         66 |                    66 |                          0 |
+
+![GA4 Dim Channel Validation V02 Grain Uniqueness](../bi/screenshots/ga4/dim_channel_validation/ga4_dim_channel_validation_v02_grain_uniqueness.png)![alt text](ga4_dim_channel_validation_v02_grain_uniqueness.png)
+
+### Key Findings
+
+* Each `channel_key` appears only once.
+* No duplicate channel keys were detected.
+* The dimension grain is valid and safe for downstream joins.
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## CV3 — Source / Medium / Campaign Uniqueness Validation
+
+### Purpose
+
+Confirm that the source + medium + campaign combination is unique.
+
+### Result
+
+| total_rows | distinct_source_medium_campaign | duplicate_source_medium_campaign_rows |
+| ---------: | ------------------------------: | ------------------------------------: |
+|         66 |                              66 |                                     0 |
+
+### Key Findings
+
+* The natural acquisition grain is unique.
+* No duplicate source / medium / campaign combinations exist.
+* `channel_key` correctly represents the intended dimension grain.
+
+### Screenshot
+
+```text
+Not stored. This was a supporting grain validation check.
+```
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## CV4 — Null Critical Field Validation
+
+### Purpose
+
+Confirm that required channel fields are populated.
+
+### Result
+
+| total_rows | null_channel_key | null_source | null_medium | null_campaign | null_channel_group |
+| ---------: | ---------------: | ----------: | ----------: | ------------: | -----------------: |
+|         66 |                0 |           0 |           0 |             0 |                  0 |
+
+### Key Findings
+
+* No null values exist in critical channel fields.
+* Source, medium, campaign, and channel group are fully populated.
+* The dimension is structurally safe for BI and mart joins.
+
+### Screenshot
+
+```text
+Not stored. This was a supporting null check.
+```
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## CV5 — Channel Group Distribution Validation
+
+### Purpose
+
+Inspect assigned channel groups inside `dim_channel`.
+
+### Result
+
+| channel_group  | channel_combinations | channel_combination_share |
+| -------------- | -------------------: | ------------------------: |
+| Referral       |                   48 |                    0.7273 |
+| Organic Search |                    7 |                    0.1061 |
+| Data Deleted   |                    3 |                    0.0455 |
+| Email          |                    2 |                    0.0303 |
+| Paid Search    |                    2 |                    0.0303 |
+| Affiliate      |                    1 |                    0.0152 |
+| Direct         |                    1 |                    0.0152 |
+| Other          |                    1 |                    0.0152 |
+| Unattributed   |                    1 |                    0.0152 |
+
+### Key Findings
+
+* Referral has the largest number of distinct channel combinations.
+* `Data Deleted` is correctly classified as its own channel group.
+* Unattributed, Direct, Other, Affiliate, and Email channels are present.
+* Classification coverage is complete.
+
+### Screenshot
+
+```text
+Not stored. This was a supporting channel-combination distribution check.
+```
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## CV6 — Join Coverage Validation Against fact_sessions_daily
+
+### Purpose
+
+Confirm that every session fact row can map to one `dim_channel` row.
+
+### Result
+
+| fact_rows | matched_channel_rows | unmatched_fact_rows | match_rate |
+| --------: | -------------------: | ------------------: | ---------: |
+|   118,618 |              118,618 |                   0 |        1.0 |
+
+![GA4 Dim Channel Validation V06 Join Coverage](../bi/screenshots/ga4/dim_channel_validation/ga4_dim_channel_validation_v06_join_coverage.png)![alt text](ga4_dim_channel_validation_v06_join_coverage.png)
+
+### Key Findings
+
+* All fact session rows successfully match to `dim_channel`.
+* No unmatched fact rows were detected.
+* Join coverage is 100%.
+* The channel dimension is ready for downstream mart construction.
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## CV7 — Session Distribution by Channel Group
+
+### Purpose
+
+Inspect session volume after joining `fact_sessions_daily` to `dim_channel`.
+
+### Result
+
+| channel_group  | sessions | session_share |
+| -------------- | -------: | ------------: |
+| Unattributed   |   91,291 |        0.7696 |
+| Organic Search |   13,273 |        0.1119 |
+| Referral       |    7,158 |        0.0603 |
+| Direct         |    3,175 |        0.0268 |
+| Other          |    2,011 |        0.0170 |
+| Data Deleted   |      753 |        0.0063 |
+| Paid Search    |      615 |        0.0052 |
+| Affiliate      |      296 |        0.0025 |
+| Email          |       46 |        0.0004 |
+
+![GA4 Dim Channel Validation V07 Channel Distribution](../bi/screenshots/ga4/dim_channel_validation/ga4_dim_channel_validation_v07_channel_distribution.png)![alt text](ga4_dim_channel_validation_v07_channel_distribution.png)
+
+### Key Findings
+
+* Unattributed sessions dominate the dataset at 76.96%.
+* Organic Search is the largest identifiable channel group.
+* Referral, Direct, Paid Search, Affiliate, Email, Other, and Data Deleted are all represented.
+* High unattributed volume is a source-data limitation, not a modeling failure.
+
+### Status
+
+```text
+PASS WITH HIGH ATTRIBUTION SPARSITY OBSERVED
+```
+
+---
+
+## CV8 — Final dim_channel Validation Status
+
+### Purpose
+
+Provide a high-level PASS/CHECK summary for the `dim_channel` table.
+
+### Result
+
+| total_rows | distinct_channel_keys | dim_channel_validation_status | null_channel_key | null_source | null_medium | null_campaign | null_channel_group | unmatched_fact_rows |
+| ---------: | --------------------: | ----------------------------- | ---------------: | ----------: | ----------: | ------------: | -----------------: | ------------------: |
+|         66 |                    66 | PASS                          |                0 |           0 |           0 |             0 |                  0 |                   0 |
+
+![GA4 Dim Channel Validation V08 Final Status](../bi/screenshots/ga4/dim_channel_validation/ga4_dim_channel_validation_v08_final_status.png)![alt text](ga4_dim_channel_validation_v08_final_status.png)
+
+### Key Findings
+
+* Final validation status is `PASS`.
+* Channel grain is unique.
+* No critical nulls were detected.
+* All fact rows successfully join to the channel dimension.
+* `dim_channel` is validated and ready for `mart_channel_daily`.
+
+### Status
+
+```text
+FINAL DIM_CHANNEL VALIDATION STATUS: PASS
+```
+
+---
+
+## Phase 2D Summary
+
+### Completed
+
+* [x] Created `dim_channel`
+* [x] Defined one-row-per-channel-combination grain
+* [x] Created reusable `channel_key`
+* [x] Classified source / medium / campaign into channel groups
+* [x] Prioritized `Data Deleted` before `Other`
+* [x] Added data quality flags for `(not set)`, `(data deleted)`, and `<Other>`
+* [x] Created dedicated validation SQL file
+* [x] Validated channel grain uniqueness
+* [x] Validated source / medium / campaign uniqueness
+* [x] Validated null critical fields
+* [x] Validated channel group distribution
+* [x] Validated 100% join coverage to `fact_sessions_daily`
+* [x] Confirmed final validation status as `PASS`
+
+## Next Step
+
+```text
+Phase 2E — mart_channel_daily
+```
+
+```
+```
 
 # Phase 2D — Channel Daily Mart
 
