@@ -2832,6 +2832,481 @@ FINAL DIM_CHANNEL VALIDATION STATUS: PASS
 ```text
 Phase 2E — mart_channel_daily
 ```
+آره، دیدم. برای پروژه فقط این ۶ اسکرین‌شات را می‌آوریم: `MCV2`, `MCV5`, `MCV6`, `MCV7`, `MCV8`, `MCV10`.
+
+````markdown
+---
+
+# Phase 2E — mart_channel_daily
+
+## Status
+
+✅ Completed
+
+## Objective
+
+Create a BI-ready daily channel performance mart by combining validated session-level facts with reusable channel and date dimensions.
+
+The `mart_channel_daily` table supports acquisition performance reporting, daily channel monitoring, conversion analysis, revenue analysis, and dashboard-ready KPI tracking.
+
+## Main SQL File
+
+```text
+sql/marts/03_mart_channel_daily.sql
+````
+
+## Target Table
+
+```text
+commercial-analytics-bq-dbx.commercial_analytics_us.mart_channel_daily
+```
+
+## Source Tables
+
+```text
+commercial-analytics-bq-dbx.commercial_analytics_us.fact_sessions_daily
+commercial-analytics-bq-dbx.commercial_analytics_us.dim_channel
+commercial-analytics-bq-dbx.commercial_analytics_us.dim_date
+```
+
+## Grain
+
+```text
+one row per event_date + channel_key
+```
+
+## Key Metrics Created
+
+* `sessions`
+* `users`
+* `total_events`
+* `page_view_events`
+* `user_engagement_events`
+* `scroll_events`
+* `ecommerce_funnel_events`
+* `view_item_events`
+* `add_to_cart_events`
+* `begin_checkout_events`
+* `purchase_event_rows`
+* `transactions`
+* `revenue`
+* `engaged_sessions`
+* `engaged_event_rows`
+* `total_engagement_time_msec`
+
+## KPI Fields Created
+
+* `users_per_session`
+* `events_per_session`
+* `page_views_per_session`
+* `engaged_session_rate`
+* `avg_engagement_time_msec_per_session`
+* `view_item_rate_per_session`
+* `add_to_cart_rate_per_session`
+* `begin_checkout_rate_per_session`
+* `purchase_event_rate_per_session`
+* `session_conversion_rate`
+* `user_conversion_rate`
+* `revenue_per_session`
+* `revenue_per_user`
+* `average_order_value`
+* `view_to_cart_rate`
+* `cart_to_checkout_rate`
+* `checkout_to_purchase_rate`
+* `view_to_purchase_rate`
+
+## Modeling Notes
+
+* The mart uses `fact_sessions_daily` as the metric base.
+* `dim_channel` provides reusable channel classification.
+* `dim_date` provides calendar attributes for daily reporting.
+* Revenue uses deduplicated transaction logic inherited from `fact_sessions_daily`.
+* User totals are not reconciled by summing mart-level users because users can appear across multiple channels or dates.
+
+## Status
+
+```text
+MART_CHANNEL_DAILY BUILD STATUS: COMPLETED
+```
+
+---
+
+# Phase 2E Validation — mart_channel_daily
+
+## Status
+
+✅ Completed
+
+## Validation SQL File
+
+```text
+sql/validation/ga4/06b_validate_mart_channel_daily.sql
+```
+
+## Target Table
+
+```text
+commercial-analytics-bq-dbx.commercial_analytics_us.mart_channel_daily
+```
+
+## Screenshot Directory
+
+```text
+bi/screenshots/ga4/mart_channel_daily_validation/
+```
+
+---
+
+## MCV1 — Mart Row Count Validation
+
+### Purpose
+
+Confirm that `mart_channel_daily` was created successfully and contains rows.
+
+### Result
+
+| total_mart_rows |
+| --------------: |
+|             688 |
+
+### Key Findings
+
+* The mart contains 688 channel-date rows.
+* The table was created successfully.
+
+### Screenshot
+
+```text
+Not stored. This was a basic row-count sanity check.
+```
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## MCV2 — Mart Grain Uniqueness Validation
+
+### Purpose
+
+Confirm that the mart contains one row per `event_date + channel_key`.
+
+### Result
+
+| total_rows | distinct_date_channel_keys | duplicate_date_channel_rows |
+| ---------: | -------------------------: | --------------------------: |
+|        688 |                        688 |                           0 |
+
+![GA4 Mart Channel Daily Validation V02 Grain Uniqueness](../bi/screenshots/ga4/mart_channel_daily_validation/ga4_mart_channel_daily_validation_v02_grain_uniqueness.png)![alt text](ga4_mart_channel_daily_validation_v02_grain_uniqueness.png)
+
+### Key Findings
+
+* The mart grain is valid.
+* No duplicate date-channel rows were detected.
+* The table is safe for downstream BI aggregation.
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## MCV3 — Date Coverage Validation
+
+### Purpose
+
+Confirm expected January 2021 date coverage.
+
+### Result
+
+| min_event_date | max_event_date | distinct_dates |
+| -------------- | -------------- | -------------: |
+| 2021-01-01     | 2021-01-31     |             31 |
+
+### Key Findings
+
+* The mart covers the full expected January 2021 range.
+* All 31 dates are represented.
+
+### Screenshot
+
+```text
+Not stored. This was a supporting date coverage check.
+```
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## MCV4 — Critical Null Validation
+
+### Purpose
+
+Confirm required mart fields are populated.
+
+### Result
+
+| total_rows | null_event_date | null_channel_key | null_channel_group | null_source | null_medium | null_campaign | null_calendar_year | null_calendar_month | null_year_month | null_sessions | null_users | null_transactions | null_revenue |
+| ---------: | --------------: | ---------------: | -----------------: | ----------: | ----------: | ------------: | -----------------: | ------------------: | --------------: | ------------: | ---------: | ----------------: | -----------: |
+|        688 |               0 |                0 |                  0 |           0 |           0 |             0 |                  0 |                   0 |               0 |             0 |          0 |                 0 |            0 |
+
+### Key Findings
+
+* No nulls exist in required mart fields.
+* Channel, date, and KPI fields are fully populated.
+* The mart is structurally ready for dashboarding.
+
+### Screenshot
+
+```text
+Not stored. This was a supporting null validation check.
+```
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## MCV5 — Fact-to-Mart Reconciliation
+
+### Purpose
+
+Confirm key totals reconcile back to `fact_sessions_daily`.
+
+### Result
+
+| fact_sessions | mart_sessions | session_difference | fact_total_events | mart_total_events | event_difference | fact_transactions | mart_transactions | transaction_difference | fact_revenue | mart_revenue | revenue_difference |
+| ------------: | ------------: | -----------------: | ----------------: | ----------------: | ---------------: | ----------------: | ----------------: | ---------------------: | -----------: | -----------: | -----------------: |
+|       118,618 |       118,618 |                  0 |         1,210,147 |         1,210,147 |                0 |               895 |               895 |                      0 |     56,880.0 |     56,880.0 |                0.0 |
+
+![GA4 Mart Channel Daily Validation V05 Fact Reconciliation](../bi/screenshots/ga4/mart_channel_daily_validation/ga4_mart_channel_daily_validation_v05_fact_reconciliation.png)![alt text](ga4_mart_channel_daily_validation_v05_fact_reconciliation.png)
+
+### Key Findings
+
+* Sessions reconcile exactly to the fact table.
+* Total events reconcile exactly to the fact table.
+* Transactions reconcile exactly to the fact table.
+* Revenue reconciles exactly to the fact table.
+* User totals were intentionally not reconciled by summing mart users because users can appear across multiple dates or channels.
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## MCV6 — Channel Distribution Validation
+
+### Purpose
+
+Inspect sessions, transactions, revenue, conversion, and AOV by channel group.
+
+### Result
+
+| channel_group  | sessions | session_share | transactions |  revenue | session_conversion_rate | average_order_value |
+| -------------- | -------: | ------------: | -----------: | -------: | ----------------------: | ------------------: |
+| Unattributed   |   91,291 |        0.7696 |          621 | 39,701.0 |                  0.0068 |               63.93 |
+| Organic Search |   13,273 |        0.1119 |          104 |  6,532.0 |                  0.0078 |               62.81 |
+| Referral       |    7,158 |        0.0603 |          129 |  8,164.0 |                  0.0180 |               63.29 |
+| Direct         |    3,175 |        0.0268 |           17 |  1,002.0 |                  0.0054 |               58.94 |
+| Other          |    2,011 |        0.0170 |            7 |    262.0 |                  0.0035 |               37.43 |
+| Data Deleted   |      753 |        0.0063 |           14 |  1,102.0 |                  0.0186 |               78.71 |
+| Paid Search    |      615 |        0.0052 |            2 |     94.0 |                  0.0033 |               47.00 |
+| Affiliate      |      296 |        0.0025 |            1 |     23.0 |                  0.0034 |               23.00 |
+| Email          |       46 |        0.0004 |            0 |      0.0 |                  0.0000 |                null |
+
+![GA4 Mart Channel Daily Validation V06 Channel Distribution](../bi/screenshots/ga4/mart_channel_daily_validation/ga4_mart_channel_daily_validation_v06_channel_distribution.png)![alt text](ga4_mart_channel_daily_validation_v06_channel_distribution.png)
+
+### Key Findings
+
+* Unattributed sessions dominate the dataset at 76.96%.
+* Organic Search is the largest identifiable traffic channel.
+* Referral has stronger conversion than several larger channels.
+* Email has sessions but no transactions in the selected period.
+* High unattributed traffic is a source-data limitation and should be disclosed in final reporting.
+
+### Status
+
+```text
+PASS WITH HIGH ATTRIBUTION SPARSITY OBSERVED
+```
+
+---
+
+## MCV7 — KPI Boundary Validation
+
+### Purpose
+
+Confirm calculated KPI rates are within reasonable bounds.
+
+### Result
+
+| total_rows | negative_session_conversion_rate_rows | negative_user_conversion_rate_rows | invalid_engaged_session_rate_rows | negative_view_to_cart_rate_rows | negative_cart_to_checkout_rate_rows | negative_checkout_to_purchase_rate_rows | negative_revenue_rows |
+| ---------: | ------------------------------------: | ---------------------------------: | --------------------------------: | ------------------------------: | ----------------------------------: | --------------------------------------: | --------------------: |
+|        688 |                                     0 |                                  0 |                                 0 |                               0 |                                   0 |                                       0 |                     0 |
+
+![GA4 Mart Channel Daily Validation V07 KPI Boundary](../bi/screenshots/ga4/mart_channel_daily_validation/ga4_mart_channel_daily_validation_v07_kpi_boundary.png)![alt text](ga4_mart_channel_daily_validation_v07_kpi_boundary.png)
+
+### Key Findings
+
+* No negative conversion rates were detected.
+* No invalid engagement rates were detected.
+* No negative funnel rates were detected.
+* No negative revenue rows were detected.
+* KPI calculations are safe for BI use.
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## MCV8 — Daily Trend Validation
+
+### Purpose
+
+Inspect daily sessions, transactions, revenue, conversion rate, and revenue per session.
+
+### Result Summary
+
+| date_range               | distinct_days | notes                                                                           |
+| ------------------------ | ------------: | ------------------------------------------------------------------------------- |
+| 2021-01-01 to 2021-01-31 |            31 | Daily sessions, transactions, and revenue were populated across the full month. |
+
+![GA4 Mart Channel Daily Validation V08 Daily Trend](../bi/screenshots/ga4/mart_channel_daily_validation/ga4_mart_channel_daily_validation_v08_daily_trend.png)![alt text](ga4_mart_channel_daily_validation_v08_daily_trend.png)
+
+### Key Findings
+
+* Daily trend output covers all 31 days in January 2021.
+* Sessions, transactions, revenue, conversion rate, and revenue per session are available for daily reporting.
+* January 31 has zero transactions and zero revenue, which should be treated as an observed daily pattern rather than a pipeline failure.
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## MCV9 — High Revenue Channel-Date Inspection
+
+### Purpose
+
+Inspect highest revenue channel-date rows.
+
+### Result Summary
+
+The highest revenue rows are concentrated mostly in the `Unattributed` channel group, with selected identifiable Organic Search and Referral rows also appearing.
+
+### Key Findings
+
+* Highest revenue channel-date row: `2021-01-20`, `Unattributed`, revenue `5,288.0`.
+* Several high-revenue rows belong to `(not set)` acquisition fields.
+* This reinforces the attribution sparsity already observed in earlier validation checks.
+* The output is useful for analyst inspection but is not included as a core project screenshot to avoid overloading the portfolio with diagnostic tables.
+
+### Screenshot
+
+```text
+Not stored in the project evidence set. Used for analyst inspection only.
+```
+
+### Status
+
+```text
+REVIEWED
+```
+
+---
+
+## MCV10 — Final mart_channel_daily Validation Status
+
+### Purpose
+
+Provide a high-level PASS/CHECK summary for `mart_channel_daily`.
+
+### Result
+
+| total_rows | distinct_date_channel_keys | min_event_date | max_event_date | mart_channel_daily_validation_status | null_event_date | null_channel_key | null_channel_group | invalid_sessions_rows | negative_revenue_rows | invalid_engaged_session_rate_rows | session_difference | transaction_difference | revenue_difference |
+| ---------: | -------------------------: | -------------- | -------------- | ------------------------------------ | --------------: | ---------------: | -----------------: | --------------------: | --------------------: | --------------------------------: | -----------------: | ---------------------: | -----------------: |
+|        688 |                        688 | 2021-01-01     | 2021-01-31     | PASS                                 |               0 |                0 |                  0 |                     0 |                     0 |                                 0 |                  0 |                      0 |                0.0 |
+
+![GA4 Mart Channel Daily Validation V10 Final Status](../bi/screenshots/ga4/mart_channel_daily_validation/ga4_mart_channel_daily_validation_v10_final_status.png)![alt text](ga4_mart_channel_daily_validation_v10_final_status.png)
+
+### Key Findings
+
+* Final validation status is `PASS`.
+* Mart grain is unique.
+* Date coverage is complete for January 2021.
+* No critical nulls were detected.
+* No invalid session rows were detected.
+* No negative revenue rows were detected.
+* Fact-to-mart reconciliation passes for sessions, transactions, and revenue.
+
+### Status
+
+```text
+FINAL MART_CHANNEL_DAILY VALIDATION STATUS: PASS
+```
+
+---
+
+## Phase 2E Summary
+
+### Completed
+
+* [x] Created `mart_channel_daily`
+* [x] Joined `fact_sessions_daily` to `dim_channel`
+* [x] Joined `fact_sessions_daily` to `dim_date`
+* [x] Preserved one row per `event_date + channel_key`
+* [x] Built daily channel-level session, event, transaction, and revenue metrics
+* [x] Created BI-ready KPI fields
+* [x] Validated mart grain uniqueness
+* [x] Validated January 2021 date coverage
+* [x] Validated critical null fields
+* [x] Reconciled mart totals back to fact table
+* [x] Validated channel distribution
+* [x] Validated KPI boundary conditions
+* [x] Reviewed daily trend output
+* [x] Reviewed high-revenue channel-date rows
+* [x] Confirmed final validation status as `PASS`
+
+## Evidence Screenshots Stored
+
+```text
+bi/screenshots/ga4/mart_channel_daily_validation/ga4_mart_channel_daily_validation_v02_grain_uniqueness.png
+bi/screenshots/ga4/mart_channel_daily_validation/ga4_mart_channel_daily_validation_v05_fact_reconciliation.png
+bi/screenshots/ga4/mart_channel_daily_validation/ga4_mart_channel_daily_validation_v06_channel_distribution.png
+bi/screenshots/ga4/mart_channel_daily_validation/ga4_mart_channel_daily_validation_v07_kpi_boundary.png
+bi/screenshots/ga4/mart_channel_daily_validation/ga4_mart_channel_daily_validation_v08_daily_trend.png
+bi/screenshots/ga4/mart_channel_daily_validation/ga4_mart_channel_daily_validation_v10_final_status.png
+```
+
+## Next Step
+
+```text
+Phase 2F — Executive KPI Mart
+```
+
+```
+```
 
 ```
 ```

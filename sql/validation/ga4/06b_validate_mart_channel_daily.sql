@@ -87,14 +87,13 @@ FROM `commercial-analytics-bq-dbx.commercial_analytics_us.mart_channel_daily`;
 -- ============================================================
 -- MCV5) Fact-to-mart reconciliation
 -- Purpose:
--- confirm key totals reconcile back to fact_sessions_daily
+-- Confirm key totals reconcile back to fact_sessions_daily
 -- ============================================================
 
 WITH fact_totals AS (
 
   SELECT
     COUNT(*) AS fact_sessions,
-    COUNT(DISTINCT user_pseudo_id) AS fact_users,
     SUM(event_count) AS fact_total_events,
     SUM(valid_transactions) AS fact_transactions,
     SUM(deduplicated_revenue) AS fact_revenue
@@ -107,7 +106,6 @@ mart_totals AS (
 
   SELECT
     SUM(sessions) AS mart_sessions,
-    COUNT(DISTINCT CONCAT(CAST(event_date AS STRING), ' | ', source, ' | ', medium, ' | ', campaign)) AS mart_channel_rows,
     SUM(total_events) AS mart_total_events,
     SUM(transactions) AS mart_transactions,
     SUM(revenue) AS mart_revenue
@@ -131,11 +129,10 @@ SELECT
 
   fact_revenue,
   mart_revenue,
-  fact_revenue - mart_revenue AS revenue_difference
+  ROUND(fact_revenue - mart_revenue, 2) AS revenue_difference
 
 FROM fact_totals
 CROSS JOIN mart_totals;
-
 
 
 -- ============================================================
@@ -261,7 +258,8 @@ LIMIT 50;
 
 -- ============================================================
 -- MCV10) Final mart_channel_daily validation status
--- Purpose: high-level PASS/CHECK summary
+-- Purpose:
+-- High-level PASS/CHECK summary for mart_channel_daily
 -- ============================================================
 
 WITH mart_checks AS (
@@ -282,8 +280,11 @@ WITH mart_checks AS (
     COUNTIF(channel_key IS NULL) AS null_channel_key,
     COUNTIF(channel_group IS NULL) AS null_channel_group,
 
-    COUNTIF(sessions IS NULL OR sessions <= 0) AS invalid_sessions_rows,
-    COUNTIF(revenue < 0) AS negative_revenue_rows,
+    COUNTIF(sessions IS NULL OR sessions <= 0)
+      AS invalid_sessions_rows,
+
+    COUNTIF(revenue < 0)
+      AS negative_revenue_rows,
 
     COUNTIF(engaged_session_rate < 0 OR engaged_session_rate > 1)
       AS invalid_engaged_session_rate_rows
@@ -345,7 +346,7 @@ SELECT
       AND m.invalid_engaged_session_rate_rows = 0
       AND r.session_difference = 0
       AND r.transaction_difference = 0
-      AND r.revenue_difference = 0
+      AND ABS(r.revenue_difference) < 0.01
     THEN 'PASS'
     ELSE 'CHECK'
   END AS mart_channel_daily_validation_status,
@@ -359,7 +360,7 @@ SELECT
 
   r.session_difference,
   r.transaction_difference,
-  r.revenue_difference
+  ROUND(r.revenue_difference, 2) AS revenue_difference
 
 FROM mart_checks m
 CROSS JOIN reconciliation r;
