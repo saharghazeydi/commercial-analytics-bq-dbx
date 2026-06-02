@@ -2150,6 +2150,319 @@ sql/marts/02_dim_channel.sql
 - [ ] Validate channel classification logic
 
 ---
+درست. فقط `DV1`, `DV2`, `DV6` اسکرین‌شات دارند؛ `DV3`, `DV4`, `DV5` در tracker می‌آیند ولی بدون screenshot.
+
+````markdown
+---
+
+# Phase 2C — dim_date
+
+## Status
+
+✅ Completed
+
+## Objective
+
+Create a reusable date dimension table to support consistent calendar-based reporting across downstream marts and BI dashboards.
+
+The `dim_date` table provides one row per calendar date and includes calendar attributes, reporting labels, weekday/weekend flags, and period boundary flags.
+
+## Main SQL File
+
+```text
+sql/marts/01_dim_date.sql
+````
+
+## Target Table
+
+```text
+commercial-analytics-bq-dbx.commercial_analytics_us.dim_date
+```
+
+## Grain
+
+```text
+one row per date_day
+```
+
+## Source Logic
+
+The table was created using a generated date spine for the January 2021 development window.
+
+```text
+2021-01-01 to 2021-01-31
+```
+
+## Key Fields Created
+
+* `date_day`
+* `calendar_year`
+* `calendar_quarter`
+* `calendar_month`
+* `calendar_week`
+* `day_of_month`
+* `day_name`
+* `day_name_short`
+* `month_name`
+* `month_name_short`
+* `year_month`
+* `date_label`
+* `is_weekend`
+* `is_weekday`
+* `is_month_start`
+* `is_month_end`
+* `is_quarter_start`
+* `is_quarter_end`
+* `is_year_start`
+* `is_year_end`
+
+## Modeling Decision
+
+A dedicated date dimension was created instead of deriving date attributes repeatedly inside marts. This keeps downstream reporting logic cleaner, more consistent, and easier to maintain.
+
+## Status
+
+```text
+DIM_DATE BUILD STATUS: COMPLETED
+```
+
+---
+
+# Phase 2C Validation — dim_date
+
+## Status
+
+✅ Completed
+
+## Validation SQL File
+
+```text
+sql/validation/ga4/04b_validate_dim_date.sql
+```
+
+## Target Table
+
+```text
+commercial-analytics-bq-dbx.commercial_analytics_us.dim_date
+```
+
+## Screenshot Directory
+
+```text
+bi/screenshots/ga4/dim_date_validation/
+```
+
+---
+
+## DV1 — Date Range Validation
+
+### Purpose
+
+Confirm that `dim_date` covers the expected January 2021 development window.
+
+### Result
+
+| total_dates | min_date   | max_date   | distinct_dates |
+| ----------: | ---------- | ---------- | -------------: |
+|          31 | 2021-01-01 | 2021-01-31 |             31 |
+
+![GA4 Dim Date Validation V01 Date Range](../bi/screenshots/ga4/dim_date_validation/ga4_dim_date_validation_v01_date_range.png)![alt text](ga4_dim_date_validation_v01_date_range.png)
+
+### Key Findings
+
+* The table contains 31 calendar dates.
+* Minimum date is 2021-01-01.
+* Maximum date is 2021-01-31.
+* Distinct date count equals total row count.
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## DV2 — Date Grain Uniqueness Validation
+
+### Purpose
+
+Confirm that `dim_date` contains exactly one row per `date_day`.
+
+### Result
+
+| total_rows | distinct_date_days | duplicate_date_rows |
+| ---------: | -----------------: | ------------------: |
+|         31 |                 31 |                   0 |
+
+![GA4 Dim Date Validation V02 Grain Uniqueness](../bi/screenshots/ga4/dim_date_validation/ga4_dim_date_validation_v02_grain_uniqueness.png)![alt text](ga4_dim_date_validation_v02_grain_uniqueness.png)
+
+### Key Findings
+
+* Each `date_day` appears only once.
+* No duplicate date rows exist.
+* The dimension grain is valid and safe for joins.
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## DV3 — Null Critical Field Validation
+
+### Purpose
+
+Confirm that required date attributes are fully populated.
+
+### Result
+
+| total_rows | null_date_day | null_calendar_year | null_calendar_quarter | null_calendar_month | null_day_of_month | null_day_name | null_month_name | null_year_month |
+| ---------: | ------------: | -----------------: | --------------------: | ------------------: | ----------------: | ------------: | --------------: | --------------: |
+|         31 |             0 |                  0 |                     0 |                   0 |                 0 |             0 |               0 |               0 |
+
+### Key Findings
+
+* No null values exist in critical date fields.
+* Calendar, month, day, and reporting label attributes are fully populated.
+
+### Screenshot
+
+```text
+Not stored. This was a supporting structural null check.
+```
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## DV4 — Weekend / Weekday Logic Validation
+
+### Purpose
+
+Confirm that weekend and weekday flags are mutually consistent.
+
+### Result
+
+| total_rows | weekend_days | weekday_days | conflicting_weekend_weekday_rows | unclassified_days |
+| ---------: | -----------: | -----------: | -------------------------------: | ----------------: |
+|         31 |           10 |           21 |                                0 |                 0 |
+
+### Key Findings
+
+* January 2021 contains 10 weekend days and 21 weekdays.
+* No date is marked as both weekend and weekday.
+* No date is left unclassified.
+
+### Screenshot
+
+```text
+Not stored. This was a supporting calendar logic check.
+```
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## DV5 — Period Boundary Validation
+
+### Purpose
+
+Inspect month, quarter, and year boundary flags.
+
+### Result
+
+| month_start_days | month_end_days | quarter_start_days | quarter_end_days | year_start_days | year_end_days |
+| ---------------: | -------------: | -----------------: | ---------------: | --------------: | ------------: |
+|                1 |              1 |                  1 |                0 |               1 |             0 |
+
+### Key Findings
+
+* January 1 is correctly flagged as month start, quarter start, and year start.
+* January 31 is correctly flagged as month end.
+* Quarter-end and year-end flags are zero because the January 2021 window does not include quarter-end or year-end dates.
+
+### Screenshot
+
+```text
+Not stored. This was a supporting period-boundary check.
+```
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## DV6 — Final dim_date Validation Status
+
+### Purpose
+
+Provide a high-level PASS/CHECK summary for the `dim_date` table.
+
+### Result
+
+| total_rows | distinct_date_days | min_date   | max_date   | dim_date_validation_status | null_date_day | conflicting_weekend_weekday_rows | unclassified_days |
+| ---------: | -----------------: | ---------- | ---------- | -------------------------- | ------------: | -------------------------------: | ----------------: |
+|         31 |                 31 | 2021-01-01 | 2021-01-31 | PASS                       |             0 |                                0 |                 0 |
+
+![GA4 Dim Date Validation V06 Final Status](../bi/screenshots/ga4/dim_date_validation/ga4_dim_date_validation_v06_final_status.png)![alt text](ga4_dim_date_validation_v06_final_status.png)
+
+### Key Findings
+
+* Final validation status is `PASS`.
+* Date range is complete.
+* Date grain is unique.
+* No critical nulls were detected.
+* Weekend and weekday flags are consistent.
+* `dim_date` is validated and ready for downstream mart joins.
+
+### Status
+
+```text
+FINAL DIM_DATE VALIDATION STATUS: PASS
+```
+
+---
+
+## Phase 2C Summary
+
+### Completed
+
+* [x] Created `dim_date`
+* [x] Defined one-row-per-date grain
+* [x] Added calendar hierarchy fields
+* [x] Added reporting labels
+* [x] Added weekday/weekend flags
+* [x] Added period boundary flags
+* [x] Created dedicated validation SQL file
+* [x] Validated date coverage
+* [x] Validated date grain uniqueness
+* [x] Validated null critical fields
+* [x] Validated weekday/weekend logic
+* [x] Validated period boundary logic
+* [x] Confirmed final validation status as `PASS`
+
+## Next Step
+
+```text
+Phase 2D — dim_channel
+```
+
+```
+```
 
 # Phase 2D — Channel Daily Mart
 
