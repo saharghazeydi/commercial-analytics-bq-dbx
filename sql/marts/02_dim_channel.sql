@@ -1,18 +1,121 @@
+-- ============================================================
 -- 02_dim_channel.sql
--- Purpose: Channel dimension from GA4 session fact
+-- Purpose:
+-- Create reusable acquisition channel dimension from session-level GA4 data
+--
+-- Grain:
+-- One row per normalized source + medium + campaign combination
+-- ============================================================
 
-CREATE OR REPLACE TABLE `nike-sql-practice.commercial_analytics_us.dim_channel` AS
+CREATE OR REPLACE TABLE
+`commercial-analytics-bq-dbx.commercial_analytics_us.dim_channel`
+AS
+
+WITH channel_base AS (
+
+  SELECT DISTINCT
+    COALESCE(session_source, '(not set)') AS source,
+    COALESCE(session_medium, '(not set)') AS medium,
+    COALESCE(session_campaign, '(not set)') AS campaign
+
+  FROM `commercial-analytics-bq-dbx.commercial_analytics_us.fact_sessions_daily`
+
+),
+
+classified AS (
+
+  SELECT
+    source,
+    medium,
+    campaign,
+
+    CONCAT(
+      source,
+      ' | ',
+      medium,
+      ' | ',
+      campaign
+    ) AS channel_key,
+
+    CASE
+      WHEN source = '(not set)'
+        AND medium = '(not set)'
+      THEN 'Unattributed'
+
+      WHEN source = '(data deleted)'
+        OR medium = '(data deleted)'
+        OR campaign = '(data deleted)'
+      THEN 'Data Deleted'
+
+      WHEN source = '(direct)'
+        OR medium = '(none)'
+      THEN 'Direct'
+
+      WHEN medium = 'organic'
+      THEN 'Organic Search'
+
+      WHEN medium IN ('cpc', 'paid', 'ppc')
+      THEN 'Paid Search'
+
+      WHEN medium = 'email'
+      THEN 'Email'
+
+      WHEN medium = 'affiliate'
+      THEN 'Affiliate'
+
+      WHEN medium = 'referral'
+      THEN 'Referral'
+
+      WHEN source = '<Other>'
+        OR medium = '<Other>'
+        OR campaign = '<Other>'
+      THEN 'Other'
+
+      ELSE 'Other'
+    END AS channel_group,
+
+    CASE
+      WHEN source = '(not set)'
+        OR medium = '(not set)'
+        OR campaign = '(not set)'
+      THEN TRUE
+      ELSE FALSE
+    END AS has_not_set_value,
+
+    CASE
+      WHEN source = '(data deleted)'
+        OR medium = '(data deleted)'
+        OR campaign = '(data deleted)'
+      THEN TRUE
+      ELSE FALSE
+    END AS has_data_deleted_value,
+
+    CASE
+      WHEN source = '<Other>'
+        OR medium = '<Other>'
+        OR campaign = '<Other>'
+      THEN TRUE
+      ELSE FALSE
+    END AS has_other_value
+
+  FROM channel_base
+
+)
+
 SELECT
-  -- stable key
-  TO_HEX(MD5(CONCAT(
-    COALESCE(traffic_source, ''), '|',
-    COALESCE(traffic_medium, ''), '|',
-    COALESCE(campaign_name, '')
-  ))) AS channel_key,
+  channel_key,
+  source,
+  medium,
+  campaign,
+  channel_group,
+  has_not_set_value,
+  has_data_deleted_value,
+  has_other_value
 
-  traffic_source,
-  traffic_medium,
-  campaign_name
+FROM classified
 
-FROM `nike-sql-practice.commercial_analytics_us.fact_sessions_daily`
-GROUP BY 1,2,3,4;
+ORDER BY
+  channel_group,
+  source,
+  medium,
+  campaign;
