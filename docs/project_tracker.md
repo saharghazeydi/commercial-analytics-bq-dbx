@@ -3792,6 +3792,499 @@ bi/screenshots/ga4/mart_executive_daily_validation/ga4_mart_executive_daily_vali
 
 ---
 
+````markdown
+---
+
+# Phase 2K — Executive Enhanced Mart Construction
+
+## Status
+
+✅ Completed
+
+## Objective
+
+Build an enhanced executive KPI mart that extends the validated daily executive mart with rolling 7-day metrics, week-over-week comparison fields, and BI-ready trend indicators.
+
+## Main SQL File
+
+```text
+sql/marts/05_mart_executive_enhanced.sql
+````
+
+## Target Table
+
+```text
+commercial-analytics-bq-dbx.commercial_analytics_us.mart_executive_enhanced
+```
+
+## Sources
+
+```text
+commercial-analytics-bq-dbx.commercial_analytics_us.mart_executive_daily
+commercial-analytics-bq-dbx.commercial_analytics_us.dim_date
+```
+
+## Grain
+
+```text
+one row per event_date
+```
+
+## Key Modeling Decisions
+
+The enhanced executive mart keeps the same daily grain as `mart_executive_daily` and adds time-series features for executive reporting.
+
+Rolling metrics are calculated only for additive metrics such as sessions, transactions, and revenue. Daily users are not summed across the rolling window because distinct users are not safely additive across days.
+
+Instead, the mart includes:
+
+```text
+rolling_7d_avg_daily_users
+```
+
+This represents the average daily user count across the rolling window, not true 7-day unique users.
+
+## Metrics Added
+
+### Rolling 7-Day Metrics
+
+* `rolling_7d_days`
+* `rolling_7d_sessions`
+* `rolling_7d_transactions`
+* `rolling_7d_revenue`
+* `rolling_7d_avg_daily_users`
+* `rolling_7d_session_conversion_rate`
+* `rolling_7d_revenue_per_session`
+* `rolling_7d_average_order_value`
+
+### Week-over-Week Reference Metrics
+
+* `sessions_7d_ago`
+* `users_7d_ago`
+* `transactions_7d_ago`
+* `revenue_7d_ago`
+* `session_conversion_rate_7d_ago`
+* `revenue_per_session_7d_ago`
+
+### Week-over-Week Change Metrics
+
+* `wow_sessions_change`
+* `wow_sessions_change_rate`
+* `wow_users_change`
+* `wow_users_change_rate`
+* `wow_transactions_change`
+* `wow_transactions_change_rate`
+* `wow_revenue_change`
+* `wow_revenue_change_rate`
+* `wow_session_conversion_rate_change`
+* `wow_revenue_per_session_change`
+
+### Validation Flags
+
+* `has_complete_rolling_7d_window`
+* `has_wow_comparison`
+
+## Phase 2K Summary
+
+* [x] Created `mart_executive_enhanced`
+* [x] Joined executive daily mart with `dim_date`
+* [x] Preserved one-row-per-date grain
+* [x] Added rolling 7-day sessions, transactions, and revenue
+* [x] Added rolling 7-day conversion and revenue-efficiency KPIs
+* [x] Added average daily users across the rolling window
+* [x] Added same-weekday week-over-week comparison logic
+* [x] Added rolling-window and WoW availability flags
+* [x] Prepared enhanced executive outputs for BI trend reporting
+
+---
+
+# Phase 2L — Executive Enhanced Mart Validation
+
+## Status
+
+✅ Completed
+
+## Objective
+
+Validate the `mart_executive_enhanced` table for grain integrity, date attributes, base metric preservation, rolling 7-day logic, week-over-week logic, and BI readiness.
+
+## Validation SQL File
+
+```text
+sql/validation/ga4/08b_validate_mart_executive_enhanced.sql
+```
+
+## Target Table
+
+```text
+commercial-analytics-bq-dbx.commercial_analytics_us.mart_executive_enhanced
+```
+
+## Screenshot Directory
+
+```text
+bi/screenshots/ga4/mart_executive_enhanced_validation/
+```
+
+---
+
+## Executive Enhanced Validation Screenshot Inventory
+
+| Step  | Validation Check                                     | Screenshot File                                                               | Stored |
+| ----- | ---------------------------------------------------- | ----------------------------------------------------------------------------- | ------ |
+| EEV1  | Row count and date range validation                  | `ga4_mart_executive_enhanced_validation_v01_row_count_date_range.png`         | Yes    |
+| EEV2  | Grain uniqueness validation                          | `ga4_mart_executive_enhanced_validation_v02_grain_uniqueness.png`             | Yes    |
+| EEV3  | Critical null validation                             | Not stored                                                                    | No     |
+| EEV4  | Date attribute reconciliation with dim_date          | Not stored                                                                    | No     |
+| EEV5  | Base metric reconciliation with mart_executive_daily | Not stored                                                                    | No     |
+| EEV6  | Rolling 7-day window structure validation            | `ga4_mart_executive_enhanced_validation_v06_rolling_window_structure.png`     | Yes    |
+| EEV7  | Rolling 7-day metric recalculation validation        | `ga4_mart_executive_enhanced_validation_v07_rolling_metric_recalculation.png` | Yes    |
+| EEV8  | Week-over-week availability validation               | `ga4_mart_executive_enhanced_validation_v08_wow_availability.png`             | Yes    |
+| EEV9  | Week-over-week metric recalculation validation       | Not stored                                                                    | No     |
+| EEV10 | Impossible value validation                          | Not stored                                                                    | No     |
+| EEV11 | Enhanced daily trend inspection                      | `ga4_mart_executive_enhanced_validation_v11_enhanced_daily_trend.png`         | Yes    |
+| EEV12 | Final enhanced mart validation status                | `ga4_mart_executive_enhanced_validation_v12_final_status.png`                 | Yes    |
+
+---
+
+## EEV1 — Row Count and Date Range Validation
+
+### Result
+
+| total_rows | min_event_date | max_event_date | distinct_dates |
+| ---------: | -------------- | -------------- | -------------: |
+|         31 | 2021-01-01     | 2021-01-31     |             31 |
+
+![GA4 Executive Enhanced Validation V01 Row Count Date Range](../bi/screenshots/ga4/mart_executive_enhanced_validation/ga4_mart_executive_enhanced_validation_v01_row_count_date_range.png)
+
+### Key Findings
+
+* The enhanced executive mart contains 31 daily rows.
+* The table covers the full January 2021 reporting window.
+* Distinct dates match the total row count.
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## EEV2 — Grain Uniqueness Validation
+
+### Result
+
+| total_rows | distinct_event_dates | duplicate_event_date_rows | grain_validation_status |
+| ---------: | -------------------: | ------------------------: | ----------------------- |
+|         31 |                   31 |                         0 | PASS                    |
+
+![GA4 Executive Enhanced Validation V02 Grain Uniqueness](../bi/screenshots/ga4/mart_executive_enhanced_validation/ga4_mart_executive_enhanced_validation_v02_grain_uniqueness.png)
+
+### Key Findings
+
+* The enhanced mart contains exactly one row per `event_date`.
+* No duplicate daily rows were detected.
+* The table grain is valid for enhanced executive reporting.
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## EEV3 — Critical Null Validation
+
+### Key Findings
+
+* No unexpected nulls were detected in required base metrics.
+* Date attributes are populated.
+* Rolling 7-day base fields are populated.
+* Conditional KPI null checks passed for sessions, users, transactions, and revenue.
+
+### Screenshot
+
+```text
+Not stored. This was a supporting structural validation check.
+```
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## EEV4 — Date Attribute Reconciliation With dim_date
+
+### Key Findings
+
+* Enhanced mart date attributes were reconciled against `dim_date`.
+* No mismatched date attribute rows were returned.
+* Calendar fields, weekday/weekend flags, and reporting labels remain aligned with the validated date dimension.
+
+### Screenshot
+
+```text
+Not stored. The query returned zero mismatch rows.
+```
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## EEV5 — Base Metric Reconciliation With mart_executive_daily
+
+### Key Findings
+
+* Base daily metrics were reconciled against `mart_executive_daily`.
+* No mismatch rows were returned.
+* The enhanced mart preserves base executive metrics before adding rolling and WoW logic.
+
+### Screenshot
+
+```text
+Not stored. The query returned zero mismatch rows.
+```
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## EEV6 — Rolling 7-Day Window Structure Validation
+
+### Result
+
+| total_rows | partial_rolling_7d_window_rows | complete_rolling_7d_window_rows | flagged_complete_rolling_7d_window_rows | complete_window_flag_mismatch_rows | min_rolling_7d_days | max_rolling_7d_days |
+| ---------: | -----------------------------: | ------------------------------: | --------------------------------------: | ---------------------------------: | ------------------: | ------------------: |
+|         31 |                              6 |                              25 |                                      25 |                                  0 |                   1 |                   7 |
+
+![GA4 Executive Enhanced Validation V06 Rolling Window Structure](../bi/screenshots/ga4/mart_executive_enhanced_validation/ga4_mart_executive_enhanced_validation_v06_rolling_window_structure.png)![alt text](ga4_mart_executive_enhanced_validation_v06_rolling_window_structure.png)
+
+### Key Findings
+
+* The first 6 days correctly have partial rolling windows.
+* 25 rows have complete 7-day rolling windows.
+* `has_complete_rolling_7d_window` correctly flags complete windows.
+* Rolling window length ranges from 1 to 7 days as expected.
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## EEV7 — Rolling 7-Day Metric Recalculation Validation
+
+### Result
+
+Rolling metrics were recalculated from `mart_executive_daily` and compared against stored enhanced mart values.
+
+![GA4 Executive Enhanced Validation V07 Rolling Metric Recalculation](../bi/screenshots/ga4/mart_executive_enhanced_validation/ga4_mart_executive_enhanced_validation_v07_rolling_metric_recalculation.png)![alt text](ga4_mart_executive_enhanced_validation_v07_rolling_metric_recalculation.png)
+
+### Key Findings
+
+* Recalculated rolling 7-day values match the stored enhanced mart fields.
+* Rolling sessions, transactions, revenue, and average daily users are internally consistent.
+* Difference columns return zero across inspected rows.
+* Rolling KPI calculations are suitable for executive trend analysis.
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## EEV8 — Week-over-Week Availability Validation
+
+### Result
+
+| total_rows | rows_without_wow_comparison | rows_with_wow_comparison | flagged_wow_comparison_rows | missing_wow_flag_rows | incorrect_wow_flag_rows |
+| ---------: | --------------------------: | -----------------------: | --------------------------: | --------------------: | ----------------------: |
+|         31 |                           7 |                       24 |                          24 |                     0 |                       0 |
+
+![GA4 Executive Enhanced Validation V08 WoW Availability](../bi/screenshots/ga4/mart_executive_enhanced_validation/ga4_mart_executive_enhanced_validation_v08_wow_availability.png)![alt text](ga4_mart_executive_enhanced_validation_v08_wow_availability.png)
+
+### Key Findings
+
+* The first 7 days correctly have no WoW comparison.
+* 24 rows correctly have week-over-week comparison values.
+* `has_wow_comparison` correctly matches seven-day lag availability.
+* No missing or incorrect WoW flags were detected.
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## EEV9 — Week-over-Week Metric Recalculation Validation
+
+### Key Findings
+
+* Seven-day lag values were recalculated from `mart_executive_daily`.
+* No mismatch rows were returned.
+* WoW sessions, users, transactions, revenue, conversion, and revenue-per-session calculations are consistent with the source daily mart.
+
+### Screenshot
+
+```text
+Not stored. The query returned zero mismatch rows.
+```
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## EEV10 — Impossible Value Validation
+
+### Key Findings
+
+* No negative base metric issues were returned.
+* No invalid rolling-window flag issues were returned.
+* No invalid WoW flag issues were returned.
+* Core conversion and rolling conversion rates remained within valid bounds.
+
+### Screenshot
+
+```text
+Not stored. The query returned zero anomaly rows.
+```
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## EEV11 — Enhanced Daily Trend Inspection
+
+### Result
+
+The output contains base daily, rolling 7-day, and week-over-week KPI movement across the January 2021 reporting window.
+
+![GA4 Executive Enhanced Validation V11 Enhanced Daily Trend](../bi/screenshots/ga4/mart_executive_enhanced_validation/ga4_mart_executive_enhanced_validation_v11_enhanced_daily_trend.png)![alt text](ga4_mart_executive_enhanced_validation_v11_enhanced_daily_trend.png)
+
+### Key Findings
+
+* Base daily executive metrics are present.
+* Rolling 7-day metrics are populated and interpretable.
+* First 7 days correctly lack WoW comparison fields.
+* From January 8 onward, WoW comparison fields are populated.
+* The enhanced mart is ready for BI dashboarding and executive trend reporting.
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## EEV12 — Final Enhanced Mart Validation Status
+
+### Result
+
+| total_rows | distinct_event_dates | duplicate_event_date_rows | null_event_date | null_sessions | null_users | null_transactions | null_revenue |
+| ---------: | -------------------: | ------------------------: | --------------: | ------------: | ---------: | ----------------: | -----------: |
+|         31 |                   31 |                         0 |               0 |             0 |          0 |                 0 |            0 |
+
+![GA4 Executive Enhanced Validation V12 Final Status](../bi/screenshots/ga4/mart_executive_enhanced_validation/ga4_mart_executive_enhanced_validation_v12_final_status.png)![alt text](ga4_mart_executive_enhanced_validation_v12_final_status.png)
+
+### Key Findings
+
+* Final validation status is `PASS`.
+* Date grain is unique.
+* No critical nulls were detected.
+* No negative base metric issues were detected.
+* No rolling-window flag issues were detected.
+* No WoW availability flag issues were detected.
+* No date, base metric, rolling, or WoW reconciliation mismatches were detected.
+
+### Status
+
+```text
+FINAL EXECUTIVE ENHANCED MART VALIDATION STATUS: PASS
+```
+
+---
+
+## Phase 2L Summary
+
+* [x] Created enhanced executive validation SQL file
+* [x] Validated row count and date range
+* [x] Validated one-row-per-date grain
+* [x] Checked critical null fields
+* [x] Reconciled date attributes with `dim_date`
+* [x] Reconciled base metrics with `mart_executive_daily`
+* [x] Validated rolling 7-day window structure
+* [x] Recalculated rolling 7-day metrics
+* [x] Validated week-over-week availability logic
+* [x] Recalculated week-over-week metrics
+* [x] Checked impossible values and invalid flags
+* [x] Inspected enhanced daily trend output
+* [x] Produced final enhanced mart validation status
+* [x] Saved selected evidence screenshots
+
+## Evidence Screenshots Stored
+
+```text
+bi/screenshots/ga4/mart_executive_enhanced_validation/ga4_mart_executive_enhanced_validation_v01_row_count_date_range.png
+bi/screenshots/ga4/mart_executive_enhanced_validation/ga4_mart_executive_enhanced_validation_v02_grain_uniqueness.png
+bi/screenshots/ga4/mart_executive_enhanced_validation/ga4_mart_executive_enhanced_validation_v06_rolling_window_structure.png
+bi/screenshots/ga4/mart_executive_enhanced_validation/ga4_mart_executive_enhanced_validation_v07_rolling_metric_recalculation.png
+bi/screenshots/ga4/mart_executive_enhanced_validation/ga4_mart_executive_enhanced_validation_v08_wow_availability.png
+bi/screenshots/ga4/mart_executive_enhanced_validation/ga4_mart_executive_enhanced_validation_v11_enhanced_daily_trend.png
+bi/screenshots/ga4/mart_executive_enhanced_validation/ga4_mart_executive_enhanced_validation_v12_final_status.png
+```
+
+## Key Modeling Validation Notes
+
+* Rolling sessions, transactions, and revenue are additive rolling metrics.
+* Rolling users are represented as average daily users, not true 7-day distinct users.
+* The first 6 rows correctly have partial rolling windows.
+* The first 7 rows correctly have no WoW comparison.
+* WoW comparison starts from the eighth reporting day.
+* Base metrics are preserved from `mart_executive_daily`.
+* The enhanced mart is validated and ready for BI dashboard development.
+
+---
+
+# Next Phase
+
+```text
+Next Phase: Phase 3 — Olist Ingestion
+```
+
+```
+```
+
+
+
+
 # Future Expansion Work
 
 * [ ] Replace hardcoded January 2021 development window with configurable date ranges
