@@ -8,7 +8,7 @@
 #### Phase 1A — GA4 Raw Data Profiling
 ✅ Completed
 
-#### Phase 1B — GA4 Staging View Construction
+#### Phase 1B — GA4 Staging View( Construction)
 ✅ Completed
 
 #### Phase 1C — GA4 Staging Validation
@@ -22,13 +22,13 @@
 #### Phase 2B — Session Fact Validation
 ✅ Completed
 
-#### Phase 2C — Date Dimension Construction
+#### Phase 2C — Date Dimension Construction(dim_date)
 ✅ Completed
 
 #### Phase 2D — Date Dimension Validation
 ✅ Completed
 
-#### Phase 2E — Channel Dimension Construction
+#### Phase 2E — Channel Dimension Construction (dim_channel
 ✅ Completed
 
 #### Phase 2F — Channel Dimension Validation
@@ -41,6 +41,7 @@
 ✅ Completed
 
 ➡️ Next Phase: Phase 2I — Executive KPI Mart Construction
+
 
 # Project Objective
 
@@ -185,7 +186,7 @@ ga4_session_fact_validation_v##_description.png
 - [x] Committed and pushed work to GitHub
 
 ---
-
+# Phase 1 — GA4 Foundation Layer
 # Phase 1A — GA4 Raw Data Profiling
 
 ## Status
@@ -1428,8 +1429,8 @@ Channel grouping should be implemented in `dim_channel` or downstream marts, not
 Every downstream table should have at least one validation step before it is considered complete.
 
 ---
-
-# Phase 2A — GA4 Session Fact Modeling
+# Phase 2 — Core Warehouse Modeling
+# Phase 2A — Session Fact Construction
 
 ## Status
 
@@ -1616,7 +1617,7 @@ The table is ready for downstream session KPI validation, channel marts, executi
 
 ---
 
-# Phase 2B — GA4 Session Fact Validation
+# Phase 2B — Session Fact Validation
 
 ## Status
 
