@@ -2258,7 +2258,7 @@ Confirm that `dim_date` covers the expected January 2021 development window.
 | ----------: | ---------- | ---------- | -------------: |
 |          31 | 2021-01-01 | 2021-01-31 |             31 |
 
-![GA4 Dim Date Validation V01 Date Range](../bi/screenshots/ga4/dim_date_validation/ga4_dim_date_validation_v01_date_range.png)![alt text](ga4_dim_date_validation_v01_date_range.png)
+![GA4 Dim Date Validation V01 Date Range](../bi/screenshots/ga4/dim_date_validation/ga4_dim_date_validation_v01_date_range.png)
 
 ### Key Findings
 
@@ -2287,7 +2287,7 @@ Confirm that `dim_date` contains exactly one row per `date_day`.
 | ---------: | -----------------: | ------------------: |
 |         31 |                 31 |                   0 |
 
-![GA4 Dim Date Validation V02 Grain Uniqueness](../bi/screenshots/ga4/dim_date_validation/ga4_dim_date_validation_v02_grain_uniqueness.png)![alt text](ga4_dim_date_validation_v02_grain_uniqueness.png)
+![GA4 Dim Date Validation V02 Grain Uniqueness](../bi/screenshots/ga4/dim_date_validation/ga4_dim_date_validation_v02_grain_uniqueness.png)
 
 ### Key Findings
 
@@ -2410,7 +2410,7 @@ Provide a high-level PASS/CHECK summary for the `dim_date` table.
 | ---------: | -----------------: | ---------- | ---------- | -------------------------- | ------------: | -------------------------------: | ----------------: |
 |         31 |                 31 | 2021-01-01 | 2021-01-31 | PASS                       |             0 |                                0 |                 0 |
 
-![GA4 Dim Date Validation V06 Final Status](../bi/screenshots/ga4/dim_date_validation/ga4_dim_date_validation_v06_final_status.png)![alt text](ga4_dim_date_validation_v06_final_status.png)
+![GA4 Dim Date Validation V06 Final Status](../bi/screenshots/ga4/dim_date_validation/ga4_dim_date_validation_v06_final_status.png)
 
 ### Key Findings
 
@@ -2581,7 +2581,7 @@ Confirm that `dim_channel` contains one row per `channel_key`.
 | ---------: | --------------------: | -------------------------: |
 |         66 |                    66 |                          0 |
 
-![GA4 Dim Channel Validation V02 Grain Uniqueness](../bi/screenshots/ga4/dim_channel_validation/ga4_dim_channel_validation_v02_grain_uniqueness.png)![alt text](ga4_dim_channel_validation_v02_grain_uniqueness.png)
+![GA4 Dim Channel Validation V02 Grain Uniqueness](../bi/screenshots/ga4/dim_channel_validation/ga4_dim_channel_validation_v02_grain_uniqueness.png)
 
 ### Key Findings
 
@@ -2714,7 +2714,7 @@ Confirm that every session fact row can map to one `dim_channel` row.
 | --------: | -------------------: | ------------------: | ---------: |
 |   118,618 |              118,618 |                   0 |        1.0 |
 
-![GA4 Dim Channel Validation V06 Join Coverage](../bi/screenshots/ga4/dim_channel_validation/ga4_dim_channel_validation_v06_join_coverage.png)![alt text](ga4_dim_channel_validation_v06_join_coverage.png)
+![GA4 Dim Channel Validation V06 Join Coverage](../bi/screenshots/ga4/dim_channel_validation/ga4_dim_channel_validation_v06_join_coverage.png)
 
 ### Key Findings
 
@@ -2751,7 +2751,7 @@ Inspect session volume after joining `fact_sessions_daily` to `dim_channel`.
 | Affiliate      |      296 |        0.0025 |
 | Email          |       46 |        0.0004 |
 
-![GA4 Dim Channel Validation V07 Channel Distribution](../bi/screenshots/ga4/dim_channel_validation/ga4_dim_channel_validation_v07_channel_distribution.png)![alt text](ga4_dim_channel_validation_v07_channel_distribution.png)
+![GA4 Dim Channel Validation V07 Channel Distribution](../bi/screenshots/ga4/dim_channel_validation/ga4_dim_channel_validation_v07_channel_distribution.png)
 
 ### Key Findings
 
@@ -2780,7 +2780,7 @@ Provide a high-level PASS/CHECK summary for the `dim_channel` table.
 | ---------: | --------------------: | ----------------------------- | ---------------: | ----------: | ----------: | ------------: | -----------------: | ------------------: |
 |         66 |                    66 | PASS                          |                0 |           0 |           0 |             0 |                  0 |                   0 |
 
-![GA4 Dim Channel Validation V08 Final Status](../bi/screenshots/ga4/dim_channel_validation/ga4_dim_channel_validation_v08_final_status.png)![alt text](ga4_dim_channel_validation_v08_final_status.png)
+![GA4 Dim Channel Validation V08 Final Status](../bi/screenshots/ga4/dim_channel_validation/ga4_dim_channel_validation_v08_final_status.png)
 
 ### Key Findings
 
@@ -3004,7 +3004,7 @@ Confirm that the mart contains one row per `event_date + channel_key`.
 | ---------: | -------------------------: | --------------------------: |
 |        688 |                        688 |                           0 |
 
-![GA4 Mart Channel Daily Validation V02 Grain Uniqueness](../bi/screenshots/ga4/mart_channel_daily_validation/ga4_mart_channel_daily_validation_v02_grain_uniqueness.png)![alt text](ga4_mart_channel_daily_validation_v02_grain_uniqueness.png)
+![GA4 Mart Channel Daily Validation V02 Grain Uniqueness](../bi/screenshots/ga4/mart_channel_daily_validation/ga4_mart_channel_daily_validation_v02_grain_uniqueness.png)
 
 ### Key Findings
 
@@ -3095,7 +3095,7 @@ Confirm key totals reconcile back to `fact_sessions_daily`.
 | ------------: | ------------: | -----------------: | ----------------: | ----------------: | ---------------: | ----------------: | ----------------: | ---------------------: | -----------: | -----------: | -----------------: |
 |       118,618 |       118,618 |                  0 |         1,210,147 |         1,210,147 |                0 |               895 |               895 |                      0 |     56,880.0 |     56,880.0 |                0.0 |
 
-![GA4 Mart Channel Daily Validation V05 Fact Reconciliation](../bi/screenshots/ga4/mart_channel_daily_validation/ga4_mart_channel_daily_validation_v05_fact_reconciliation.png)![alt text](ga4_mart_channel_daily_validation_v05_fact_reconciliation.png)
+![GA4 Mart Channel Daily Validation V05 Fact Reconciliation](../bi/screenshots/ga4/mart_channel_daily_validation/ga4_mart_channel_daily_validation_v05_fact_reconciliation.png)
 
 ### Key Findings
 
@@ -3133,7 +3133,7 @@ Inspect sessions, transactions, revenue, conversion, and AOV by channel group.
 | Affiliate      |      296 |        0.0025 |            1 |     23.0 |                  0.0034 |               23.00 |
 | Email          |       46 |        0.0004 |            0 |      0.0 |                  0.0000 |                null |
 
-![GA4 Mart Channel Daily Validation V06 Channel Distribution](../bi/screenshots/ga4/mart_channel_daily_validation/ga4_mart_channel_daily_validation_v06_channel_distribution.png)![alt text](ga4_mart_channel_daily_validation_v06_channel_distribution.png)
+![GA4 Mart Channel Daily Validation V06 Channel Distribution](../bi/screenshots/ga4/mart_channel_daily_validation/ga4_mart_channel_daily_validation_v06_channel_distribution.png)
 
 ### Key Findings
 
@@ -3163,7 +3163,7 @@ Confirm calculated KPI rates are within reasonable bounds.
 | ---------: | ------------------------------------: | ---------------------------------: | --------------------------------: | ------------------------------: | ----------------------------------: | --------------------------------------: | --------------------: |
 |        688 |                                     0 |                                  0 |                                 0 |                               0 |                                   0 |                                       0 |                     0 |
 
-![GA4 Mart Channel Daily Validation V07 KPI Boundary](../bi/screenshots/ga4/mart_channel_daily_validation/ga4_mart_channel_daily_validation_v07_kpi_boundary.png)![alt text](ga4_mart_channel_daily_validation_v07_kpi_boundary.png)
+![GA4 Mart Channel Daily Validation V07 KPI Boundary](../bi/screenshots/ga4/mart_channel_daily_validation/ga4_mart_channel_daily_validation_v07_kpi_boundary.png)
 
 ### Key Findings
 
@@ -3193,7 +3193,7 @@ Inspect daily sessions, transactions, revenue, conversion rate, and revenue per 
 | ------------------------ | ------------: | ------------------------------------------------------------------------------- |
 | 2021-01-01 to 2021-01-31 |            31 | Daily sessions, transactions, and revenue were populated across the full month. |
 
-![GA4 Mart Channel Daily Validation V08 Daily Trend](../bi/screenshots/ga4/mart_channel_daily_validation/ga4_mart_channel_daily_validation_v08_daily_trend.png)![alt text](ga4_mart_channel_daily_validation_v08_daily_trend.png)
+![GA4 Mart Channel Daily Validation V08 Daily Trend](../bi/screenshots/ga4/mart_channel_daily_validation/ga4_mart_channel_daily_validation_v08_daily_trend.png)
 
 ### Key Findings
 
@@ -3252,7 +3252,7 @@ Provide a high-level PASS/CHECK summary for `mart_channel_daily`.
 | ---------: | -------------------------: | -------------- | -------------- | ------------------------------------ | --------------: | ---------------: | -----------------: | --------------------: | --------------------: | --------------------------------: | -----------------: | ---------------------: | -----------------: |
 |        688 |                        688 | 2021-01-01     | 2021-01-31     | PASS                                 |               0 |                0 |                  0 |                     0 |                     0 |                                 0 |                  0 |                      0 |                0.0 |
 
-![GA4 Mart Channel Daily Validation V10 Final Status](../bi/screenshots/ga4/mart_channel_daily_validation/ga4_mart_channel_daily_validation_v10_final_status.png)![alt text](ga4_mart_channel_daily_validation_v10_final_status.png)
+![GA4 Mart Channel Daily Validation V10 Final Status](../bi/screenshots/ga4/mart_channel_daily_validation/ga4_mart_channel_daily_validation_v10_final_status.png)
 
 ### Key Findings
 
