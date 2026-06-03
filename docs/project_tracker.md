@@ -1,17 +1,46 @@
-# Project Tracker — Commercial Analytics
-
 ## Current Status
 
-✅ Phase 0 — Repository & Environment Setup: Completed  
-✅ Phase 1A — GA4 Raw Data Profiling: Completed  
-✅ Phase 1B — GA4 Staging View: Completed  
-✅ Phase 1C — GA4 Staging Validation: Completed  
-✅ Phase 2A — GA4 Session Fact Modeling: Completed  
-✅ Phase 2B — GA4 Session Fact Validation: Completed  
+### Phase 0 — Repository & Environment Setup
+✅ Completed
 
-➡️ Next Phase: Phase 2C — Date & Channel Dimension Construction
+### Phase 1 — GA4 Foundation Layer
 
----
+#### Phase 1A — GA4 Raw Data Profiling
+✅ Completed
+
+#### Phase 1B — GA4 Staging View Construction
+✅ Completed
+
+#### Phase 1C — GA4 Staging Validation
+✅ Completed
+
+### Phase 2 — Core Warehouse Modeling
+
+#### Phase 2A — Session Fact Construction
+✅ Completed
+
+#### Phase 2B — Session Fact Validation
+✅ Completed
+
+#### Phase 2C — Date Dimension Construction
+✅ Completed
+
+#### Phase 2D — Date Dimension Validation
+✅ Completed
+
+#### Phase 2E — Channel Dimension Construction
+✅ Completed
+
+#### Phase 2F — Channel Dimension Validation
+✅ Completed
+
+#### Phase 2G — Channel Daily Mart Construction
+✅ Completed
+
+#### Phase 2H — Channel Daily Mart Validation
+✅ Completed
+
+➡️ Next Phase: Phase 2I — Executive KPI Mart Construction
 
 # Project Objective
 
@@ -42,6 +71,9 @@ commercial-analytics-bq-dbx/
 │       │   └── .gitkeep
 │       │
 │       ├── ga4/
+│       │   ├── dim_channel_validation/
+│       │   ├── dim_date_validation/
+│       │   ├── mart_channel_daily_validation/
 │       │   ├── profiling/
 │       │   ├── session_fact/
 │       │   ├── session_fact_validation/
@@ -68,23 +100,25 @@ commercial-analytics-bq-dbx/
 │   │   ├── 02_stg_ga4_events.sql
 │   │   └── 03_fact_sessions_daily.sql
 │   │
-│   ├── validation/
-│   │   └── ga4/
-│   │       ├── 02b_validate_stg_ga4_events.sql
-│   │       └── 03b_validate_fact_sessions_daily.sql
+│   ├── marts/
+│   │   ├── 01_dim_date.sql
+│   │   ├── 02_dim_channel.sql
+│   │   ├── 03_mart_channel_daily.sql
+│   │   ├── 04_mart_executive_daily.sql
+│   │   └── 05_mart_executive_enhanced.sql
 │   │
-│   └── marts/
-│       ├── 01_dim_date.sql
-│       ├── 02_dim_channel.sql
-│       ├── 03_mart_channel_daily.sql
-│       ├── 04_mart_executive_daily.sql
-│       └── 05_mart_executive_enhanced.sql
+│   └── validation/
+│       └── ga4/
+│           ├── 02b_validate_stg_ga4_events.sql
+│           ├── 03b_validate_fact_sessions_daily.sql
+│           ├── 04b_validate_dim_date.sql
+│           ├── 05b_validate_dim_channel.sql
+│           └── 06b_validate_mart_channel_daily.sql
 │
 ├── .gitignore
 ├── README.md
 └── requirements.txt
 ```
-
 ---
 
 # Screenshot Naming Convention
@@ -2123,39 +2157,12 @@ Expand from the one-month sample window to the full available GA4 range only aft
 
 ---
 
-# Next Phase — Phase 2C: Date & Channel Dimension Construction
 
-## Status
-
-➡️ Planned / Next
-
-## Objective
-
-Build reusable dimension tables that support clean downstream mart construction and BI-ready reporting.
-
-## Planned SQL Files
-
-```text
-sql/marts/01_dim_date.sql
-sql/marts/02_dim_channel.sql
-```
-
-## Planned Tasks
-
-- [ ] Build `dim_date`
-- [ ] Validate date range and date attributes
-- [ ] Build `dim_channel`
-- [ ] Define channel grouping rules
-- [ ] Preserve `(not set)` as an explicit unknown/unattributed bucket
-- [ ] Validate channel classification logic
-
----
-درست. فقط `DV1`, `DV2`, `DV6` اسکرین‌شات دارند؛ `DV3`, `DV4`, `DV5` در tracker می‌آیند ولی بدون screenshot.
 
 ````markdown
 ---
 
-# Phase 2C — dim_date
+# Phase 2C — Date Dimension Construction (dim_date)
 
 ## Status
 
@@ -2165,13 +2172,17 @@ sql/marts/02_dim_channel.sql
 
 Create a reusable date dimension table to support consistent calendar-based reporting across downstream marts and BI dashboards.
 
-The `dim_date` table provides one row per calendar date and includes calendar attributes, reporting labels, weekday/weekend flags, and period boundary flags.
-
 ## Main SQL File
 
 ```text
 sql/marts/01_dim_date.sql
 ````
+
+## Validation SQL File
+
+```text
+sql/validation/ga4/04b_validate_dim_date.sql
+```
 
 ## Target Table
 
@@ -2183,14 +2194,6 @@ commercial-analytics-bq-dbx.commercial_analytics_us.dim_date
 
 ```text
 one row per date_day
-```
-
-## Source Logic
-
-The table was created using a generated date spine for the January 2021 development window.
-
-```text
-2021-01-01 to 2021-01-31
 ```
 
 ## Key Fields Created
@@ -2216,20 +2219,8 @@ The table was created using a generated date spine for the January 2021 developm
 * `is_year_start`
 * `is_year_end`
 
-## Modeling Decision
 
-A dedicated date dimension was created instead of deriving date attributes repeatedly inside marts. This keeps downstream reporting logic cleaner, more consistent, and easier to maintain.
-
-## Status
-
-```text
-DIM_DATE BUILD STATUS: COMPLETED
-```
-
----
-
-# Phase 2C Validation — dim_date
-
+#### Phase 2D — Date Dimension Validation
 ## Status
 
 ✅ Completed
@@ -2437,38 +2428,38 @@ FINAL DIM_DATE VALIDATION STATUS: PASS
 
 ---
 
-## Phase 2C Summary
 
-### Completed
+## Validation Summary
 
-* [x] Created `dim_date`
-* [x] Defined one-row-per-date grain
-* [x] Added calendar hierarchy fields
-* [x] Added reporting labels
-* [x] Added weekday/weekend flags
-* [x] Added period boundary flags
-* [x] Created dedicated validation SQL file
-* [x] Validated date coverage
-* [x] Validated date grain uniqueness
-* [x] Validated null critical fields
-* [x] Validated weekday/weekend logic
-* [x] Validated period boundary logic
-* [x] Confirmed final validation status as `PASS`
+| Check                   | Result |
+| ----------------------- | ------ |
+| Date range coverage     | PASS   |
+| Date grain uniqueness   | PASS   |
+| Critical null fields    | PASS   |
+| Weekend / weekday logic | PASS   |
+| Period boundary logic   | PASS   |
+| Final validation status | PASS   |
 
-## Next Step
+## Evidence Screenshots Stored
 
 ```text
-Phase 2D — dim_channel
+bi/screenshots/ga4/dim_date_validation/ga4_dim_date_validation_v01_date_range.png
+bi/screenshots/ga4/dim_date_validation/ga4_dim_date_validation_v02_grain_uniqueness.png
+bi/screenshots/ga4/dim_date_validation/ga4_dim_date_validation_v06_final_status.png
 ```
 
-```
-```
-دقیقاً؛ فقط اسکرین‌شات‌های `CV2`, `CV6`, `CV7`, `CV8` را در markdown می‌آوریم. `CV1`, `CV3`, `CV4`, `CV5` فقط مستند می‌شوند.
+## Key Findings
 
-````markdown
+* `dim_date` contains 31 calendar dates from 2021-01-01 to 2021-01-31.
+* The table has one row per `date_day`.
+* No duplicate date rows were detected.
+* No critical date attributes are missing.
+* Weekend and weekday logic is consistent.
+* Final validation status is `PASS`.
+
 ---
 
-# Phase 2D — dim_channel
+# Phase 2E — Channel Dimension Construction (dim_channel)
 
 ## Status
 
@@ -2476,15 +2467,19 @@ Phase 2D — dim_channel
 
 ## Objective
 
-Create a reusable acquisition channel dimension from session-level GA4 acquisition fields.
-
-The `dim_channel` table standardizes source, medium, and campaign combinations into reusable channel groups for downstream marts and BI reporting.
+Create a reusable acquisition channel dimension from session-level GA4 source, medium, and campaign fields.
 
 ## Main SQL File
 
 ```text
 sql/marts/02_dim_channel.sql
-````
+```
+
+## Validation SQL File
+
+```text
+sql/validation/ga4/05b_validate_dim_channel.sql
+```
 
 ## Target Table
 
@@ -2511,19 +2506,12 @@ one row per source + medium + campaign combination
 
 ## Modeling Decision
 
-A dedicated channel dimension was created instead of repeatedly classifying acquisition fields inside marts.
+Channel classification is handled in a dedicated dimension table instead of being repeated inside each mart.
 
-The classification logic prioritizes `Data Deleted` before `Other`, because privacy/data-deletion values represent a more important data quality condition than generic `<Other>` buckets.
+The logic prioritizes `Data Deleted` before `Other`, because privacy/data-deletion values are more important data-quality signals than generic `<Other>` buckets.
 
-## Status
 
-```text
-DIM_CHANNEL BUILD STATUS: COMPLETED
-```
-
----
-
-# Phase 2D Validation — dim_channel
+# Phase 2F — Channel Dimension Validation
 
 ## Status
 
@@ -2809,35 +2797,45 @@ FINAL DIM_CHANNEL VALIDATION STATUS: PASS
 
 ---
 
-## Phase 2D Summary
 
-### Completed
-
-* [x] Created `dim_channel`
-* [x] Defined one-row-per-channel-combination grain
-* [x] Created reusable `channel_key`
-* [x] Classified source / medium / campaign into channel groups
-* [x] Prioritized `Data Deleted` before `Other`
-* [x] Added data quality flags for `(not set)`, `(data deleted)`, and `<Other>`
-* [x] Created dedicated validation SQL file
-* [x] Validated channel grain uniqueness
-* [x] Validated source / medium / campaign uniqueness
-* [x] Validated null critical fields
-* [x] Validated channel group distribution
-* [x] Validated 100% join coverage to `fact_sessions_daily`
-* [x] Confirmed final validation status as `PASS`
-
-## Next Step
-
-```text
-Phase 2E — mart_channel_daily
-```
-آره، دیدم. برای پروژه فقط این ۶ اسکرین‌شات را می‌آوریم: `MCV2`, `MCV5`, `MCV6`, `MCV7`, `MCV8`, `MCV10`.
 
 ````markdown
 ---
 
-# Phase 2E — mart_channel_daily
+## Validation Summary
+
+| Check                                  | Result                                  |
+| -------------------------------------- | --------------------------------------- |
+| Channel row count                      | PASS                                    |
+| Channel grain uniqueness               | PASS                                    |
+| Source / medium / campaign uniqueness  | PASS                                    |
+| Critical null fields                   | PASS                                    |
+| Channel group distribution             | PASS                                    |
+| Join coverage to `fact_sessions_daily` | PASS                                    |
+| Session distribution by channel group  | PASS with attribution sparsity observed |
+| Final validation status                | PASS                                    |
+
+## Evidence Screenshots Stored
+
+```text
+bi/screenshots/ga4/dim_channel_validation/ga4_dim_channel_validation_v02_grain_uniqueness.png
+bi/screenshots/ga4/dim_channel_validation/ga4_dim_channel_validation_v06_join_coverage.png
+bi/screenshots/ga4/dim_channel_validation/ga4_dim_channel_validation_v07_channel_distribution.png
+bi/screenshots/ga4/dim_channel_validation/ga4_dim_channel_validation_v08_final_status.png
+```
+
+## Key Findings
+
+* `dim_channel` contains 66 distinct acquisition combinations.
+* Channel grain is unique.
+* No critical nulls were detected.
+* Join coverage from `fact_sessions_daily` to `dim_channel` is 100%.
+* Unattributed traffic dominates session volume, which is a source-data limitation rather than a modeling issue.
+* Final validation status is `PASS`.
+
+---
+
+# Phase 2G — Channel Daily Mart Construction
 
 ## Status
 
@@ -2847,13 +2845,17 @@ Phase 2E — mart_channel_daily
 
 Create a BI-ready daily channel performance mart by combining validated session-level facts with reusable channel and date dimensions.
 
-The `mart_channel_daily` table supports acquisition performance reporting, daily channel monitoring, conversion analysis, revenue analysis, and dashboard-ready KPI tracking.
-
 ## Main SQL File
 
 ```text
 sql/marts/03_mart_channel_daily.sql
-````
+```
+
+## Validation SQL File
+
+```text
+sql/validation/ga4/06b_validate_mart_channel_daily.sql
+```
 
 ## Target Table
 
@@ -2915,6 +2917,7 @@ one row per event_date + channel_key
 * `checkout_to_purchase_rate`
 * `view_to_purchase_rate`
 
+
 ## Modeling Notes
 
 * The mart uses `fact_sessions_daily` as the metric base.
@@ -2931,7 +2934,7 @@ MART_CHANNEL_DAILY BUILD STATUS: COMPLETED
 
 ---
 
-# Phase 2E Validation — mart_channel_daily
+#  Phase 2H — Channel Daily Mart Validation
 
 ## Status
 
@@ -3268,25 +3271,21 @@ FINAL MART_CHANNEL_DAILY VALIDATION STATUS: PASS
 
 ---
 
-## Phase 2E Summary
 
-### Completed
+## Validation Summary
 
-* [x] Created `mart_channel_daily`
-* [x] Joined `fact_sessions_daily` to `dim_channel`
-* [x] Joined `fact_sessions_daily` to `dim_date`
-* [x] Preserved one row per `event_date + channel_key`
-* [x] Built daily channel-level session, event, transaction, and revenue metrics
-* [x] Created BI-ready KPI fields
-* [x] Validated mart grain uniqueness
-* [x] Validated January 2021 date coverage
-* [x] Validated critical null fields
-* [x] Reconciled mart totals back to fact table
-* [x] Validated channel distribution
-* [x] Validated KPI boundary conditions
-* [x] Reviewed daily trend output
-* [x] Reviewed high-revenue channel-date rows
-* [x] Confirmed final validation status as `PASS`
+| Check                                | Result                                  |
+| ------------------------------------ | --------------------------------------- |
+| Mart row count                       | PASS                                    |
+| Mart grain uniqueness                | PASS                                    |
+| Date coverage                        | PASS                                    |
+| Critical null fields                 | PASS                                    |
+| Fact-to-mart reconciliation          | PASS                                    |
+| Channel distribution                 | PASS with attribution sparsity observed |
+| KPI boundary validation              | PASS                                    |
+| Daily trend validation               | PASS                                    |
+| High-revenue channel-date inspection | Reviewed                                |
+| Final validation status              | PASS                                    |
 
 ## Evidence Screenshots Stored
 
@@ -3299,45 +3298,35 @@ bi/screenshots/ga4/mart_channel_daily_validation/ga4_mart_channel_daily_validati
 bi/screenshots/ga4/mart_channel_daily_validation/ga4_mart_channel_daily_validation_v10_final_status.png
 ```
 
-## Next Step
+## Key Findings
 
-```text
-Phase 2F — Executive KPI Mart
-```
-
-```
-```
-
-```
-```
-
-# Phase 2D — Channel Daily Mart
-
-## Status
-
-⬜ Planned
-
-## Planned SQL File
-
-```text
-sql/marts/03_mart_channel_daily.sql
-```
-
-## Planned Tasks
-
-- [ ] Build daily channel-level mart
-- [ ] Aggregate sessions by date and channel
-- [ ] Add transactions and deduplicated revenue
-- [ ] Calculate conversion metrics
-- [ ] Validate mart totals against `fact_sessions_daily`
+* `mart_channel_daily` contains 688 channel-date rows.
+* The mart has one row per `event_date + channel_key`.
+* No duplicate date-channel rows were detected.
+* The mart reconciles exactly back to `fact_sessions_daily` for sessions, events, transactions, and revenue.
+* Revenue uses deduplicated transaction logic inherited from the session fact table.
+* Unattributed sessions represent 76.96% of session volume.
+* KPI boundary checks passed.
+* Final validation status is `PASS`.
 
 ---
 
-# Phase 2E — Executive Daily Mart
+# Future Expansion Work
 
-## Status
+* [ ] Replace hardcoded January 2021 development window with configurable date ranges
+* [ ] Re-run staging on the full available GA4 range
+* [ ] Re-run validation suites on the full available range
+* [ ] Compare one-month metrics against full-range metrics
+* [ ] Confirm whether new data quality patterns appear outside January 2021
+* [ ] Update documentation if full-range findings differ
 
-⬜ Planned
+---
+
+# Next Phase
+
+```text
+Next Phase: Phase 2I — Executive KPI Mart Construction
+```
 
 ## Planned SQL Files
 
@@ -3348,23 +3337,13 @@ sql/marts/05_mart_executive_enhanced.sql
 
 ## Planned Tasks
 
-- [ ] Build executive daily KPI mart
-- [ ] Add revenue, sessions, transactions, conversion rate, and engagement metrics
-- [ ] Add rolling 7-day metrics
-- [ ] Add week-over-week comparison logic
-- [ ] Validate KPI consistency
-- [ ] Prepare BI-ready outputs
-
----
-
-# Future Expansion Work
-
-- [ ] Replace hardcoded January 2021 filters with configurable date ranges
-- [ ] Re-run staging on full available GA4 range
-- [ ] Re-run validation suite on full range
-- [ ] Compare one-month metrics vs full-range metrics
-- [ ] Confirm no new data quality patterns appear
-- [ ] Update documentation if full-range findings differ
+* [ ] Build executive daily KPI mart
+* [ ] Aggregate business-level daily KPIs
+* [ ] Add sessions, users, transactions, revenue, conversion, and engagement metrics
+* [ ] Add rolling 7-day metrics
+* [ ] Add week-over-week comparison logic
+* [ ] Validate executive KPI consistency
+* [ ] Prepare BI-ready executive outputs
 
 ---
 
@@ -3374,62 +3353,52 @@ sql/marts/05_mart_executive_enhanced.sql
 
 ⬜ Planned
 
-Planned work:
-
-- ingest Olist ecommerce CSVs
-- profile Olist orders, customers, products, sellers, payments, and reviews
-- convert raw CSVs into reusable warehouse tables
-- document grain and join logic
-- validate transactional completeness
+* Ingest Olist ecommerce CSVs
+* Profile orders, customers, products, sellers, payments, and reviews
+* Convert raw CSVs into reusable warehouse tables
+* Document grain and join logic
+* Validate transactional completeness
 
 ## Phase 4 — Multi-Source Commercial Mart
 
 ⬜ Planned
 
-Planned work:
-
-- integrate GA4 behavioral/acquisition layer with Olist commercial data at an aggregate level
-- document integration limitations
-- avoid artificial row-level joins where no natural key exists
-- build commercial KPI marts
+* Integrate GA4 behavioral/acquisition layer with Olist commercial data at an aggregate level
+* Document integration limitations
+* Avoid artificial row-level joins where no natural key exists
+* Build commercial KPI marts
 
 ## Phase 5 — BI Layer
 
 ⬜ Planned
 
-Planned work:
-
-- build Power BI dashboards
-- create executive overview page
-- create acquisition/channel performance page
-- create ecommerce funnel page
-- create revenue and transaction quality page
-- add documentation screenshots
+* Build Power BI dashboards
+* Create executive overview page
+* Create acquisition/channel performance page
+* Create ecommerce funnel page
+* Create revenue and transaction quality page
+* Add dashboard screenshots
 
 ## Phase 6 — A/B Testing Layer
 
 ⬜ Planned
 
-Planned work:
-
-- define experiment framework
-- build assignment logic
-- calculate treatment vs control KPIs
-- evaluate absolute and relative lift
-- document ship / no-ship recommendation
+* Define experiment framework
+* Build assignment logic
+* Calculate treatment vs control KPIs
+* Evaluate absolute and relative lift
+* Document ship / no-ship recommendation
 
 ## Phase 7 — Final Packaging
 
 ⬜ Planned
 
-Planned work:
-
-- finalize README
-- clean documentation
-- validate repo navigation
-- polish screenshots
-- summarize business outcomes
-- prepare project for resume and interview use
+* Finalize README
+* Clean documentation
+* Validate repo navigation
+* Polish screenshots
+* Summarize business outcomes
+* Prepare project for resume and interview use
 
 ---
 
@@ -3443,14 +3412,17 @@ Planned work:
 
 Reasons:
 
-- repository structure is clear
-- raw profiling is complete
-- staging view is complete
-- staging validation suite is complete
-- session fact table is complete
-- session fact validation suite is complete
-- selected screenshots are organized by workflow area
-- BigQuery work is backed by GitHub documentation
+* Repository structure is clear.
+* GA4 raw profiling is complete.
+* GA4 staging view is complete.
+* GA4 staging validation suite is complete.
+* Session fact table is complete.
+* Session fact validation suite is complete.
+* Date dimension is complete and validated.
+* Channel dimension is complete and validated.
+* Channel daily mart is complete and validated.
+* Selected screenshots are organized by workflow area.
+* BigQuery work is backed by GitHub documentation.
 
 ### Analytics Engineering Health
 
@@ -3458,12 +3430,13 @@ Reasons:
 
 Reasons:
 
-- grain is documented
-- validation checks are explicit
-- data quality risks are surfaced
-- revenue deduplication is implemented
-- attribution sparsity is documented
-- downstream modeling requirements are clear
+* Table grains are documented.
+* Validation checks are explicit.
+* Data quality risks are surfaced.
+* Revenue deduplication is implemented.
+* Attribution sparsity is documented.
+* Fact-to-mart reconciliation is implemented.
+* Downstream modeling requirements are clear.
 
 ### Portfolio Readiness
 
@@ -3473,20 +3446,23 @@ Reason:
 
 The analytics foundation is strong, but the project still needs:
 
-- date and channel dimensions
-- commercial marts
-- executive KPI layer
-- BI dashboards
-- final README polish
-- business narrative
+* executive KPI mart
+* enhanced executive mart
+* BI dashboard layer
+* final README polish
+* business narrative
+* final GitHub packaging
 
 ## Most Important Data Risks to Preserve in Future Work
 
 Future marts and dashboards must continue to explicitly handle:
 
-- high attribution sparsity
-- invalid transaction IDs
-- missing purchase revenue
-- duplicate purchase transaction rows
-- transaction-level revenue deduplication
-- strict separation between event, session, item, and transaction grains
+* high attribution sparsity
+* invalid transaction IDs
+* missing purchase revenue
+* duplicate purchase transaction rows
+* transaction-level revenue deduplication
+* strict separation between event, session, item, transaction, dimension, and mart grains
+
+```
+
