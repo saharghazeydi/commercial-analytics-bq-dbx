@@ -3792,7 +3792,7 @@ bi/screenshots/ga4/mart_executive_daily_validation/ga4_mart_executive_daily_vali
 
 ---
 
-````markdown
+
 ---
 
 # Phase 2K — Executive Enhanced Mart Construction
@@ -4070,7 +4070,7 @@ PASS
 | ---------: | -----------------------------: | ------------------------------: | --------------------------------------: | ---------------------------------: | ------------------: | ------------------: |
 |         31 |                              6 |                              25 |                                      25 |                                  0 |                   1 |                   7 |
 
-![GA4 Executive Enhanced Validation V06 Rolling Window Structure](../bi/screenshots/ga4/mart_executive_enhanced_validation/ga4_mart_executive_enhanced_validation_v06_rolling_window_structure.png)![alt text](ga4_mart_executive_enhanced_validation_v06_rolling_window_structure.png)
+![GA4 Executive Enhanced Validation V06 Rolling Window Structure](../bi/screenshots/ga4/mart_executive_enhanced_validation/ga4_mart_executive_enhanced_validation_v06_rolling_window_structure.png)
 
 ### Key Findings
 
@@ -4093,7 +4093,7 @@ PASS
 
 Rolling metrics were recalculated from `mart_executive_daily` and compared against stored enhanced mart values.
 
-![GA4 Executive Enhanced Validation V07 Rolling Metric Recalculation](../bi/screenshots/ga4/mart_executive_enhanced_validation/ga4_mart_executive_enhanced_validation_v07_rolling_metric_recalculation.png)![alt text](ga4_mart_executive_enhanced_validation_v07_rolling_metric_recalculation.png)
+![GA4 Executive Enhanced Validation V07 Rolling Metric Recalculation](../bi/screenshots/ga4/mart_executive_enhanced_validation/ga4_mart_executive_enhanced_validation_v07_rolling_metric_recalculation.png)
 
 ### Key Findings
 
@@ -4118,7 +4118,7 @@ PASS
 | ---------: | --------------------------: | -----------------------: | --------------------------: | --------------------: | ----------------------: |
 |         31 |                           7 |                       24 |                          24 |                     0 |                       0 |
 
-![GA4 Executive Enhanced Validation V08 WoW Availability](../bi/screenshots/ga4/mart_executive_enhanced_validation/ga4_mart_executive_enhanced_validation_v08_wow_availability.png)![alt text](ga4_mart_executive_enhanced_validation_v08_wow_availability.png)
+![GA4 Executive Enhanced Validation V08 WoW Availability](../bi/screenshots/ga4/mart_executive_enhanced_validation/ga4_mart_executive_enhanced_validation_v08_wow_availability.png)
 
 ### Key Findings
 
@@ -4186,7 +4186,7 @@ PASS
 
 The output contains base daily, rolling 7-day, and week-over-week KPI movement across the January 2021 reporting window.
 
-![GA4 Executive Enhanced Validation V11 Enhanced Daily Trend](../bi/screenshots/ga4/mart_executive_enhanced_validation/ga4_mart_executive_enhanced_validation_v11_enhanced_daily_trend.png)![alt text](ga4_mart_executive_enhanced_validation_v11_enhanced_daily_trend.png)
+![GA4 Executive Enhanced Validation V11 Enhanced Daily Trend](../bi/screenshots/ga4/mart_executive_enhanced_validation/ga4_mart_executive_enhanced_validation_v11_enhanced_daily_trend.png)
 
 ### Key Findings
 
@@ -4212,7 +4212,7 @@ PASS
 | ---------: | -------------------: | ------------------------: | --------------: | ------------: | ---------: | ----------------: | -----------: |
 |         31 |                   31 |                         0 |               0 |             0 |          0 |                 0 |            0 |
 
-![GA4 Executive Enhanced Validation V12 Final Status](../bi/screenshots/ga4/mart_executive_enhanced_validation/ga4_mart_executive_enhanced_validation_v12_final_status.png)![alt text](ga4_mart_executive_enhanced_validation_v12_final_status.png)
+![GA4 Executive Enhanced Validation V12 Final Status](../bi/screenshots/ga4/mart_executive_enhanced_validation/ga4_mart_executive_enhanced_validation_v12_final_status.png)
 
 ### Key Findings
 
@@ -4273,18 +4273,6 @@ bi/screenshots/ga4/mart_executive_enhanced_validation/ga4_mart_executive_enhance
 
 ---
 
-# Next Phase
-
-```text
-Next Phase: Phase 3 — Olist Ingestion
-```
-
-```
-```
-
-
-
-
 # Future Expansion Work
 
 * [ ] Replace hardcoded January 2021 development window with configurable date ranges
@@ -4299,25 +4287,24 @@ Next Phase: Phase 3 — Olist Ingestion
 # Next Phase
 
 ```text
-Next Phase: Phase 2K — Executive Enhanced Mart Construction
+Next Phase: Phase 3 — Olist Ingestion
 ```
 
 ## Planned SQL Files
 
 ```text
-sql/marts/05_mart_executive_enhanced.sql
+To be defined in Phase 3A after raw Olist file inventory.
 ```
 
 ## Planned Tasks
 
-* [ ] Build enhanced executive KPI mart
-* [ ] Add 7-day rolling revenue
-* [ ] Add 7-day rolling conversion rate
-* [ ] Add week-over-week revenue comparison
-* [ ] Add week-over-week sessions comparison
-* [ ] Add week-over-week transaction comparison
-* [ ] Validate enhanced KPI consistency
-* [ ] Prepare enhanced BI-ready executive outputs
+* [ ] Create Olist raw data inventory
+* [ ] Inspect available CSV files
+* [ ] Define source tables and expected grains
+* [ ] Plan BigQuery ingestion approach
+* [ ] Create Olist staging folder structure if needed
+* [ ] Profile orders, customers, products, sellers, payments, and reviews
+* [ ] Validate transactional completeness before modeling
 
 ---
 
@@ -4396,6 +4383,7 @@ Reasons:
 * Channel dimension is complete and validated.
 * Channel daily mart is complete and validated.
 * Executive daily mart is complete and validated.
+* Executive enhanced mart is complete and validated.
 * Selected screenshots are organized by workflow area.
 * BigQuery work is backed by GitHub documentation.
 
@@ -4411,6 +4399,8 @@ Reasons:
 * Revenue deduplication is implemented.
 * Attribution sparsity is documented.
 * Non-additive user logic is handled correctly.
+* Rolling KPI logic is documented.
+* Week-over-week comparison logic is validated.
 * Fact-to-mart reconciliation is implemented.
 * Downstream modeling requirements are clear.
 
@@ -4420,9 +4410,10 @@ Reasons:
 
 Reason:
 
-The analytics foundation is strong, but the project still needs:
+The GA4 analytics foundation is strong and complete, but the project still needs:
 
-* enhanced executive mart
+* Olist ingestion
+* multi-source commercial modeling
 * BI dashboard layer
 * final README polish
 * business narrative
@@ -4438,7 +4429,8 @@ Future marts and dashboards must continue to explicitly handle:
 * duplicate purchase transaction rows
 * transaction-level revenue deduplication
 * non-additive distinct user metrics
+* non-additive rolling user metrics
 * strict separation between event, session, item, transaction, dimension, and mart grains
 
 ```
-```
+
