@@ -3314,6 +3314,7 @@ bi/screenshots/ga4/mart_channel_daily_validation/ga4_mart_channel_daily_validati
 
 
 
+
 ````markdown
 ---
 
@@ -3497,7 +3498,7 @@ bi/screenshots/ga4/mart_executive_daily_validation/
 | ---------: | -------------- | -------------- | -------------: |
 |         31 | 2021-01-01     | 2021-01-31     |             31 |
 
-![GA4 Executive Daily Validation V01 Row Count Date Range](../bi/screenshots/ga4/mart_executive_daily_validation/ga4_mart_executive_daily_validation_v01_row_count_date_range.png)![alt text](ga4_mart_executive_daily_validation_v01_row_count_date_range.png)
+![GA4 Executive Daily Validation V01 Row Count Date Range](../bi/screenshots/ga4/mart_executive_daily_validation/ga4_mart_executive_daily_validation_v01_row_count_date_range.png)
 
 ### Key Findings
 
@@ -3521,7 +3522,7 @@ PASS
 | ---------: | -------------------: | ------------------------: | ----------------------- |
 |         31 |                   31 |                         0 | PASS                    |
 
-![GA4 Executive Daily Validation V02 Grain Uniqueness](../bi/screenshots/ga4/mart_executive_daily_validation/ga4_mart_executive_daily_validation_v02_grain_uniqueness.png)![alt text](ga4_mart_executive_daily_validation_v02_grain_uniqueness.png)
+![GA4 Executive Daily Validation V02 Grain Uniqueness](../bi/screenshots/ga4/mart_executive_daily_validation/ga4_mart_executive_daily_validation_v02_grain_uniqueness.png)
 
 ### Key Findings
 
@@ -3600,7 +3601,7 @@ Selected reconciliation outputs:
 | Transactions |             895 |                895 |          0 |
 | Revenue      |        56,880.0 |           56,880.0 |        0.0 |
 
-![GA4 Executive Daily Validation V05 Additive Metric Reconciliation](../bi/screenshots/ga4/mart_executive_daily_validation/ga4_mart_executive_daily_validation_v05_additive_metric_reconciliation.png)![alt text](ga4_mart_executive_daily_validation_v05_additive_metric_reconciliation.png)
+![GA4 Executive Daily Validation V05 Additive Metric Reconciliation](../bi/screenshots/ga4/mart_executive_daily_validation/ga4_mart_executive_daily_validation_v05_additive_metric_reconciliation.png)
 
 ### Key Findings
 
@@ -3667,7 +3668,7 @@ PASS
 
 The validation recalculated selected KPI fields from stored base metrics and compared them with the KPI values stored in `mart_executive_daily`.
 
-![GA4 Executive Daily Validation V08 KPI Recalculation](../bi/screenshots/ga4/mart_executive_daily_validation/ga4_mart_executive_daily_validation_v08_kpi_recalculation.png)![alt text](ga4_mart_executive_daily_validation_v08_kpi_recalculation.png)
+![GA4 Executive Daily Validation V08 KPI Recalculation](../bi/screenshots/ga4/mart_executive_daily_validation/ga4_mart_executive_daily_validation_v08_kpi_recalculation.png)
 
 ### Key Findings
 
@@ -3687,9 +3688,9 @@ PASS
 
 ### Key Findings
 
-* No negative metric issues were expected in valid base metrics.
-* Impossible rate checks were reviewed as a supporting validation step.
-* Any funnel rate above 1 should be interpreted carefully because event-count-based funnel ratios can exceed 1 when multiple downstream events occur relative to upstream event counts at daily aggregate grain.
+* Negative metric checks did not identify core metric issues.
+* Funnel rate outputs were reviewed as a supporting anomaly inspection step.
+* Event-count-based funnel ratios can exceed 1 when multiple downstream events occur relative to upstream event counts at daily aggregate grain.
 
 ### Screenshot
 
@@ -3711,7 +3712,7 @@ PASS WITH FUNNEL-RATE INTERPRETATION NOTE
 
 The output contains daily executive KPI movement across the January 2021 reporting window.
 
-![GA4 Executive Daily Validation V10 Daily Trend](../bi/screenshots/ga4/mart_executive_daily_validation/ga4_mart_executive_daily_validation_v10_daily_trend.png)![alt text](ga4_mart_executive_daily_validation_v10_daily_trend.png)
+![GA4 Executive Daily Validation V10 Daily Trend](../bi/screenshots/ga4/mart_executive_daily_validation/ga4_mart_executive_daily_validation_v10_daily_trend.png)
 
 ### Key Findings
 
@@ -3736,7 +3737,7 @@ PASS
 | ---------: | -------------------: | ------------------------: | --------------: | ------------: | ---------: | ----------------: | -----------: | -------------------------------- |
 |         31 |                   31 |                         0 |               0 |             0 |          0 |                 0 |            0 | PASS                             |
 
-![GA4 Executive Daily Validation V11 Final Status](../bi/screenshots/ga4/mart_executive_daily_validation/ga4_mart_executive_daily_validation_v11_final_status.png)![alt text](ga4_mart_executive_daily_validation_v11_final_status.png)
+![GA4 Executive Daily Validation V11 Final Status](../bi/screenshots/ga4/mart_executive_daily_validation/ga4_mart_executive_daily_validation_v11_final_status.png)
 
 ### Key Findings
 
@@ -3791,12 +3792,6 @@ bi/screenshots/ga4/mart_executive_daily_validation/ga4_mart_executive_daily_vali
 
 ---
 
-➡️ Next Phase: Phase 2K — Executive Enhanced Mart Construction
-
-```
-```
-
-
 # Future Expansion Work
 
 * [ ] Replace hardcoded January 2021 development window with configurable date ranges
@@ -3811,25 +3806,25 @@ bi/screenshots/ga4/mart_executive_daily_validation/ga4_mart_executive_daily_vali
 # Next Phase
 
 ```text
-Next Phase: Phase 2I — Executive KPI Mart Construction
+Next Phase: Phase 2K — Executive Enhanced Mart Construction
 ```
 
 ## Planned SQL Files
 
 ```text
-sql/marts/04_mart_executive_daily.sql
 sql/marts/05_mart_executive_enhanced.sql
 ```
 
 ## Planned Tasks
 
-* [ ] Build executive daily KPI mart
-* [ ] Aggregate business-level daily KPIs
-* [ ] Add sessions, users, transactions, revenue, conversion, and engagement metrics
-* [ ] Add rolling 7-day metrics
-* [ ] Add week-over-week comparison logic
-* [ ] Validate executive KPI consistency
-* [ ] Prepare BI-ready executive outputs
+* [ ] Build enhanced executive KPI mart
+* [ ] Add 7-day rolling revenue
+* [ ] Add 7-day rolling conversion rate
+* [ ] Add week-over-week revenue comparison
+* [ ] Add week-over-week sessions comparison
+* [ ] Add week-over-week transaction comparison
+* [ ] Validate enhanced KPI consistency
+* [ ] Prepare enhanced BI-ready executive outputs
 
 ---
 
@@ -3907,6 +3902,7 @@ Reasons:
 * Date dimension is complete and validated.
 * Channel dimension is complete and validated.
 * Channel daily mart is complete and validated.
+* Executive daily mart is complete and validated.
 * Selected screenshots are organized by workflow area.
 * BigQuery work is backed by GitHub documentation.
 
@@ -3921,6 +3917,7 @@ Reasons:
 * Data quality risks are surfaced.
 * Revenue deduplication is implemented.
 * Attribution sparsity is documented.
+* Non-additive user logic is handled correctly.
 * Fact-to-mart reconciliation is implemented.
 * Downstream modeling requirements are clear.
 
@@ -3932,7 +3929,6 @@ Reason:
 
 The analytics foundation is strong, but the project still needs:
 
-* executive KPI mart
 * enhanced executive mart
 * BI dashboard layer
 * final README polish
@@ -3948,7 +3944,8 @@ Future marts and dashboards must continue to explicitly handle:
 * missing purchase revenue
 * duplicate purchase transaction rows
 * transaction-level revenue deduplication
+* non-additive distinct user metrics
 * strict separation between event, session, item, transaction, dimension, and mart grains
 
 ```
-
+```
