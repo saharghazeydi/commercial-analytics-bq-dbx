@@ -3312,6 +3312,491 @@ bi/screenshots/ga4/mart_channel_daily_validation/ga4_mart_channel_daily_validati
 
 ---
 
+
+
+````markdown
+---
+
+# Phase 2I — Executive KPI Mart Construction
+
+## Status
+
+✅ Completed
+
+## Objective
+
+Build a daily executive-level commercial analytics mart that summarizes commercial, traffic, engagement, funnel, revenue, and data quality metrics for BI reporting.
+
+## Main SQL File
+
+```text
+sql/marts/04_mart_executive_daily.sql
+````
+
+## Target Table
+
+```text
+commercial-analytics-bq-dbx.commercial_analytics_us.mart_executive_daily
+```
+
+## Sources
+
+```text
+commercial-analytics-bq-dbx.commercial_analytics_us.mart_channel_daily
+commercial-analytics-bq-dbx.commercial_analytics_us.fact_sessions_daily
+```
+
+## Grain
+
+```text
+one row per event_date
+```
+
+## Key Modeling Decision
+
+Most executive metrics are additive and are aggregated from the validated `mart_channel_daily`.
+
+However, `users` is a non-additive metric across channel-level rows. To avoid overcounting users, daily users are calculated directly from `fact_sessions_daily` using:
+
+```sql
+COUNT(DISTINCT user_pseudo_id)
+```
+
+This prevents inflated executive user counts when the same user appears across multiple channels on the same day.
+
+## Metrics Created
+
+### Traffic Metrics
+
+* `sessions`
+* `users`
+
+### Engagement Metrics
+
+* `total_events`
+* `page_view_events`
+* `user_engagement_events`
+* `scroll_events`
+* `engaged_sessions`
+* `engaged_event_rows`
+* `total_engagement_time_msec`
+
+### Ecommerce Funnel Metrics
+
+* `ecommerce_funnel_events`
+* `view_item_events`
+* `add_to_cart_events`
+* `begin_checkout_events`
+* `purchase_event_rows`
+
+### Commercial Outcome Metrics
+
+* `transactions`
+* `revenue`
+
+### Data Quality Metrics
+
+* `invalid_purchase_transaction_id_events`
+* `missing_purchase_revenue_events`
+* `zero_purchase_revenue_events`
+* `negative_purchase_revenue_events`
+
+### Executive KPIs
+
+* `users_per_session`
+* `events_per_session`
+* `page_views_per_session`
+* `engaged_session_rate`
+* `avg_engagement_time_msec_per_session`
+* `view_item_rate_per_session`
+* `add_to_cart_rate_per_session`
+* `begin_checkout_rate_per_session`
+* `purchase_event_rate_per_session`
+* `session_conversion_rate`
+* `user_conversion_rate`
+* `revenue_per_session`
+* `revenue_per_user`
+* `average_order_value`
+* `view_to_cart_rate`
+* `cart_to_checkout_rate`
+* `checkout_to_purchase_rate`
+* `view_to_purchase_rate`
+
+### Executive Flags
+
+* `has_sessions`
+* `has_transactions`
+* `has_revenue`
+* `has_purchase_quality_issue`
+
+## Phase 2I Summary
+
+* [x] Created `mart_executive_daily`
+* [x] Aggregated additive executive metrics from `mart_channel_daily`
+* [x] Calculated true daily users from `fact_sessions_daily`
+* [x] Avoided channel-level user overcounting
+* [x] Added executive traffic, engagement, funnel, conversion, and revenue KPIs
+* [x] Added purchase quality indicators
+* [x] Prepared the table for executive BI reporting and enhanced KPI modeling
+
+---
+
+# Phase 2J — Executive KPI Mart Validation
+
+## Status
+
+✅ Completed
+
+## Objective
+
+Validate the `mart_executive_daily` table for grain integrity, date coverage, source reconciliation, true user logic, KPI calculation accuracy, impossible values, and BI readiness.
+
+## Validation SQL File
+
+```text
+sql/validation/ga4/07b_validate_mart_executive_daily.sql
+```
+
+## Target Table
+
+```text
+commercial-analytics-bq-dbx.commercial_analytics_us.mart_executive_daily
+```
+
+## Screenshot Directory
+
+```text
+bi/screenshots/ga4/mart_executive_daily_validation/
+```
+
+---
+
+## Executive Daily Validation Screenshot Inventory
+
+| Step | Validation Check                          | Screenshot File                                                              | Stored |
+| ---- | ----------------------------------------- | ---------------------------------------------------------------------------- | ------ |
+| EV1  | Row count and date range validation       | `ga4_mart_executive_daily_validation_v01_row_count_date_range.png`           | Yes    |
+| EV2  | Grain uniqueness validation               | `ga4_mart_executive_daily_validation_v02_grain_uniqueness.png`               | Yes    |
+| EV3  | Critical null validation                  | Not stored                                                                   | No     |
+| EV4  | Date coverage validation against dim_date | Not stored                                                                   | No     |
+| EV5  | Additive metric reconciliation            | `ga4_mart_executive_daily_validation_v05_additive_metric_reconciliation.png` | Yes    |
+| EV6  | True daily users reconciliation           | Not stored                                                                   | No     |
+| EV7  | Daily additive metric reconciliation      | Not stored                                                                   | No     |
+| EV8  | KPI recalculation validation              | `ga4_mart_executive_daily_validation_v08_kpi_recalculation.png`              | Yes    |
+| EV9  | Impossible value validation               | Not stored                                                                   | No     |
+| EV10 | Daily trend inspection                    | `ga4_mart_executive_daily_validation_v10_daily_trend.png`                    | Yes    |
+| EV11 | Final validation status                   | `ga4_mart_executive_daily_validation_v11_final_status.png`                   | Yes    |
+
+---
+
+## EV1 — Row Count and Date Range Validation
+
+### Result
+
+| total_rows | min_event_date | max_event_date | distinct_dates |
+| ---------: | -------------- | -------------- | -------------: |
+|         31 | 2021-01-01     | 2021-01-31     |             31 |
+
+![GA4 Executive Daily Validation V01 Row Count Date Range](../bi/screenshots/ga4/mart_executive_daily_validation/ga4_mart_executive_daily_validation_v01_row_count_date_range.png)![alt text](ga4_mart_executive_daily_validation_v01_row_count_date_range.png)
+
+### Key Findings
+
+* The executive mart contains 31 daily rows.
+* The date range covers the full January 2021 reporting window.
+* The number of distinct dates matches the total row count.
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## EV2 — Grain Uniqueness Validation
+
+### Result
+
+| total_rows | distinct_event_dates | duplicate_event_date_rows | grain_validation_status |
+| ---------: | -------------------: | ------------------------: | ----------------------- |
+|         31 |                   31 |                         0 | PASS                    |
+
+![GA4 Executive Daily Validation V02 Grain Uniqueness](../bi/screenshots/ga4/mart_executive_daily_validation/ga4_mart_executive_daily_validation_v02_grain_uniqueness.png)![alt text](ga4_mart_executive_daily_validation_v02_grain_uniqueness.png)
+
+### Key Findings
+
+* The executive mart contains exactly one row per `event_date`.
+* No duplicate daily rows were detected.
+* The table grain is valid for daily executive reporting.
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## EV3 — Critical Null Validation
+
+### Key Findings
+
+* No null values were detected in critical fields.
+* Required base metrics and KPI fields are populated.
+* Conditional KPI null checks passed for sessions, users, revenue, and transactions.
+
+### Screenshot
+
+```text
+Not stored. This was a supporting structural validation check.
+```
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## EV4 — Date Coverage Validation Against dim_date
+
+### Result
+
+| expected_dates_from_dim_date | dates_found_in_executive_mart | missing_dates_from_executive_mart | date_coverage_status |
+| ---------------------------: | ----------------------------: | --------------------------------: | -------------------- |
+|                           31 |                            31 |                                 0 | PASS                 |
+
+### Key Findings
+
+* All expected calendar dates from `dim_date` exist in `mart_executive_daily`.
+* No reporting dates are missing.
+* The executive mart aligns with the project calendar spine.
+
+### Screenshot
+
+```text
+Not stored. This was a supporting calendar coverage check.
+```
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## EV5 — Additive Metric Reconciliation With mart_channel_daily
+
+### Result
+
+Selected reconciliation outputs:
+
+| Metric       | Executive Total | Channel Mart Total | Difference |
+| ------------ | --------------: | -----------------: | ---------: |
+| Sessions     |         118,618 |            118,618 |          0 |
+| Total Events |       1,210,147 |          1,210,147 |          0 |
+| Transactions |             895 |                895 |          0 |
+| Revenue      |        56,880.0 |           56,880.0 |        0.0 |
+
+![GA4 Executive Daily Validation V05 Additive Metric Reconciliation](../bi/screenshots/ga4/mart_executive_daily_validation/ga4_mart_executive_daily_validation_v05_additive_metric_reconciliation.png)![alt text](ga4_mart_executive_daily_validation_v05_additive_metric_reconciliation.png)
+
+### Key Findings
+
+* Additive executive metrics reconcile with `mart_channel_daily`.
+* Sessions, total events, transactions, and revenue match exactly.
+* Revenue remains consistent with the deduplicated upstream revenue logic.
+* Users were intentionally excluded from this reconciliation because distinct users are not safely additive across channel-level rows.
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## EV6 — True Daily Users Reconciliation With fact_sessions_daily
+
+### Key Findings
+
+* Executive daily users were validated against `COUNT(DISTINCT user_pseudo_id)` from `fact_sessions_daily`.
+* No mismatches were returned.
+* This confirms that `mart_executive_daily` avoids channel-level user overcounting.
+
+### Screenshot
+
+```text
+Not stored. The query returned zero discrepancy rows.
+```
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## EV7 — Daily Additive Metric Reconciliation With mart_channel_daily
+
+### Key Findings
+
+* Each executive daily row was reconciled against the daily aggregation of `mart_channel_daily`.
+* No daily mismatch rows were returned.
+* Additive metrics remain consistent at both total and daily levels.
+
+### Screenshot
+
+```text
+Not stored. The query returned zero discrepancy rows.
+```
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## EV8 — KPI Recalculation Validation
+
+### Result
+
+The validation recalculated selected KPI fields from stored base metrics and compared them with the KPI values stored in `mart_executive_daily`.
+
+![GA4 Executive Daily Validation V08 KPI Recalculation](../bi/screenshots/ga4/mart_executive_daily_validation/ga4_mart_executive_daily_validation_v08_kpi_recalculation.png)![alt text](ga4_mart_executive_daily_validation_v08_kpi_recalculation.png)
+
+### Key Findings
+
+* Recalculated KPI values matched stored KPI fields.
+* Difference columns returned zero across the inspected daily rows.
+* Conversion, revenue efficiency, and AOV calculations are internally consistent.
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## EV9 — Impossible Value Validation
+
+### Key Findings
+
+* No negative metric issues were expected in valid base metrics.
+* Impossible rate checks were reviewed as a supporting validation step.
+* Any funnel rate above 1 should be interpreted carefully because event-count-based funnel ratios can exceed 1 when multiple downstream events occur relative to upstream event counts at daily aggregate grain.
+
+### Screenshot
+
+```text
+Not stored. This was a supporting anomaly inspection check.
+```
+
+### Status
+
+```text
+PASS WITH FUNNEL-RATE INTERPRETATION NOTE
+```
+
+---
+
+## EV10 — Daily Trend Inspection
+
+### Result
+
+The output contains daily executive KPI movement across the January 2021 reporting window.
+
+![GA4 Executive Daily Validation V10 Daily Trend](../bi/screenshots/ga4/mart_executive_daily_validation/ga4_mart_executive_daily_validation_v10_daily_trend.png)![alt text](ga4_mart_executive_daily_validation_v10_daily_trend.png)
+
+### Key Findings
+
+* Daily sessions, users, transactions, and revenue are populated.
+* Conversion and revenue KPIs are available for executive monitoring.
+* January 31 shows zero transactions and zero revenue, which is consistent with the downstream KPI output.
+* The table is ready for BI dashboard development and enhanced executive trend metrics.
+
+### Status
+
+```text
+PASS
+```
+
+---
+
+## EV11 — Final Validation Status
+
+### Result
+
+| total_rows | distinct_event_dates | duplicate_event_date_rows | null_event_date | null_sessions | null_users | null_transactions | null_revenue | executive_mart_validation_status |
+| ---------: | -------------------: | ------------------------: | --------------: | ------------: | ---------: | ----------------: | -----------: | -------------------------------- |
+|         31 |                   31 |                         0 |               0 |             0 |          0 |                 0 |            0 | PASS                             |
+
+![GA4 Executive Daily Validation V11 Final Status](../bi/screenshots/ga4/mart_executive_daily_validation/ga4_mart_executive_daily_validation_v11_final_status.png)![alt text](ga4_mart_executive_daily_validation_v11_final_status.png)
+
+### Key Findings
+
+* Final validation status is `PASS`.
+* Date grain is unique.
+* No critical nulls were detected.
+* No negative session, user, transaction, or revenue values were detected.
+* Core executive KPI fields are structurally ready for BI and enhanced mart development.
+
+### Status
+
+```text
+FINAL EXECUTIVE MART VALIDATION STATUS: PASS
+```
+
+---
+
+## Phase 2J Summary
+
+* [x] Created executive daily validation SQL file
+* [x] Validated row count and date range
+* [x] Validated one-row-per-date grain
+* [x] Checked critical null fields
+* [x] Validated date coverage against `dim_date`
+* [x] Reconciled additive executive metrics with `mart_channel_daily`
+* [x] Validated true daily users against `fact_sessions_daily`
+* [x] Reconciled daily additive metrics with channel daily aggregation
+* [x] Recalculated selected KPI fields
+* [x] Inspected impossible values and KPI anomalies
+* [x] Inspected daily KPI trend for BI readiness
+* [x] Produced final executive mart validation status
+* [x] Saved selected evidence screenshots
+
+## Evidence Screenshots Stored
+
+```text
+bi/screenshots/ga4/mart_executive_daily_validation/ga4_mart_executive_daily_validation_v01_row_count_date_range.png
+bi/screenshots/ga4/mart_executive_daily_validation/ga4_mart_executive_daily_validation_v02_grain_uniqueness.png
+bi/screenshots/ga4/mart_executive_daily_validation/ga4_mart_executive_daily_validation_v05_additive_metric_reconciliation.png
+bi/screenshots/ga4/mart_executive_daily_validation/ga4_mart_executive_daily_validation_v08_kpi_recalculation.png
+bi/screenshots/ga4/mart_executive_daily_validation/ga4_mart_executive_daily_validation_v10_daily_trend.png
+bi/screenshots/ga4/mart_executive_daily_validation/ga4_mart_executive_daily_validation_v11_final_status.png
+```
+
+## Key Modeling Validation Notes
+
+* `users` was intentionally calculated from `fact_sessions_daily`, not summed from `mart_channel_daily`.
+* Additive metrics such as sessions, events, transactions, and revenue reconcile with the validated channel mart.
+* Revenue remains aligned with upstream deduplicated transaction logic.
+* Funnel step KPIs are event-count-based and should be interpreted as daily funnel activity ratios, not strict user-level funnel progression.
+* The executive mart is validated and ready for enhanced executive KPI modeling.
+
+---
+
+➡️ Next Phase: Phase 2K — Executive Enhanced Mart Construction
+
+```
+```
+
+
 # Future Expansion Work
 
 * [ ] Replace hardcoded January 2021 development window with configurable date ranges
