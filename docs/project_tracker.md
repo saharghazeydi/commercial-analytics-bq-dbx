@@ -4290,6 +4290,97 @@ bi/screenshots/ga4/mart_executive_enhanced_validation/ga4_mart_executive_enhance
 Next Phase: Phase 3 — Olist Ingestion
 ```
 
+### Phase 3A — Olist Raw Data Ingestion & Profiling
+
+**Status:** Completed
+**Environment:** Databricks
+**Layer:** Raw ingestion / profiling layer
+**Source:** Olist Brazilian E-Commerce CSV files
+**Output:** Parquet files stored in Databricks Volume
+
+#### Purpose
+
+Ingest the raw Olist ecommerce datasets into Databricks, validate file availability, inspect raw data structure, perform initial data quality profiling, and convert the raw CSV files into Parquet format for downstream modeling.
+
+#### Implementation Summary
+
+The Olist raw data ingestion process was completed in Databricks using PySpark. The pipeline validated the availability of all expected source files, loaded the raw CSV datasets into Spark DataFrames, inspected the schema of the core orders table, generated profiling outputs across all raw datasets, and wrote each dataset to a Parquet landing layer.
+
+The following Olist datasets were included:
+
+* `olist_customers_dataset.csv`
+* `olist_orders_dataset.csv`
+* `olist_order_items_dataset.csv`
+* `olist_order_payments_dataset.csv`
+* `olist_order_reviews_dataset.csv`
+* `olist_products_dataset.csv`
+* `olist_sellers_dataset.csv`
+* `olist_geolocation_dataset.csv`
+* `product_category_name_translation.csv`
+
+#### Key Activities Completed
+
+* Defined the Olist raw ingestion notebook in Databricks.
+* Validated that all 9 expected Olist raw CSV files were available.
+* Loaded all raw CSV files into Spark DataFrames.
+* Previewed the core `orders` dataset.
+* Inspected the schema of the `orders` dataset.
+* Created a raw profiling summary for all Olist datasets.
+* Checked row counts, column counts, distinct row counts, and duplicate row counts.
+* Created a null profiling summary across all raw datasets.
+* Performed key uniqueness checks for important entity keys.
+* Wrote all raw Olist datasets to Parquet format.
+* Validated row count consistency between CSV source files and Parquet outputs.
+* Confirmed successful completion of Phase 3A.
+
+#### Data Quality Notes
+
+* All 9 expected Olist source files were successfully available and loaded.
+* CSV-to-Parquet row counts matched for all datasets.
+* The `geolocation` dataset contains duplicate rows, which is expected due to repeated geographic ZIP/city/state-level records.
+* The `order_reviews` dataset contains duplicate `review_id` values, which should be handled carefully in downstream modeling.
+* Null values were identified mainly in review comments, delivery timestamps, and product attribute fields. These are expected raw-data quality issues and will be addressed during modeling and transformation phases where required.
+
+#### Evidence Screenshots
+
+| Evidence                            | Screenshot                                                                                          |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Raw file availability validation    | `../bi/screenshots/olist/phase_3a_raw_ingestion_profiling/01b_olist_raw_file_availability_pass.png` |
+| Orders sample preview               | `../bi/screenshots/olist/phase_3a_raw_ingestion_profiling/02_orders_sample_preview.png`             |
+| Orders schema inspection            | `../bi/screenshots/olist/phase_3a_raw_ingestion_profiling/03_orders_schema.png`                     |
+| Raw profiling summary               | `../bi/screenshots/olist/phase_3a_raw_ingestion_profiling/04_olist_raw_profiling_summary.png`       |
+| Null profiling summary              | `../bi/screenshots/olist/phase_3a_raw_ingestion_profiling/05_olist_null_profile.png`                |
+| Key quality checks                  | `../bi/screenshots/olist/phase_3a_raw_ingestion_profiling/06_olist_key_quality_checks.png`          |
+| Parquet output validation           | `../bi/screenshots/olist/phase_3a_raw_ingestion_profiling/07_olist_parquet_outputs.png`             |
+| CSV-to-Parquet row count validation | `../bi/screenshots/olist/phase_3a_raw_ingestion_profiling/08_csv_to_parquet_count_validation.png`   |
+| Phase 3A completion status          | `../bi/screenshots/olist/phase_3a_raw_ingestion_profiling/09_phase_3a_completion_status.png`        |
+
+#### Completion Criteria
+
+Phase 3A is complete because:
+
+* All expected raw Olist files were available.
+* All raw datasets were loaded successfully into Spark.
+* Raw profiling and data quality checks were completed.
+* All datasets were written to Parquet.
+* CSV and Parquet row counts matched for all datasets.
+* Final Databricks status returned PASS.
+
+**Phase 3A Result:** PASS
+
+---
+
+### Next Phase
+
+### Phase 3B — Olist Raw Layer Validation
+
+**Status:** Not Started
+
+#### Purpose
+
+Validate the Olist raw Parquet landing layer more formally before building staging or mart-level transformations. This phase will confirm table availability, row count stability, schema consistency, key behavior, and known raw-data quality issues.
+__
+__________________________________________________________________________________________________
 ## Planned SQL Files
 
 ```text
