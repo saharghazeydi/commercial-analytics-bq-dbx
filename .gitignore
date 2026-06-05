@@ -1,4 +1,4 @@
-
+# Local data (never commit raw datasets)
 *.csv
 *.parquet
 *.db
