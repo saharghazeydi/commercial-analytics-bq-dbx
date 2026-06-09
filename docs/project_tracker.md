@@ -4582,6 +4582,112 @@ Phase 3B is complete because:
 
 Phase 3C — Olist Data Model Documentation
 ______________________________________________________________________________________________
+### Phase 3C — Olist Source Documentation
+
+**Status:** Completed  
+**Environment:** Databricks  
+**Layer:** Source documentation / modeling preparation  
+**Notebook:** `03_olist_source_documentation.ipynb`
+
+#### Purpose
+
+Document the Olist raw Parquet source layer to prepare for downstream dimensional modeling, star schema design, KPI development, and BI reporting.
+
+This phase focuses on understanding and documenting the structure, purpose, and modeling role of each Olist dataset before building transformation logic.
+
+#### Key Activities Completed
+
+- Loaded the Olist Parquet datasets from the raw landing layer.
+- Created a schema inventory across all Olist tables.
+- Documented column names and inferred data types.
+- Counted columns by source table.
+- Documented the business purpose of each dataset.
+- Identified candidate dimension tables.
+- Identified candidate fact tables.
+- Confirmed readiness for Phase 3D.
+
+#### Source Tables Documented
+
+| Table | Business Purpose |
+|---|---|
+| `customers` | Customer master data |
+| `orders` | Order lifecycle information |
+| `order_items` | Order line items |
+| `order_payments` | Payment transactions |
+| `order_reviews` | Customer reviews |
+| `products` | Product catalog |
+| `sellers` | Seller master data |
+| `geolocation` | Geographic lookup table |
+| `product_category_name_translation` | Portuguese to English category mapping |
+
+#### Column Summary
+
+| Table | Column Count |
+|---|---:|
+| `customers` | 5 |
+| `geolocation` | 5 |
+| `order_items` | 7 |
+| `order_payments` | 5 |
+| `order_reviews` | 7 |
+| `orders` | 8 |
+| `product_category_name_translation` | 2 |
+| `products` | 9 |
+| `sellers` | 4 |
+
+#### Candidate Dimensions
+
+| Source Table | Future Dimension |
+|---|---|
+| `customers` | Customer Dimension |
+| `products` | Product Dimension |
+| `sellers` | Seller Dimension |
+| `geolocation` | Geography Dimension |
+
+#### Candidate Facts
+
+| Source Table | Future Fact |
+|---|---|
+| `orders` | Order Fact |
+| `order_items` | Sales Fact |
+| `order_payments` | Payment Fact |
+| `order_reviews` | Review Fact |
+
+#### Evidence Screenshots
+
+| Evidence | Screenshot |
+|---|---|
+| Schema inventory | `../bi/screenshots/olist/phase_3c_source_documentation/01_schema_inventory.png` |
+| Column summary | `../bi/screenshots/olist/phase_3c_source_documentation/02_column_summary.png` |
+| Table purpose documentation | `../bi/screenshots/olist/phase_3c_source_documentation/03_table_purpose_documentation.png` |
+| Candidate dimensions | `../bi/screenshots/olist/phase_3c_source_documentation/04_candidate_dimensions.png` |
+| Candidate facts | `../bi/screenshots/olist/phase_3c_source_documentation/05_candidate_facts.png` |
+| Phase 3C completion status | `../bi/screenshots/olist/phase_3c_source_documentation/06_phase_3c_completion.png` |
+
+#### Completion Criteria
+
+Phase 3C is complete because:
+
+- Source schema was documented.
+- Column inventory was documented.
+- Table purposes were documented.
+- Candidate dimensions were identified.
+- Candidate facts were identified.
+- The Olist raw layer is ready for dimensional design.
+
+**Phase 3C Result:** PASS
+
+---
+
+### Next Phase
+
+### Phase 3D — Olist Star Schema Design
+
+**Status:** Not Started
+
+#### Purpose
+
+Design the Olist dimensional model, including target fact and dimension tables, table grain, primary business keys, and join paths required for mart construction.
+__________________________________________________________________
 ## Planned SQL Files
 
 ```text
