@@ -4381,6 +4381,207 @@ Phase 3A is complete because:
 Validate the Olist raw Parquet landing layer more formally before building staging or mart-level transformations. This phase will confirm table availability, row count stability, schema consistency, key behavior, and known raw-data quality issues.
 __
 __________________________________________________________________________________________________
+
+### Phase 3B — Olist Raw Layer Validation & Data Modeling Discovery
+
+#### Objective
+
+Validate the Parquet raw layer created in Phase 3A and document the foundational modeling characteristics required for downstream dimensional modeling.
+
+---
+
+#### Activities Completed
+
+##### 1. Raw Layer Availability Validation
+
+Validated successful loading of all Parquet datasets generated during Phase 3A.
+
+Datasets validated:
+
+- customers
+- geolocation
+- orders
+- order_items
+- order_payments
+- order_reviews
+- products
+- sellers
+- product_category_name_translation
+
+---
+
+##### 2. Row Count Validation
+
+Validated row counts and column counts for all datasets.
+
+| Dataset | Row Count |
+|----------|----------:|
+| customers | 99,441 |
+| geolocation | 1,000,163 |
+| orders | 99,441 |
+| order_items | 112,650 |
+| order_payments | 103,886 |
+| order_reviews | 99,224 |
+| products | 32,951 |
+| sellers | 3,095 |
+| product_category_name_translation | 71 |
+
+Result:
+
+- All datasets successfully loaded.
+- No row count inconsistencies detected.
+
+---
+
+##### 3. Business Key Validation
+
+Validated uniqueness of primary business identifiers.
+
+Results:
+
+| Table | Business Key | Result |
+|---------|---------|---------|
+| customers | customer_id | Unique |
+| orders | order_id | Unique |
+| products | product_id | Unique |
+| sellers | seller_id | Unique |
+| order_reviews | review_id | Duplicate values detected |
+
+Observation:
+
+- order_reviews contains 814 duplicate review_id values.
+- This is a known characteristic of the Olist dataset and will be handled during downstream modeling.
+
+---
+
+##### 4. Grain Documentation
+
+Documented table-level grain definitions.
+
+| Table | Grain |
+|---------|---------|
+| customers | 1 row per customer |
+| orders | 1 row per order |
+| products | 1 row per product |
+| sellers | 1 row per seller |
+| order_items | 1 row per order line item |
+| order_payments | 1 row per payment transaction |
+| order_reviews | 1 row per review |
+| geolocation | Geographic lookup grain |
+| product_category_name_translation | Category translation lookup grain |
+
+---
+
+##### 5. Fact vs Dimension Classification
+
+Classified datasets for future dimensional modeling.
+
+Dimension Tables:
+
+- customers
+- products
+- sellers
+- geolocation
+- product_category_name_translation
+
+Fact Tables:
+
+- orders
+- order_items
+- order_payments
+- order_reviews
+
+---
+
+##### 6. Relationship Discovery
+
+Documented expected relationships between Olist entities.
+
+Validated relationships:
+
+- orders → customers
+- order_items → orders
+- order_items → products
+- order_items → sellers
+- order_payments → orders
+- order_reviews → orders
+- products → product_category_name_translation
+
+---
+
+##### 7. Relationship Coverage Validation
+
+Performed anti-join relationship testing.
+
+Results:
+
+| Relationship | Match Rate |
+|-------------|------------:|
+| orders → customers | 100.00% |
+| order_items → orders | 100.00% |
+| order_items → products | 100.00% |
+| order_items → sellers | 100.00% |
+| order_payments → orders | 100.00% |
+| order_reviews → orders | 100.00% |
+| products → category translation | 98.11% |
+
+Observation:
+
+- 623 product categories do not have a matching translation record.
+- This is a known Olist data quality limitation.
+- Future joins should use LEFT JOIN logic to avoid record loss.
+
+---
+
+#### Data Quality Observations
+
+1. geolocation contains duplicate rows by design and represents repeated geographic ZIP/city/state combinations.
+
+2. order_reviews contains duplicate review_id values (814 records).
+
+3. products contains category values that do not exist in the translation lookup table.
+
+4. No critical relationship integrity issues were detected.
+
+5. Core business entities maintain expected referential integrity.
+
+---
+
+#### Screenshots
+
+| Validation Step | Screenshot |
+|-----------------|------------|
+| Business key validation | ../bi/screenshots/olist/phase_3b_raw_validation/01_primary_key_validation.png |
+| Grain documentation | ../bi/screenshots/olist/phase_3b_raw_validation/02_grain_definition.png |
+| Fact vs Dimension classification | ../bi/screenshots/olist/phase_3b_raw_validation/03_fact_dimension_classification.png |
+| Expected relationships | ../bi/screenshots/olist/phase_3b_raw_validation/04_expected_relationships.png |
+| Relationship coverage validation | ../bi/screenshots/olist/phase_3b_raw_validation/05_relationship_validation.png |
+| Phase 3B completion status | ../bi/screenshots/olist/phase_3b_raw_validation/06_phase_3b_completion_status.png |
+
+---
+
+#### Completion Criteria
+
+Phase 3B is complete because:
+
+- All Parquet datasets were successfully validated.
+- Business keys were documented and checked.
+- Table grain was documented.
+- Fact and Dimension classifications were documented.
+- Inter-table relationships were identified and validated.
+- Referential integrity checks were completed.
+- Raw layer is ready for dimensional modeling.
+
+---
+
+### Status
+
+✅ Phase 3B Completed
+
+### Next Phase
+
+Phase 3C — Olist Data Model Documentation
+______________________________________________________________________________________________
 ## Planned SQL Files
 
 ```text
