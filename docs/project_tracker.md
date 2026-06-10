@@ -5420,6 +5420,113 @@ Planned validation activities:
 * Validation summary generation
 
 ___________________________________________
+### Phase 5B — Olist Fact Table Validation
+
+**Status:** Completed with Review Notes  
+**Environment:** Databricks  
+**Notebook:** `08_olist_fact_validation`
+
+---
+
+### Objective
+
+Validate the Olist fact tables created in Phase 5A before building downstream analytical marts.
+
+This phase checks row counts, business key behavior, null keys, and referential integrity between fact and dimension/source entities.
+
+---
+
+### Fact Row Count Validation
+
+| Fact Table | Row Count |
+|---|---:|
+| `fact_orders` | 99,441 |
+| `fact_order_items` | 112,650 |
+| `fact_payments` | 103,886 |
+| `fact_reviews` | 99,224 |
+
+---
+
+### Business Key Validation
+
+| Fact Table | Row Count | Distinct Key Count | Result |
+|---|---:|---:|---|
+| `fact_orders` | 99,441 | 99,441 | PASS |
+| `fact_order_items` | 112,650 | 112,650 | PASS |
+| `fact_payments` | 103,886 | 103,886 | PASS |
+| `fact_reviews` | 99,224 | 98,410 | REVIEW |
+
+#### Review Note
+
+`fact_reviews` contains repeated `review_id` values.  
+This was already observed in the raw layer and should be treated as a known source-data behavior rather than a pipeline failure.
+
+Further handling may be required before using reviews for detailed review-level analysis.
+
+---
+
+### Null Key Validation
+
+| Fact Table | Null Key Count |
+|---|---:|
+| `fact_orders` | 0 |
+| `fact_order_items` | 0 |
+| `fact_payments` | 0 |
+| `fact_reviews` | 0 |
+
+All fact tables passed null key validation.
+
+---
+
+### Referential Integrity Validation
+
+| Relationship | Unmatched Rows |
+|---|---:|
+| `fact_orders → customers` | 0 |
+| `fact_order_items → products` | 0 |
+| `fact_order_items → sellers` | 0 |
+
+All tested fact-to-dimension relationships passed referential integrity checks.
+
+---
+
+### Evidence Retained
+
+| Evidence | Screenshot |
+|---|---|
+| Fact row count validation | `../bi/screenshots/olist/phase_5b_fact_validation/01_fact_row_count_validation.png` |
+| Fact business key validation | `../bi/screenshots/olist/phase_5b_fact_validation/02_fact_business_key_validation.png` |
+| Fact null key validation | `../bi/screenshots/olist/phase_5b_fact_validation/03_fact_null_key_validation.png` |
+| Fact-to-dimension integrity validation | `../bi/screenshots/olist/phase_5b_fact_validation/04_fact_dimension_integrity.png` |
+| Fact validation summary | `../bi/screenshots/olist/phase_5b_fact_validation/05_fact_validation_summary.png` |
+| Phase 5B completion status | `../bi/screenshots/olist/phase_5b_fact_validation/06_phase_5b_completion_status.png` |
+
+---
+
+### Completion Criteria
+
+Phase 5B is complete because:
+
+- Fact row counts were validated.
+- Business key behavior was checked.
+- Null key checks passed for all fact tables.
+- Referential integrity checks passed.
+- Known review-level duplicate behavior was documented.
+
+**Phase 5B Result:** Completed with Review Notes
+
+---
+
+### Next Phase
+
+### Phase 6A — Olist Analytical Mart Construction
+
+**Status:** Not Started
+
+#### Purpose
+
+Build business-facing analytical marts from the validated fact and dimension layers.
+___________________________________________________________
 ## Planned SQL Files
 
 ```text
