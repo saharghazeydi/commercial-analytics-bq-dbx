@@ -4941,6 +4941,80 @@ Next Phase:
 
 Phase 4A — Dimension Mart Construction
 ________________________________________________________________
+### Phase 4A — Olist Dimension Construction
+
+**Status:** Completed  
+**Environment:** Databricks  
+**Layer:** Dimension construction  
+**Notebook:** `05_olist_dimension_construction`
+
+#### Purpose
+
+Build the initial Olist dimension tables from the validated raw Parquet layer.
+
+This phase creates the foundational dimension datasets required for downstream fact modeling, mart construction, and BI reporting.
+
+#### Dimensions Built
+
+| Dimension | Source Table | Business Key | Description |
+|---|---|---|---|
+| `dim_customers` | `customers` | `customer_id` | Customer-level attributes |
+| `dim_products` | `products` + `product_category_name_translation` | `product_id` | Product-level attributes with English category mapping |
+| `dim_sellers` | `sellers` | `seller_id` | Seller-level attributes |
+| `dim_geography` | `geolocation` | `geolocation_zip_code_prefix` | Deduplicated geographic lookup |
+
+#### Validation Results
+
+| Dimension | Row Count | Key Validation |
+|---|---:|---|
+| `dim_customers` | 99,441 | `customer_id` is unique |
+| `dim_products` | 32,951 | `product_id` is unique |
+| `dim_sellers` | 3,095 | `seller_id` is unique |
+| `dim_geography` | 27,912 | Deduplicated geography records |
+
+#### Key Observations
+
+- `dim_customers` preserves one row per `customer_id`.
+- `dim_products` successfully includes English product category mapping through a left join.
+- `dim_sellers` preserves one row per `seller_id`.
+- `dim_geography` is deduplicated from the raw geolocation dataset to reduce repeated geographic records.
+- All core dimension tables were constructed and validated successfully.
+
+#### Evidence Screenshots
+
+| Evidence | Screenshot |
+|---|---|
+| Customer dimension validation | `../bi/screenshots/olist/phase_4a_dimension_construction/01_dim_customers_validation.png` |
+| Product dimension validation | `../bi/screenshots/olist/phase_4a_dimension_construction/02_dim_products_validation.png` |
+| Seller dimension validation | `../bi/screenshots/olist/phase_4a_dimension_construction/03_dim_sellers_validation.png` |
+| Geography dimension validation | `../bi/screenshots/olist/phase_4a_dimension_construction/04_dim_geography_validation.png` |
+| Phase 4A completion status | `../bi/screenshots/olist/phase_4a_dimension_construction/05_phase_4a_completion_status.png` |
+
+#### Completion Criteria
+
+Phase 4A is complete because:
+
+- `dim_customers` was built and validated.
+- `dim_products` was built and validated.
+- `dim_sellers` was built and validated.
+- `dim_geography` was built and validated.
+- Dimension row counts and business keys were checked.
+- The Olist dimension layer is ready for formal validation.
+
+**Phase 4A Result:** PASS
+
+---
+
+### Next Phase
+
+### Phase 4B — Olist Dimension Validation
+
+**Status:** Not Started
+
+#### Purpose
+
+Perform formal data quality validation on the constructed Olist dimension tables, including uniqueness checks, null checks, duplicate checks, and readiness for fact table joins.
+___________________________________________________________
 ## Planned SQL Files
 
 ```text
