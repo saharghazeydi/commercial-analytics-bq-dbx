@@ -5015,6 +5015,255 @@ Phase 4A is complete because:
 
 Perform formal data quality validation on the constructed Olist dimension tables, including uniqueness checks, null checks, duplicate checks, and readiness for fact table joins.
 ___________________________________________________________
+# Phase 4B — Olist Dimension Validation
+
+## Objective
+
+Validate all dimension tables created during Phase 4A before beginning fact table construction.
+
+Validation scope:
+
+- Row count validation
+- Business key validation
+- Duplicate key validation
+- Null key validation
+- Attribute null analysis
+- Product category translation coverage
+- Dimension readiness assessment
+
+---
+
+# Validation Results
+
+## 1. Dimension Row Count Validation
+
+Validated row counts and column counts for each dimension.
+
+| Dimension | Rows | Columns |
+|------------|---------:|---------:|
+| dim_customers | 99,441 | 5 |
+| dim_products | 32,951 | 10 |
+| dim_sellers | 3,095 | 4 |
+| dim_geography | 27,912 | 3 |
+
+Result:
+
+- All dimensions successfully created.
+- Row counts align with source datasets and Phase 4A outputs.
+
+Screenshot:
+
+`01_dimension_row_count_validation.png`
+
+---
+
+## 2. Business Key Validation
+
+Validated uniqueness and completeness of business keys.
+
+| Dimension | Business Key | Null Keys | Duplicate Keys |
+|------------|-------------|-----------:|---------------:|
+| dim_customers | customer_id | 0 | 0 |
+| dim_products | product_id | 0 | 0 |
+| dim_sellers | seller_id | 0 | 0 |
+| dim_geography | geolocation_zip_code_prefix | 0 | 8,897 |
+
+Result:
+
+- Customer dimension passed.
+- Product dimension passed.
+- Seller dimension passed.
+- Geography dimension requires review.
+
+Observation:
+
+The geography dataset contains multiple city/state combinations for the same ZIP prefix.
+
+Therefore:
+
+- ZIP prefix is not a unique business key.
+- Geography dimension behaves more like a reference lookup table than a traditional dimension.
+
+Screenshot:
+
+`02_dimension_key_validation.png`
+
+---
+
+## 3. Null Attribute Validation
+
+Checked all dimension attributes for missing values.
+
+Findings:
+
+### Product Dimension
+
+Translation-related attributes contain limited missing values.
+
+| Column | Null Count | Null % |
+|----------|------------:|--------:|
+| product_category_name_english | 623 | 1.89% |
+| product_category_name | 610 | 1.85% |
+| product_description_lenght | 610 | 1.85% |
+| product_name_lenght | 610 | 1.85% |
+| product_photos_qty | 610 | 1.85% |
+
+Physical measurements contain almost no missing values.
+
+| Column | Null Count |
+|----------|-----------:|
+| product_height_cm | 2 |
+| product_length_cm | 2 |
+| product_weight_g | 2 |
+| product_width_cm | 2 |
+
+Interpretation:
+
+- Missing values are limited.
+- Data quality remains suitable for analytics use cases.
+- No remediation required at this stage.
+
+Screenshot:
+
+`03_dimension_null_validation.png`
+
+---
+
+## 4. Product Translation Coverage Validation
+
+Validated Portuguese-to-English category translation coverage.
+
+Results:
+
+| Translation Status | Product Count |
+|-------------------|--------------:|
+| Translation Available | 32,328 |
+| Translation Missing | 623 |
+
+Coverage Rate:
+
+97.11%
+
+Interpretation:
+
+- Translation coverage is very high.
+- Missing translations affect only a small fraction of products.
+- English category field remains appropriate for BI reporting.
+
+Screenshot:
+
+`04_product_translation_coverage.png`
+
+---
+
+## 5. Dimension Validation Summary
+
+| Dimension | Status |
+|------------|--------|
+| dim_customers | PASS |
+| dim_products | PASS |
+| dim_sellers | PASS |
+| dim_geography | REVIEW |
+
+Interpretation:
+
+dim_geography requires review because ZIP prefixes are not unique.
+
+This is a source data characteristic rather than a transformation error.
+
+Current decision:
+
+- Retain geography dimension unchanged.
+- Document limitation.
+- Continue project execution.
+
+Screenshot:
+
+`05_dimension_validation_summary.png`
+
+---
+
+# Key Findings
+
+### Finding 1
+
+Customer dimension contains:
+
+99,441 unique customers.
+
+No duplicate business keys detected.
+
+---
+
+### Finding 2
+
+Product dimension contains:
+
+32,951 products.
+
+Translation coverage exceeds 97%.
+
+---
+
+### Finding 3
+
+Seller dimension contains:
+
+3,095 sellers.
+
+No key quality issues detected.
+
+---
+
+### Finding 4
+
+Geography dimension contains:
+
+27,912 rows.
+
+ZIP prefix cannot be treated as a unique business key because multiple locations may share the same ZIP prefix.
+
+This limitation is inherited from the Olist source dataset.
+
+---
+
+# Conclusion
+
+Phase 4B completed successfully.
+
+Validation confirms:
+
+- Dimension construction logic is correct.
+- Customer dimension is production-ready.
+- Product dimension is production-ready.
+- Seller dimension is production-ready.
+- Geography dimension is usable with documented limitations.
+- Translation coverage is sufficient for downstream reporting.
+
+Project status:
+
+✓ Phase 4A Complete
+
+✓ Phase 4B Complete
+
+Next phase:
+
+→ Phase 5A — Fact Table Construction
+
+---
+
+# Evidence
+
+Retained screenshots:
+
+1. 01_dimension_row_count_validation.png
+2. 02_dimension_key_validation.png
+3. 03_dimension_null_validation.png
+4. 04_product_translation_coverage.png
+5. 05_dimension_validation_summary.png
+6. 06_phase_4b_completion_status.png
+
+_______________________________________________
 ## Planned SQL Files
 
 ```text
