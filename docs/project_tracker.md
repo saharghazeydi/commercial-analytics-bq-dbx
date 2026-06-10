@@ -4688,6 +4688,259 @@ Phase 3C is complete because:
 
 Design the Olist dimensional model, including target fact and dimension tables, table grain, primary business keys, and join paths required for mart construction.
 __________________________________________________________________
+# Phase 3D — Olist Star Schema Design
+
+## Objective
+
+Design the target dimensional model for the Olist commercial analytics layer before physical mart construction.
+
+The goal of this phase was to:
+
+- Define target fact tables
+- Define target dimension tables
+- Establish business grain for each analytical table
+- Document fact-to-dimension join paths
+- Design the initial star schema architecture
+- Identify the primary commercial fact table for downstream KPI development
+
+---
+
+## Source Inputs
+
+Validated Olist source tables from previous phases:
+
+| Source Table | Status |
+|-------------|---------|
+| customers | Validated |
+| orders | Validated |
+| order_items | Validated |
+| order_payments | Validated |
+| order_reviews | Validated |
+| products | Validated |
+| sellers | Validated |
+| geolocation | Validated |
+| product_category_name_translation | Validated |
+
+All source relationships were previously validated during Phase 3B.
+
+---
+
+## Target Fact Table Design
+
+The following fact tables were identified for analytical modeling.
+
+| Fact Table | Grain | Business Key | Purpose |
+|------------|---------|-------------|----------|
+| fact_orders | 1 row per order | order_id | Order lifecycle analytics |
+| fact_order_items | 1 row per order item | order_id + order_item_id | Revenue and sales analytics |
+| fact_payments | 1 row per payment transaction | order_id + payment_sequential | Payment analytics |
+| fact_reviews | 1 row per review | review_id | Customer satisfaction analytics |
+
+### Key Design Decision
+
+`fact_order_items` was selected as the primary commercial fact table because it contains:
+
+- Revenue metrics
+- Product relationships
+- Seller relationships
+- Order-level commercial activity
+
+This table provides the most detailed sales grain available within the Olist dataset.
+
+---
+
+## Target Dimension Table Design
+
+The following dimensions were identified.
+
+| Dimension Table | Business Key | Purpose |
+|----------------|-------------|----------|
+| dim_customers | customer_id | Customer attributes |
+| dim_products | product_id | Product attributes |
+| dim_sellers | seller_id | Seller attributes |
+| dim_geography | zip_code_prefix | Geographic attributes |
+
+### Supporting Lookup Table
+
+| Lookup Table | Purpose |
+|-------------|----------|
+| product_category_name_translation | Portuguese to English category mapping |
+
+---
+
+## Star Schema Join Paths
+
+The following analytical relationships were defined.
+
+| Fact Table | Fact Key | Dimension Table | Dimension Key |
+|------------|----------|------------------|---------------|
+| fact_orders | customer_id | dim_customers | customer_id |
+| fact_order_items | product_id | dim_products | product_id |
+| fact_order_items | seller_id | dim_sellers | seller_id |
+
+### Additional Future Enhancement
+
+A geography dimension may later be connected through customer geographic attributes if additional regional analysis is required.
+
+---
+
+## Proposed Star Schema
+
+### Dimensions
+
+- dim_customers
+- dim_products
+- dim_sellers
+- dim_geography
+
+### Facts
+
+- fact_orders
+- fact_order_items
+- fact_payments
+- fact_reviews
+
+### Primary Commercial Fact
+
+- fact_order_items
+
+---
+
+## Validation Results
+
+Star schema design completed successfully.
+
+### Validation Checklist
+
+| Check | Result |
+|---------|---------|
+| Fact tables identified | PASS |
+| Dimension tables identified | PASS |
+| Business grain documented | PASS |
+| Business keys documented | PASS |
+| Join paths documented | PASS |
+| Primary commercial fact selected | PASS |
+| Initial star schema documented | PASS |
+
+---
+
+## Observations
+
+### Observation 1
+
+The Olist dataset naturally supports a dimensional model structure.
+
+Core dimensions:
+
+- Customers
+- Products
+- Sellers
+- Geography
+
+Core facts:
+
+- Orders
+- Order Items
+- Payments
+- Reviews
+
+### Observation 2
+
+The commercial center of the model is `fact_order_items`.
+
+This table provides the most detailed revenue grain and will serve as the foundation for:
+
+- Revenue KPIs
+- Product performance
+- Seller performance
+- Commercial dashboards
+
+### Observation 3
+
+The star schema design confirms that the Olist dataset is suitable for downstream dimensional modeling and BI reporting.
+
+---
+
+## Evidence Retention
+
+### Keep
+
+1. Star schema fact table design
+
+```text
+phase_3d_star_schema_design/01_fact_design.png
+```
+
+Reason:
+Documents final fact table structure and grain decisions.
+
+2. Star schema dimension table design
+
+```text
+phase_3d_star_schema_design/02_dimension_design.png
+```
+
+Reason:
+Documents final dimension structure.
+
+3. Join path design
+
+```text
+phase_3d_star_schema_design/03_join_paths.png
+```
+
+Reason:
+Documents fact-to-dimension relationships.
+
+4. Phase completion evidence
+
+```text
+phase_3d_star_schema_design/05_phase_3d_complete.png
+```
+
+Reason:
+Formal completion checkpoint.
+
+### Do Not Retain
+
+```text
+04_star_schema_summary.png
+```
+
+Reason:
+
+This screenshot contains information already documented by:
+
+- Fact Design
+- Dimension Design
+- Join Path Design
+
+and therefore provides no additional audit value.
+
+---
+
+## Deliverables Produced
+
+- Star schema blueprint
+- Fact table definitions
+- Dimension table definitions
+- Business grain definitions
+- Join path definitions
+- Primary commercial fact selection
+- Modeling design documentation
+
+---
+
+## Phase Status
+
+PASS
+
+Phase 3D completed successfully.
+
+Next Phase:
+
+Phase 4A — Dimension Mart Construction
+________________________________________________________________
 ## Planned SQL Files
 
 ```text
