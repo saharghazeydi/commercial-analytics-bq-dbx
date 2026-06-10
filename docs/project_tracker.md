@@ -5264,6 +5264,135 @@ Retained screenshots:
 6. 06_phase_4b_completion_status.png
 
 _______________________________________________
+### Phase 5A — Olist Fact Table Construction
+
+**Status:** Completed
+
+**Environment:** Databricks
+
+**Notebook:** `07_olist_fact_construction`
+
+---
+
+### Objective
+
+Construct the transactional fact layer for the Olist commercial analytics warehouse.
+
+The goal of this phase was to transform validated raw Olist datasets into analytics-ready fact tables that can support KPI calculations, business reporting, customer analysis, seller performance analysis, and future BI dashboards.
+
+---
+
+### Fact Tables Constructed
+
+| Table              | Grain                           | Purpose                                  |
+| ------------------ | ------------------------------- | ---------------------------------------- |
+| `fact_orders`      | One row per order               | Order lifecycle and fulfillment analysis |
+| `fact_order_items` | One row per order item          | Revenue, product and seller analytics    |
+| `fact_payments`    | One row per payment transaction | Payment behavior analysis                |
+| `fact_reviews`     | One row per review              | Customer satisfaction analysis           |
+
+---
+
+### Construction Summary
+
+#### fact_orders
+
+Created the primary order-level fact table containing:
+
+* Order identifiers
+* Customer identifiers
+* Order status
+* Purchase timestamps
+* Approval timestamps
+* Delivery timestamps
+* Estimated delivery timestamps
+
+This table serves as the foundation for order lifecycle and fulfillment reporting.
+
+---
+
+#### fact_order_items
+
+Created the order-item fact table containing:
+
+* Order identifiers
+* Product identifiers
+* Seller identifiers
+* Item-level pricing
+* Freight values
+* Shipping limit timestamps
+
+This table provides the revenue foundation of the warehouse and will drive future sales and product-performance KPIs.
+
+---
+
+#### fact_reviews
+
+Created the customer review fact table containing:
+
+* Review identifiers
+* Order identifiers
+* Review scores
+* Review creation dates
+* Review response timestamps
+
+This table enables customer satisfaction and review-performance reporting.
+
+---
+
+### Storage Layer
+
+All fact tables were persisted successfully to the Olist mart layer.
+
+```text
+dbfs:/Volumes/workspace/default/olist_uploads/marts/olist
+```
+
+---
+
+### Evidence Retained
+
+| Evidence                         | Screenshot                          |
+| -------------------------------- | ----------------------------------- |
+| fact_orders sample output        | `01_fact_orders_sample.png`         |
+| fact_order_items sample output   | `02_fact_order_items_sample.png`    |
+| fact_reviews sample output       | `04_fact_reviews_sample.png`        |
+| Phase 5A completion confirmation | `06_phase_5a_completion_status.png` |
+
+---
+
+### Key Outcome
+
+The warehouse now contains both:
+
+* Dimension Layer
+* Fact Layer
+
+This completes the foundational warehouse modeling stage and prepares the project for formal fact-table validation.
+
+---
+
+### Phase Result
+
+**PASS**
+
+---
+
+### Next Phase
+
+**Phase 5B — Olist Fact Table Validation**
+
+Planned validation activities:
+
+* Row count validation
+* Primary/business key validation
+* Duplicate detection
+* Null key validation
+* Referential integrity validation
+* Fact-to-dimension relationship validation
+* Fact table quality assessment
+
+___________________________________________
 ## Planned SQL Files
 
 ```text
