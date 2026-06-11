@@ -5527,6 +5527,106 @@ Phase 5B is complete because:
 
 Build business-facing analytical marts from the validated fact and dimension layers.
 ___________________________________________________________
+### Phase 6A — Olist Analytical Mart Construction
+
+**Status:** Completed with Validation Pending  
+**Environment:** Databricks  
+**Notebook:** `09_olist_mart_construction`
+
+---
+
+### Objective
+
+Build the first business-facing analytical mart from the validated Olist fact layer.
+
+This phase creates a daily order-level mart designed for commercial reporting, KPI analysis, and future BI dashboard development.
+
+---
+
+### Mart Built
+
+| Mart | Grain | Purpose |
+|---|---|---|
+| `mart_orders_daily` | One row per order date | Daily commercial performance reporting |
+
+---
+
+### Metrics Included
+
+| Metric | Description |
+|---|---|
+| `order_date` | Order purchase date |
+| `orders` | Number of distinct orders |
+| `customers` | Number of distinct customers |
+| `revenue` | Total daily payment value |
+| `avg_order_value` | Average revenue per order |
+| `items_sold` | Total number of order items sold |
+
+---
+
+### Construction Notes
+
+`mart_orders_daily` was built by combining:
+
+- `fact_orders`
+- `fact_order_items`
+- `fact_payments`
+
+The mart aggregates order, customer, revenue, and item-level metrics at daily grain.
+
+---
+
+### Observations
+
+The mart contains **634 daily rows**.
+
+Early preview rows show some `null` values in revenue-related or item-related metrics for specific dates. These should be reviewed in Phase 6B to confirm whether they come from missing payment records, missing item records, or historical edge cases in the source data.
+
+---
+
+### Evidence Retained
+
+| Evidence | Screenshot |
+|---|---|
+| Daily mart preview | `../bi/screenshots/olist/phase_6a_mart_construction/01_mart_orders_daily_preview.png` |
+| Phase 6A completion status | `../bi/screenshots/olist/phase_6a_mart_construction/02_phase_6a_completion_status.png` |
+
+---
+
+### Completion Criteria
+
+Phase 6A is complete because:
+
+- Daily order mart was built.
+- Revenue metrics were aggregated.
+- Customer metrics were aggregated.
+- Item metrics were aggregated.
+- Mart was persisted to the Olist mart layer.
+
+**Phase 6A Result:** Completed with Validation Pending
+
+---
+
+### Next Phase
+
+### Phase 6B — Olist Analytical Mart Validation
+
+**Status:** Not Started
+
+#### Purpose
+
+Validate `mart_orders_daily` before it is used for KPI reporting or BI dashboards.
+
+Planned checks:
+
+- Mart row count validation
+- Date range validation
+- Null metric validation
+- Revenue consistency checks
+- Order count consistency checks
+- Item count consistency checks
+- Final mart approval
+____________________________________________________
 ## Planned SQL Files
 
 ```text
