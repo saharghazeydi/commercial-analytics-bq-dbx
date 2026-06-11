@@ -5793,6 +5793,281 @@ bi/screenshots/olist/phase_6b_mart_validation
 
 ## Phase 7A — Commercial KPI Layer Construction
 _______________________________________________________
+---
+
+## Phase 7A — Olist Commercial KPI Layer Construction
+
+**Status:** Complete
+
+### Purpose
+
+Build a business-facing KPI layer from the validated Olist analytical mart to support executive reporting, trend analysis, dashboard consumption, and commercial performance monitoring.
+
+---
+
+## Business Objective
+
+Transform the validated daily mart into a reporting-ready KPI layer by introducing derived commercial metrics, rolling performance indicators, and reporting dimensions commonly used by business stakeholders and BI teams.
+
+---
+
+## Source Layer
+
+Input Mart:
+
+```text
+mart_orders_daily
+```
+
+Output KPI Layer:
+
+```text
+kpi_orders_daily
+```
+
+Persisted Location:
+
+```text
+dbfs:/Volumes/workspace/default/olist_uploads/kpis/olist/kpi_orders_daily
+```
+
+---
+
+## KPI Enhancements Added
+
+### Customer Value Metrics
+
+Calculated:
+
+- Revenue Per Customer
+- Revenue Presence Flag
+
+Formula:
+
+```text
+Revenue Per Customer = Revenue / Customers
+```
+
+---
+
+### Order Efficiency Metrics
+
+Calculated:
+
+- Items Per Order
+- Revenue Per Item
+
+Formulas:
+
+```text
+Items Per Order = Items Sold / Orders
+
+Revenue Per Item = Revenue / Items Sold
+```
+
+---
+
+### Rolling Commercial KPIs
+
+Added rolling 7-day aggregations:
+
+- Revenue 7D
+- Orders 7D
+- Customers 7D
+- Items Sold 7D
+- Average Order Value 7D
+
+Purpose:
+
+Provide trend monitoring capability similar to production commercial reporting environments.
+
+---
+
+### Reporting Calendar Dimensions
+
+Added:
+
+```text
+order_year
+order_month
+order_week
+```
+
+Purpose:
+
+Support dashboard filtering, aggregation, and period-over-period analysis.
+
+---
+
+## KPI Summary Results
+
+| Metric | Value |
+|----------|----------|
+| Reporting Days | 634 |
+| Total Orders | 99,441 |
+| Total Customers | 99,441 |
+| Total Revenue | 16,008,872.12 |
+| Average Daily AOV | 162.62 |
+| Average Items Per Order | 1.13 |
+| Min Order Date | 2016-09-04 |
+| Max Order Date | 2018-10-17 |
+
+---
+
+## Key Validation Observations
+
+### Revenue Consistency
+
+Revenue values remain consistent with the validated analytical mart.
+
+### KPI Logic
+
+Derived metrics successfully generated:
+
+- Revenue Per Customer
+- Items Per Order
+- Revenue Per Item
+
+without calculation failures.
+
+### Trend Layer
+
+Rolling 7-day KPIs generated successfully and support future executive dashboard trend analysis.
+
+### Calendar Layer
+
+Reporting dimensions successfully added and validated.
+
+---
+
+## Evidence
+
+### Screenshot 01
+
+File:
+
+```text
+01_load_validated_daily_mart.png
+```
+
+Description:
+
+Validated analytical mart successfully loaded from storage and ready for KPI layer construction.
+
+---
+
+### Screenshot 02
+
+File:
+
+```text
+02_commercial_kpi_layer_preview.png
+```
+
+Description:
+
+Commercial KPI layer preview displaying derived metrics:
+
+- Revenue Per Customer
+- Items Per Order
+- Revenue Per Item
+- Revenue Presence Flag
+
+---
+
+### Screenshot 03
+
+File:
+
+```text
+03_rolling_7d_kpis.png
+```
+
+Description:
+
+Rolling 7-day commercial KPIs successfully generated including revenue, orders, customers, items sold, and rolling AOV.
+* The 7-day rolling KPI window was explicitly partitioned with a constant partition to avoid Databricks window execution warnings while preserving a single overall daily time series calculation.
+
+---
+
+### Screenshot 04
+
+File:
+
+```text
+04_reporting_date_fields.png
+```
+
+Description:
+
+Reporting calendar dimensions added:
+
+- Year
+- Month
+- Week
+
+to support dashboard consumption and time-series analysis.
+
+---
+
+### Screenshot 05
+
+File:
+
+```text
+05_kpi_summary.png
+```
+
+Description:
+
+KPI summary output showing total orders, customers, revenue, reporting days, average order value, and reporting date range.
+
+---
+
+### Screenshot 06
+
+File:
+
+```text
+06_phase_7a_completion_status.png
+```
+
+Description:
+
+Successful completion of KPI layer construction and readiness for validation phase.
+
+---
+
+## Completion Criteria
+
+- [x] KPI layer built
+- [x] Customer metrics calculated
+- [x] Order efficiency metrics calculated
+- [x] Revenue metrics calculated
+- [x] Rolling 7-day KPIs added
+- [x] Reporting calendar dimensions added
+- [x] KPI summary generated
+- [x] KPI layer persisted
+- [x] Ready for validation
+
+---
+
+## Next Phase
+
+### Phase 7B — Olist Commercial KPI Layer Validation
+
+Validate:
+
+- KPI row counts
+- KPI null rates
+- Rolling KPI calculations
+- Date dimension integrity
+- Business metric consistency
+- Persisted KPI layer quality
+
+before promoting the KPI layer to dashboard-serving status.
+
+_____________________________________________________
 ## Planned SQL Files
 
 ```text
