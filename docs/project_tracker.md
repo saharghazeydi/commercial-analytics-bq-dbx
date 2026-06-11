@@ -5627,6 +5627,172 @@ Planned checks:
 - Item count consistency checks
 - Final mart approval
 ____________________________________________________
+## Phase 6B — Olist Analytical Mart Validation
+
+**Status:** Complete
+
+### Purpose
+
+Validate the daily analytical mart before exposing it to BI reporting and dashboard layers.
+
+The validation focused on:
+
+- Row count consistency
+- Date coverage
+- Null metric assessment
+- Revenue reconciliation against source facts
+- Reporting readiness approval
+
+---
+
+### Validation Results
+
+#### 1. Mart Row Count Validation
+
+The mart contains:
+
+```text
+634 rows
+```
+
+representing daily aggregated business activity.
+
+Result:
+
+```text
+PASS
+```
+
+**Evidence**
+
+`bi/screenshots/olist/phase_6b_mart_validation/01_mart_row_count_validation.png`
+
+---
+
+#### 2. Date Coverage Validation
+
+Validated the minimum and maximum reporting dates.
+
+```text
+Min Date: 2016-09-04
+Max Date: 2018-10-17
+```
+
+The mart covers the complete available Olist business period.
+
+Result:
+
+```text
+PASS
+```
+
+**Evidence**
+
+`bi/screenshots/olist/phase_6b_mart_validation/02_date_range_validation.png`
+
+---
+
+#### 3. Null Metric Validation
+
+Validated business metrics for missing values.
+
+Results:
+
+```text
+Null Revenue Days: 1
+Null AOV Days: 1
+Null Items Sold Days: 18
+```
+
+Observation:
+
+A small number of null values were identified. These are attributable to source-level transactional behavior and are considered acceptable for analytical reporting.
+
+Result:
+
+```text
+PASS
+```
+
+**Evidence**
+
+`bi/screenshots/olist/phase_6b_mart_validation/03_null_metric_validation.png`
+
+---
+
+#### 4. Revenue Reconciliation Validation
+
+Compared total mart revenue against the source payment fact table.
+
+```text
+Mart Revenue: 16,008,872.12
+
+Fact Revenue: 16,008,872.12
+```
+
+Observed difference is limited to floating-point precision and is operationally zero.
+
+Result:
+
+```text
+PASS
+```
+
+**Evidence**
+
+`bi/screenshots/olist/phase_6b_mart_validation/04_metric_reconciliation_validation.png`
+
+---
+
+### Validation Conclusion
+
+The analytical mart successfully passed all validation checks.
+
+Approved for:
+
+- Executive reporting
+- KPI development
+- Dashboard consumption
+- Business analytics use cases
+
+Result:
+
+```text
+PHASE 6B PASSED
+```
+
+**Evidence**
+
+`bi/screenshots/olist/phase_6b_mart_validation/05_phase_6b_completion_status.png`
+
+---
+
+### Deliverables Produced
+
+#### Notebook
+
+```text
+notebooks/databricks/10_olist_mart_validation
+```
+
+#### Analytical Mart
+
+```text
+mart_orders_daily
+```
+
+#### Validation Evidence Folder
+
+```text
+bi/screenshots/olist/phase_6b_mart_validation
+```
+
+---
+
+### Next Phase
+
+## Phase 7A — Commercial KPI Layer Construction
+_______________________________________________________
 ## Planned SQL Files
 
 ```text
