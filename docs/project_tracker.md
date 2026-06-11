@@ -6068,6 +6068,282 @@ Validate:
 before promoting the KPI layer to dashboard-serving status.
 
 _____________________________________________________
+این Markdown را می‌توانی مستقیماً داخل فایل Tracker مرحله Validation کپی کنی.
+
+````markdown
+# Phase 7B — KPI Layer Validation
+
+## Objective
+Validate the KPI layer generated in Phase 7A to ensure:
+
+- Row counts are preserved from source mart
+- KPI calculations are accurate
+- Rolling metrics are generated correctly
+- Reporting date fields are valid
+- Dataset is ready for BI consumption
+
+---
+
+## Validation 1 — KPI Layer Row Count Validation
+
+### Validation Logic
+
+Compare source mart row count against KPI layer row count.
+
+### Result
+
+| Table | Row Count | Column Count |
+|---------|-----------:|------------:|
+| mart_orders_daily | 634 | 6 |
+| kpi_orders_daily_enhanced | 634 | 18 |
+
+### Outcome
+
+PASS
+
+### Validation Notes
+
+- No rows lost during KPI enrichment.
+- KPI layer preserves the original daily grain.
+- Additional KPI columns successfully added.
+
+### Evidence
+
+`docs/screenshots/phase_7b/01_kpi_layer_row_count_validation.png`
+
+---
+
+## Validation 2 — KPI Null Value Validation
+
+### Validation Logic
+
+Validate critical KPI fields for unexpected null values.
+
+Fields reviewed:
+
+- order_date
+- orders
+- customers
+- revenue
+- avg_order_value
+- items_sold
+- revenue_per_customer
+- items_per_order
+- revenue_per_item
+- revenue_7d
+- orders_7d
+- customers_7d
+- items_sold_7d
+- avg_order_value_7d
+
+### Result
+
+Observed null values:
+
+| Column | Null Count |
+|----------|-----------:|
+| revenue | 1 |
+| avg_order_value | 1 |
+| items_sold | 18 |
+| revenue_per_customer | 1 |
+| items_per_order | 18 |
+| revenue_per_item | 19 |
+| items_sold_7d | 8 |
+
+### Assessment
+
+PASS
+
+### Validation Notes
+
+Null values are expected and originate from source transactional data:
+
+- Some orders have no associated payment information.
+- Some orders have no item-level records.
+- Derived KPI fields inherit nulls from source attributes.
+
+No unexpected nulls detected in primary grain fields:
+
+- order_date
+- orders
+- customers
+
+### Evidence
+
+`docs/screenshots/phase_7b/02_kpi_layer_null_validation.png`
+
+---
+
+## Validation 3 — KPI Formula Validation
+
+### Validation Logic
+
+Manually verify KPI calculations against expected formulas.
+
+Reviewed metrics:
+
+- avg_order_value
+- revenue_per_customer
+- items_per_order
+- revenue_per_item
+
+### Expected Formulas
+
+```text
+avg_order_value = revenue / orders
+
+revenue_per_customer = revenue / customers
+
+items_per_order = items_sold / orders
+
+revenue_per_item = revenue / items_sold
+````
+
+### Result
+
+Calculated KPI values matched expected values across sampled records.
+
+### Outcome
+
+PASS
+
+### Validation Notes
+
+No discrepancies observed between:
+
+* generated KPI columns
+* manually calculated expected values
+
+### Evidence
+
+`docs/screenshots/phase_7b/03_kpi_formula_validation.png`
+
+---
+
+## Validation 4 — Rolling 7-Day KPI Validation
+
+### Validation Logic
+
+Review rolling KPI fields:
+
+* revenue_7d
+* orders_7d
+* customers_7d
+* items_sold_7d
+* avg_order_value_7d
+
+Verify cumulative behavior across sequential dates.
+
+### Result
+
+Rolling metrics increase and decrease consistently according to underlying transactional activity.
+
+### Outcome
+
+PASS
+
+### Validation Notes
+
+* Rolling calculations correctly include historical observations.
+* No unexpected resets detected.
+* Window logic behaves as intended.
+
+### Evidence
+
+`docs/screenshots/phase_7b/04_rolling_7d_validation.png`
+
+---
+
+## Validation 5 — Reporting Date Field Validation
+
+### Validation Logic
+
+Validate derived reporting fields:
+
+* order_year
+* order_month
+* order_week
+
+### Result
+
+Sample records confirmed:
+
+* Correct year extraction
+* Correct month formatting (YYYY-MM)
+* Correct ISO week assignment
+
+### Outcome
+
+PASS
+
+### Validation Notes
+
+Date attributes are suitable for:
+
+* dashboard filtering
+* monthly aggregation
+* weekly trend analysis
+* executive reporting
+
+### Evidence
+
+`docs/screenshots/phase_7b/05_reporting_date_fields_validation.png`
+
+---
+
+## Final Validation Assessment
+
+### KPI Layer Status
+
+PASS
+
+### Dataset Summary
+
+| Metric            |         Value |
+| ----------------- | ------------: |
+| Reporting Days    |           634 |
+| Total Orders      |        99,441 |
+| Total Customers   |        99,441 |
+| Total Revenue     | 16,008,872.12 |
+| Average Daily AOV |        162.62 |
+
+### Business Readiness Assessment
+
+The KPI layer has been successfully validated and approved for:
+
+* Executive reporting
+* Commercial dashboards
+* Trend analysis
+* Revenue monitoring
+* Customer performance reporting
+
+### Validation Conclusion
+
+PASS
+
+Phase 7B completed successfully.
+
+### Evidence
+
+`docs/screenshots/phase_7b/06_kpi_layer_completion_status.png`
+
+---
+
+## Phase Status
+
+| Phase                             | Status   |
+| --------------------------------- | -------- |
+| Phase 7A — KPI Layer Construction | Complete |
+| Phase 7B — KPI Layer Validation   | Complete |
+
+### Next Phase
+
+Phase 8A — Executive Reporting Mart Construction
+
+```
+
+
+_______________________________________________________________________
 ## Planned SQL Files
 
 ```text
