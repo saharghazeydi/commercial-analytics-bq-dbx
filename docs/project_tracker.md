@@ -6344,6 +6344,156 @@ Phase 8A — Executive Reporting Mart Construction
 
 
 _______________________________________________________________________
+
+حتماً. این نسخه را کامل کپی کن داخل `docs/project_tracker.md`.
+
+````markdown
+### Phase 8A — Olist Executive Mart Construction
+
+**Status:** Completed
+
+#### Purpose
+
+Build an executive-facing daily mart from the validated KPI layer.  
+This layer is designed to support high-level commercial reporting by exposing revenue, order, customer, rolling performance, and growth metrics in a simplified reporting-ready table.
+
+#### Notebook
+
+```text
+13_olist_executive_mart_construction
+````
+
+#### Output Dataset Path
+
+```text
+dbfs:/Volumes/workspace/default/olist_uploads/executive/olist/executive_daily
+```
+
+#### Source Layer
+
+```text
+dbfs:/Volumes/workspace/default/olist_uploads/kpis/olist/kpi_orders_daily
+```
+
+#### Construction Summary
+
+The executive mart was created from the validated KPI layer and focused on a smaller set of business-facing metrics suitable for executive reporting.
+
+The mart includes:
+
+* Daily order date
+* Reporting date fields
+* Order volume
+* Customer count
+* Revenue
+* Average order value
+* 7-day rolling revenue
+* 7-day rolling orders
+* 7-day rolling customers
+* Previous-day revenue
+* Daily revenue growth percentage
+
+#### Key Results Observed
+
+The executive mart base was successfully created from the KPI layer.
+
+The mart preview confirmed that the daily KPI fields were available, including:
+
+* `order_date`
+* `order_year`
+* `order_month`
+* `order_week`
+* `orders`
+* `customers`
+* `revenue`
+* `avg_order_value`
+* `revenue_7d`
+* `orders_7d`
+* `customers_7d`
+* `items_sold_7d`
+* `avg_order_value_7d`
+
+Growth metrics were added successfully:
+
+* `prev_day_revenue`
+* `revenue_growth_pct`
+
+The growth metric calculation produced expected null values where prior-day revenue was unavailable or where revenue comparison was not meaningful. This is expected behavior and not a pipeline error.
+
+An executive summary was generated with the following results:
+
+| Metric          |         Value |
+| --------------- | ------------: |
+| Total Revenue   | 16,008,872.12 |
+| Total Orders    |        99,441 |
+| Total Customers |        99,441 |
+| Average AOV     |        162.62 |
+
+The executive mart was successfully persisted to:
+
+```text
+dbfs:/Volumes/workspace/default/olist_uploads/executive/olist/executive_daily
+```
+
+A saved executive mart preview was reloaded from the persisted path, confirming that the mart was written successfully and can be reused by downstream reporting layers.
+
+#### Technical Note
+
+A Databricks warning appeared during the window calculation:
+
+```text
+WARN WindowExpression: No Partition Defined for Window operation
+```
+
+This is not a pipeline failure.
+The warning appears because the executive mart uses a global time-based window ordered by `order_date`. Since this mart is small and daily-grain, the warning is acceptable for the current project scope. In a production environment with larger data volume, this calculation could be optimized by partitioning by a reporting entity such as country, channel, or business unit.
+
+#### Evidence Screenshots
+
+The following screenshots were retained as project evidence:
+
+```text
+bi/screenshots/olist/phase_8a_executive_mart_construction/01_executive_mart_base.png
+bi/screenshots/olist/phase_8a_executive_mart_construction/02_executive_growth_metrics.png
+bi/screenshots/olist/phase_8a_executive_mart_construction/03_executive_summary.png
+bi/screenshots/olist/phase_8a_executive_mart_construction/04_executive_mart_saved.png
+bi/screenshots/olist/phase_8a_executive_mart_construction/05_saved_executive_mart_preview.png
+bi/screenshots/olist/phase_8a_executive_mart_construction/06_phase_8a_completion_status.png
+```
+
+#### Screenshot Notes
+
+* `01_executive_mart_base.png` shows the initial executive mart structure created from the KPI layer.
+* `02_executive_growth_metrics.png` shows the added growth metrics, including previous-day revenue and revenue growth percentage.
+* `03_executive_summary.png` shows the executive-level aggregate metrics.
+* `04_executive_mart_saved.png` confirms that the executive mart was persisted to DBFS.
+* `05_saved_executive_mart_preview.png` confirms that the saved mart can be reloaded successfully.
+* `06_phase_8a_completion_status.png` confirms successful completion of Phase 8A.
+
+#### Completion Criteria
+
+* Executive mart created from validated KPI layer.
+* Revenue, order, customer, rolling, and growth metrics prepared.
+* Executive summary generated.
+* Executive mart persisted to DBFS.
+* Persisted executive mart reloaded successfully.
+* Evidence screenshots saved.
+
+#### Outcome
+
+Phase 8A was completed successfully.
+
+The Olist executive mart is now ready for validation in Phase 8B.
+
+---
+
+### Next Phase
+
+### Phase 8B — Olist Executive Mart Validation
+
+**Status:** Not Started
+
+_______________________________________________________________
 ## Planned SQL Files
 
 ```text
