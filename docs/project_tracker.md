@@ -6494,6 +6494,183 @@ The Olist executive mart is now ready for validation in Phase 8B.
 **Status:** Not Started
 
 _______________________________________________________________
+### Phase 8B — Olist Executive Mart Validation
+
+**Status:** Complete  
+**Notebook:** `14_olist_executive_mart_validation`  
+**Layer:** Executive / BI-ready reporting layer  
+**Output validated:** `executive_daily`
+
+#### Purpose
+
+This phase validated the Olist executive mart created in Phase 8A before approving it for BI and reporting use.  
+The validation focused on row counts, reporting date coverage, revenue reconciliation, expected null behavior, formula consistency, and final reporting readiness.
+
+#### Validation Scope
+
+The following checks were completed:
+
+- Executive mart row and column count validation
+- Reporting date range validation
+- Null metric validation
+- Revenue reconciliation against the KPI layer
+- Executive KPI formula logic validation
+- Final validation summary generation
+- Phase completion confirmation
+
+---
+
+#### 1. Row and Column Count Validation
+
+The executive mart contains **634 reporting rows** and **15 columns**.
+
+This confirms that the executive layer preserves the same daily reporting grain as the validated KPI layer while adding executive-level fields for reporting and dashboard consumption.
+
+**Evidence:**  
+`bi/screenshots/olist/phase_8b_executive_mart_validation/02_executive_row_column_count.png`
+
+**Result:**
+
+| table_name | row_count | column_count |
+|---|---:|---:|
+| executive_daily | 634 | 15 |
+
+**Status:** PASS
+
+---
+
+#### 2. Date Range Validation
+
+The executive mart covers the expected Olist reporting period.
+
+**Evidence:**  
+`bi/screenshots/olist/phase_8b_executive_mart_validation/03_executive_date_range_validation.png`
+
+**Result:**
+
+| min_order_date | max_order_date |
+|---|---|
+| 2016-09-04 | 2018-10-17 |
+
+**Status:** PASS
+
+---
+
+#### 3. Null Metric Validation
+
+Null checks were performed across key executive metrics.
+
+**Evidence:**  
+`bi/screenshots/olist/phase_8b_executive_mart_validation/04_executive_null_metric_validation.png`
+
+**Observed results:**
+
+| metric | null_count |
+|---|---:|
+| null_order_date | 0 |
+| null_orders | 0 |
+| null_customers | 0 |
+| null_revenue | 1 |
+| null_avg_order_value | 1 |
+| null_revenue_7d | 0 |
+| null_orders_7d | 0 |
+| null_customers_7d | 0 |
+| null_prev_day_revenue | 2 |
+| null_revenue_growth_pct | 3 |
+
+The nulls in revenue-related and growth-related fields are expected because some dates either have incomplete raw Olist item/payment values or do not have a comparable previous revenue value. These nulls are documented as expected business/data behavior, not pipeline failure.
+
+**Status:** PASS_WITH_NOTES
+
+---
+
+#### 4. Revenue Reconciliation
+
+Executive-level revenue was reconciled against the validated KPI layer.
+
+**Evidence:**  
+`bi/screenshots/olist/phase_8b_executive_mart_validation/05_executive_revenue_reconciliation.png`
+
+**Result:**
+
+| executive_total_revenue | kpi_total_revenue | reconciliation_status |
+|---:|---:|---|
+| 16008872.12 | 16008872.12 | PASS |
+
+The executive mart revenue matches the KPI layer exactly after rounding to two decimal places.
+
+**Status:** PASS
+
+---
+
+#### 5. Formula Logic Validation
+
+Executive KPI formulas were reviewed by comparing reported metrics against expected calculated values.
+
+**Evidence:**  
+`bi/screenshots/olist/phase_8b_executive_mart_validation/06_executive_formula_validation.png`
+
+The validation confirmed that:
+
+- `avg_order_value` aligns with expected revenue-per-order logic.
+- 7-day rolling metrics are populated.
+- `prev_day_revenue` supports revenue growth calculation.
+- `revenue_growth_pct` is calculated where a valid prior revenue value exists.
+- Null growth values are expected for rows where comparison is not valid.
+
+**Status:** PASS
+
+---
+
+#### 6. Executive Validation Summary
+
+A structured validation summary was generated to document final approval status.
+
+**Evidence:**  
+`bi/screenshots/olist/phase_8b_executive_mart_validation/07_executive_validation_summary.png`
+
+**Summary result:**
+
+| table_name | validation_check | validation_status |
+|---|---|---|
+| executive_daily | Row count validation | PASS |
+| executive_daily | Date range validation | PASS |
+| executive_daily | Revenue reconciliation | PASS |
+| executive_daily | Null metric review | PASS_WITH_NOTES |
+| executive_daily | Formula logic review | PASS |
+
+**Status:** PASS_WITH_NOTES
+
+---
+
+#### 7. Completion Status
+
+The phase was completed successfully and the executive mart was approved for BI/reporting use.
+
+**Evidence:**  
+`bi/screenshots/olist/phase_8b_executive_mart_validation/08_phase_8b_completion_status.png`
+
+**Completion checklist:**
+
+- Executive mart loaded
+- Row and column counts validated
+- Date range validated
+- Revenue reconciled against KPI layer
+- Null metrics reviewed
+- KPI formulas reviewed
+- Executive mart approved for BI/reporting use
+
+---
+
+#### Final Decision
+
+**Phase 8B is complete.**
+
+The Olist executive mart is validated and approved as a BI-ready reporting layer.  
+Known null values are documented and accepted because they reflect expected source-data and comparison-window behavior rather than pipeline errors.
+
+**Ready for Phase 9A.**
+_____________________________________________________________
 ## Planned SQL Files
 
 ```text
