@@ -224,34 +224,57 @@ commercial-analytics-bq-dbx/
 │
 ├── bi/
 │   └── screenshots/
+│       │
 │       ├── dashboards/
 │       │   └── .gitkeep
 │       │
 │       ├── ga4/
-│       │   ├── dim_channel_validation/
-│       │   ├── dim_date_validation/
-│       │   ├── mart_channel_daily_validation/
 │       │   ├── profiling/
+│       │   ├── staging_validation/
 │       │   ├── session_fact/
 │       │   ├── session_fact_validation/
-│       │   └── staging_validation/
+│       │   ├── dim_date_validation/
+│       │   ├── dim_channel_validation/
+│       │   ├── mart_channel_daily_validation/
+│       │   ├── mart_executive_daily_validation/
+│       │   └── mart_executive_enhanced_validation/
 │       │
 │       └── olist/
-│           └── .gitkeep
+│           ├── phase_3a_raw_ingestion_profiling/
+│           ├── phase_3b_raw_layer_validation/
+│           ├── phase_3c_source_documentation/
+│           ├── phase_3d_star_schema_design/
+│           ├── phase_4a_dimension_construction/
+│           ├── phase_4b_dimension_validation/
+│           ├── phase_5a_fact_construction/
+│           ├── phase_5b_fact_validation/
+│           ├── phase_6a_mart_construction/
+│           ├── phase_6b_mart_validation/
+│           ├── phase_7a_kpi_layer_construction/
+│           ├── phase_7b_kpi_layer_validation/
+│           ├── phase_8a_executive_mart_construction/
+│           ├── phase_8b_executive_mart_validation/
+│           ├── phase_9a_bi_export_construction/
+│           └── phase_09b_bi_export_validation/
 │
 ├── data/
 │   ├── processed/
 │   └── raw/
-│       └── olist/
 │
 ├── docs/
 │   ├── architecture.md
 │   ├── data_dictionary.md
 │   ├── decisions_log.md
 │   ├── kpi_definitions.md
+│   ├── olist_data_model.md
 │   └── project_tracker.md
 │
+├── notebooks/
+│   └── databricks/
+│       └── .gitkeep
+│
 ├── sql/
+│   │
 │   ├── ga4/
 │   │   ├── 01_data_profiling.sql
 │   │   ├── 02_stg_ga4_events.sql
@@ -264,18 +287,25 @@ commercial-analytics-bq-dbx/
 │   │   ├── 04_mart_executive_daily.sql
 │   │   └── 05_mart_executive_enhanced.sql
 │   │
+│   ├── olist/
+│   │   ├── raw/
+│   │   └── validation/
+│   │
 │   └── validation/
 │       └── ga4/
 │           ├── 02b_validate_stg_ga4_events.sql
 │           ├── 03b_validate_fact_sessions_daily.sql
 │           ├── 04b_validate_dim_date.sql
 │           ├── 05b_validate_dim_channel.sql
-│           └── 06b_validate_mart_channel_daily.sql
+│           ├── 06b_validate_mart_channel_daily.sql
+│           ├── 07b_validate_mart_executive_daily.sql
+│           └── 08b_validate_mart_executive_enhanced.sql
 │
 ├── .gitignore
 ├── README.md
 └── requirements.txt
 ```
+
 ---
 
 # Screenshot Naming Convention
@@ -4427,749 +4457,911 @@ bi/screenshots/ga4/mart_executive_enhanced_validation/ga4_mart_executive_enhance
 * Base metrics are preserved from `mart_executive_daily`.
 * The enhanced mart is validated and ready for BI dashboard development.
 
+# Future GA4 Expansion Work
+
+The GA4 modeling layer has been completed and validated using the January 2021 development window.
+
+Future GA4 expansion work may include:
+
+* Replace the hardcoded January 2021 development window with configurable date ranges.
+* Re-run staging logic across the full available GA4 public dataset range.
+* Re-run validation suites on the full available GA4 range.
+* Compare one-month development-window metrics against full-range metrics.
+* Confirm whether additional data quality patterns appear outside January 2021.
+* Update documentation if full-range findings differ from the development-window findings.
+
+This future expansion work is intentionally deferred because the current objective is to complete the end-to-end commercial analytics portfolio workflow before expanding the GA4 historical window.
+
 ---
 
-# Future Expansion Work
+# Phase 3 — Olist Data Warehouse Layer
 
-* [ ] Replace hardcoded January 2021 development window with configurable date ranges
-* [ ] Re-run staging on the full available GA4 range
-* [ ] Re-run validation suites on the full available range
-* [ ] Compare one-month metrics against full-range metrics
-* [ ] Confirm whether new data quality patterns appear outside January 2021
-* [ ] Update documentation if full-range findings differ
+## Purpose
+
+Introduce the Olist ecommerce dataset as the transactional commercial data source for the project.
+
+The Olist layer extends the project beyond GA4 behavioral analytics by adding order, customer, product, seller, payment, review, and geographic data. This supports downstream commercial modeling, dimensional design, KPI development, executive reporting, and BI dashboard construction.
 
 ---
 
-# Next Phase
+# Phase 3A — Olist Raw Data Ingestion & Profiling
+
+## Status
+
+✅ Completed
+
+## Environment
+
+Databricks
+
+## Processing Engine
+
+PySpark
+
+## Layer
+
+Raw ingestion and profiling layer
+
+## Source
+
+Olist Brazilian E-Commerce CSV files
+
+## Output Format
+
+Parquet
+
+## Output Storage
 
 ```text
-Next Phase: Phase 3 — Olist Ingestion
+dbfs:/Volumes/workspace/default/olist_uploads/parquet/olist/
 ```
 
-### Phase 3A — Olist Raw Data Ingestion & Profiling
+---
 
-**Status:** Completed
-**Environment:** Databricks
-**Layer:** Raw ingestion / profiling layer
-**Source:** Olist Brazilian E-Commerce CSV files
-**Output:** Parquet files stored in Databricks Volume
+## Objective
 
-#### Purpose
+Ingest the raw Olist ecommerce CSV files into Databricks, validate file availability, inspect source structure, perform initial profiling, identify raw data quality issues, and persist reusable Parquet outputs for downstream modeling.
 
-Ingest the raw Olist ecommerce datasets into Databricks, validate file availability, inspect raw data structure, perform initial data quality profiling, and convert the raw CSV files into Parquet format for downstream modeling.
+This phase establishes the raw Olist foundation for later dimensional modeling, fact construction, mart development, KPI layer creation, executive reporting, and BI export.
 
-#### Implementation Summary
+---
 
-The Olist raw data ingestion process was completed in Databricks using PySpark. The pipeline validated the availability of all expected source files, loaded the raw CSV datasets into Spark DataFrames, inspected the schema of the core orders table, generated profiling outputs across all raw datasets, and wrote each dataset to a Parquet landing layer.
+## Source Dataset Inventory
 
-The following Olist datasets were included:
+The following 9 Olist source files were included in the ingestion workflow.
 
-* `olist_customers_dataset.csv`
-* `olist_orders_dataset.csv`
-* `olist_order_items_dataset.csv`
-* `olist_order_payments_dataset.csv`
-* `olist_order_reviews_dataset.csv`
-* `olist_products_dataset.csv`
-* `olist_sellers_dataset.csv`
-* `olist_geolocation_dataset.csv`
-* `product_category_name_translation.csv`
+| Source File                             | Business Entity              | Expected Grain                              | Downstream Role                        |
+| --------------------------------------- | ---------------------------- | ------------------------------------------- | -------------------------------------- |
+| `olist_customers_dataset.csv`           | Customers                    | One row per customer                        | Customer dimension                     |
+| `olist_orders_dataset.csv`              | Orders                       | One row per order                           | Order lifecycle fact                   |
+| `olist_order_items_dataset.csv`         | Order items                  | One row per order item                      | Sales / revenue fact                   |
+| `olist_order_payments_dataset.csv`      | Payments                     | One row per payment transaction             | Payment fact                           |
+| `olist_order_reviews_dataset.csv`       | Reviews                      | One row per review record                   | Review / satisfaction fact             |
+| `olist_products_dataset.csv`            | Products                     | One row per product                         | Product dimension                      |
+| `olist_sellers_dataset.csv`             | Sellers                      | One row per seller                          | Seller dimension                       |
+| `olist_geolocation_dataset.csv`         | Geolocation                  | Geographic ZIP/city/state reference records | Geography lookup / dimension candidate |
+| `product_category_name_translation.csv` | Product category translation | One row per category mapping                | Product category lookup                |
 
-#### Key Activities Completed
+---
 
-* Defined the Olist raw ingestion notebook in Databricks.
-* Validated that all 9 expected Olist raw CSV files were available.
-* Loaded all raw CSV files into Spark DataFrames.
-* Previewed the core `orders` dataset.
-* Inspected the schema of the `orders` dataset.
-* Created a raw profiling summary for all Olist datasets.
-* Checked row counts, column counts, distinct row counts, and duplicate row counts.
-* Created a null profiling summary across all raw datasets.
-* Performed key uniqueness checks for important entity keys.
-* Wrote all raw Olist datasets to Parquet format.
-* Validated row count consistency between CSV source files and Parquet outputs.
-* Confirmed successful completion of Phase 3A.
+## Implementation Summary
 
-#### Data Quality Notes
+The ingestion process was implemented in Databricks using PySpark.
 
-* All 9 expected Olist source files were successfully available and loaded.
-* CSV-to-Parquet row counts matched for all datasets.
-* The `geolocation` dataset contains duplicate rows, which is expected due to repeated geographic ZIP/city/state-level records.
-* The `order_reviews` dataset contains duplicate `review_id` values, which should be handled carefully in downstream modeling.
-* Null values were identified mainly in review comments, delivery timestamps, and product attribute fields. These are expected raw-data quality issues and will be addressed during modeling and transformation phases where required.
+The workflow completed the following steps:
 
-#### Evidence Screenshots
+1. Validated that all expected raw Olist CSV files were available.
+2. Loaded all raw CSV files into Spark DataFrames.
+3. Previewed the core `orders` dataset.
+4. Inspected the `orders` schema.
+5. Generated a raw profiling summary across all source datasets.
+6. Generated a null profiling summary across all source datasets.
+7. Performed key quality checks for important business identifiers.
+8. Persisted all Olist raw datasets as Parquet outputs.
+9. Reconciled CSV source row counts against Parquet output row counts.
+10. Confirmed successful completion of the ingestion and profiling phase.
 
-| Evidence                            | Screenshot                                                                                          |
-| ----------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Raw file availability validation    | `../bi/screenshots/olist/phase_3a_raw_ingestion_profiling/01b_olist_raw_file_availability_pass.png` |
-| Orders sample preview               | `../bi/screenshots/olist/phase_3a_raw_ingestion_profiling/02_orders_sample_preview.png`             |
-| Orders schema inspection            | `../bi/screenshots/olist/phase_3a_raw_ingestion_profiling/03_orders_schema.png`                     |
-| Raw profiling summary               | `../bi/screenshots/olist/phase_3a_raw_ingestion_profiling/04_olist_raw_profiling_summary.png`       |
-| Null profiling summary              | `../bi/screenshots/olist/phase_3a_raw_ingestion_profiling/05_olist_null_profile.png`                |
-| Key quality checks                  | `../bi/screenshots/olist/phase_3a_raw_ingestion_profiling/06_olist_key_quality_checks.png`          |
-| Parquet output validation           | `../bi/screenshots/olist/phase_3a_raw_ingestion_profiling/07_olist_parquet_outputs.png`             |
-| CSV-to-Parquet row count validation | `../bi/screenshots/olist/phase_3a_raw_ingestion_profiling/08_csv_to_parquet_count_validation.png`   |
-| Phase 3A completion status          | `../bi/screenshots/olist/phase_3a_raw_ingestion_profiling/09_phase_3a_completion_status.png`        |
+---
 
-#### Completion Criteria
+## Raw Profiling Scope
+
+The raw profiling process reviewed:
+
+* File availability
+* Row counts
+* Column counts
+* Distinct row counts
+* Duplicate row counts
+* Null patterns
+* Key uniqueness behavior
+* CSV-to-Parquet output consistency
+* Initial schema structure
+
+---
+
+## Key Data Quality Findings
+
+| Dataset          | Finding                                                                       | Severity | Treatment                                                 |
+| ---------------- | ----------------------------------------------------------------------------- | -------- | --------------------------------------------------------- |
+| All source files | All 9 expected Olist files were available and loaded successfully.            | Low      | Continue                                                  |
+| All source files | CSV-to-Parquet row counts matched after persistence.                          | Low      | Continue                                                  |
+| `geolocation`    | Duplicate rows exist due to repeated ZIP/city/state-level geographic records. | Expected | Document and handle during geography modeling             |
+| `order_reviews`  | Duplicate `review_id` values exist.                                           | Medium   | Document and validate during review fact modeling         |
+| `orders`         | Some delivery timestamp fields contain null values.                           | Expected | Preserve and interpret as lifecycle status behavior       |
+| `products`       | Some product attribute fields contain null values.                            | Low      | Preserve and review during product dimension construction |
+| `order_reviews`  | Review comment fields contain null values.                                    | Expected | Preserve because written comments are optional            |
+
+---
+
+## Modeling Implications
+
+The raw Olist source layer is suitable for downstream modeling, but the following constraints must be preserved:
+
+* `geolocation` should not be treated as a clean unique dimension without deduplication or documented grain handling.
+* `order_reviews` requires careful handling because `review_id` is not perfectly unique.
+* Product category translation should use left join logic later to avoid product loss.
+* Null delivery timestamps should be interpreted as lifecycle behavior, not automatic pipeline errors.
+* Raw CSV files should remain unchanged; modeling corrections should happen in downstream layers.
+
+---
+
+## Validation Summary
+
+| Check                         | Result          | Notes                                                                        |
+| ----------------------------- | --------------- | ---------------------------------------------------------------------------- |
+| Raw file availability         | PASS            | All 9 expected Olist files were available                                    |
+| Raw CSV loading               | PASS            | All files loaded into Spark DataFrames                                       |
+| Orders preview                | PASS            | Core order dataset inspected successfully                                    |
+| Orders schema inspection      | PASS            | Schema was reviewed before downstream modeling                               |
+| Raw profiling summary         | PASS            | Row, column, distinct row, and duplicate checks completed                    |
+| Null profiling summary        | PASS_WITH_NOTES | Expected nulls found in reviews, delivery timestamps, and product attributes |
+| Key quality checks            | PASS_WITH_NOTES | Known duplicate behavior identified in review/geolocation-related data       |
+| Parquet persistence           | PASS            | All datasets written to Parquet                                              |
+| CSV-to-Parquet reconciliation | PASS            | Source and persisted row counts matched                                      |
+| Phase completion              | PASS            | Phase completed successfully in Databricks                                   |
+
+---
+
+## Evidence Screenshot Inventory
+
+| Step | Evidence                            | Screenshot                                                                                          |
+| ---- | ----------------------------------- | --------------------------------------------------------------------------------------------------- |
+| P3A1 | Raw file availability validation    | `../bi/screenshots/olist/phase_3a_raw_ingestion_profiling/01b_olist_raw_file_availability_pass.png` |
+| P3A2 | Orders sample preview               | `../bi/screenshots/olist/phase_3a_raw_ingestion_profiling/02_orders_sample_preview.png`             |
+| P3A3 | Orders schema inspection            | `../bi/screenshots/olist/phase_3a_raw_ingestion_profiling/03_orders_schema.png`                     |
+| P3A4 | Raw profiling summary               | `../bi/screenshots/olist/phase_3a_raw_ingestion_profiling/04_olist_raw_profiling_summary.png`       |
+| P3A5 | Null profiling summary              | `../bi/screenshots/olist/phase_3a_raw_ingestion_profiling/05_olist_null_profile.png`                |
+| P3A6 | Key quality checks                  | `../bi/screenshots/olist/phase_3a_raw_ingestion_profiling/06_olist_key_quality_checks.png`          |
+| P3A7 | Parquet output validation           | `../bi/screenshots/olist/phase_3a_raw_ingestion_profiling/07_olist_parquet_outputs.png`             |
+| P3A8 | CSV-to-Parquet row count validation | `../bi/screenshots/olist/phase_3a_raw_ingestion_profiling/08_csv_to_parquet_count_validation.png`   |
+| P3A9 | Phase 3A completion status          | `../bi/screenshots/olist/phase_3a_raw_ingestion_profiling/09_phase_3a_completion_status.png`        |
+
+---
+
+## Completion Criteria
 
 Phase 3A is complete because:
 
 * All expected raw Olist files were available.
-* All raw datasets were loaded successfully into Spark.
-* Raw profiling and data quality checks were completed.
-* All datasets were written to Parquet.
-* CSV and Parquet row counts matched for all datasets.
-* Final Databricks status returned PASS.
-
-**Phase 3A Result:** PASS
+* All raw datasets were loaded successfully into Databricks.
+* Core schema inspection was completed.
+* Raw profiling was completed across all source datasets.
+* Null profiling was completed and documented.
+* Key quality checks were performed.
+* All source datasets were written to Parquet.
+* CSV-to-Parquet row counts reconciled successfully.
+* Known raw-data limitations were documented.
+* The raw Olist layer is ready for formal raw-layer validation.
 
 ---
 
-### Next Phase
+## Phase Result
 
-### Phase 3B — Olist Raw Layer Validation
+```text
+PASS
+```
 
-**Status:** Not Started
+---
 
-#### Purpose
-
-Validate the Olist raw Parquet landing layer more formally before building staging or mart-level transformations. This phase will confirm table availability, row count stability, schema consistency, key behavior, and known raw-data quality issues.
-__
-__________________________________________________________________________________________________
+## Next Phase
 
 ### Phase 3B — Olist Raw Layer Validation & Data Modeling Discovery
 
+Purpose:
+
+Validate the persisted Olist Parquet raw layer more formally before dimensional modeling.
+
+The next phase will confirm:
+
+* raw Parquet availability
+* row count stability
+* business key behavior
+* source table grain
+* fact vs dimension classification
+* entity relationships
+* relationship coverage
+* known source-data limitations
+
+### Phase 3B — Olist Raw Layer Validation & Data Modeling Discovery
+
+#### Status
+
+✅ Completed
+
 #### Objective
 
-Validate the Parquet raw layer created in Phase 3A and document the foundational modeling characteristics required for downstream dimensional modeling.
+Validate the persisted Olist Parquet raw layer and document the foundational modeling characteristics required for dimensional design, fact construction, KPI development, and executive reporting.
 
 ---
 
-#### Activities Completed
+#### Validation Scope
 
-##### 1. Raw Layer Availability Validation
+The following validation activities were completed:
+
+* Raw layer availability validation
+* Row and column count validation
+* Business key validation
+* Table grain documentation
+* Fact vs dimension classification
+* Relationship discovery
+* Relationship coverage validation
+* Raw-layer data quality assessment
+
+---
+
+#### Raw Layer Availability Validation
 
 Validated successful loading of all Parquet datasets generated during Phase 3A.
 
 Datasets validated:
 
-- customers
-- geolocation
-- orders
-- order_items
-- order_payments
-- order_reviews
-- products
-- sellers
-- product_category_name_translation
-
----
-
-##### 2. Row Count Validation
-
-Validated row counts and column counts for all datasets.
-
-| Dataset | Row Count |
-|----------|----------:|
-| customers | 99,441 |
-| geolocation | 1,000,163 |
-| orders | 99,441 |
-| order_items | 112,650 |
-| order_payments | 103,886 |
-| order_reviews | 99,224 |
-| products | 32,951 |
-| sellers | 3,095 |
-| product_category_name_translation | 71 |
+* customers
+* geolocation
+* orders
+* order_items
+* order_payments
+* order_reviews
+* products
+* sellers
+* product_category_name_translation
 
 Result:
 
-- All datasets successfully loaded.
-- No row count inconsistencies detected.
+PASS
 
 ---
 
-##### 3. Business Key Validation
+#### Row Count Validation
 
-Validated uniqueness of primary business identifiers.
+| Dataset                           | Row Count |
+| --------------------------------- | --------: |
+| customers                         |    99,441 |
+| geolocation                       | 1,000,163 |
+| orders                            |    99,441 |
+| order_items                       |   112,650 |
+| order_payments                    |   103,886 |
+| order_reviews                     |    99,224 |
+| products                          |    32,951 |
+| sellers                           |     3,095 |
+| product_category_name_translation |        71 |
 
-Results:
+Result:
 
-| Table | Business Key | Result |
-|---------|---------|---------|
-| customers | customer_id | Unique |
-| orders | order_id | Unique |
-| products | product_id | Unique |
-| sellers | seller_id | Unique |
-| order_reviews | review_id | Duplicate values detected |
+PASS
 
-Observation:
-
-- order_reviews contains 814 duplicate review_id values.
-- This is a known characteristic of the Olist dataset and will be handled during downstream modeling.
+No row-count inconsistencies were detected.
 
 ---
 
-##### 4. Grain Documentation
+#### Business Key Validation
 
-Documented table-level grain definitions.
+| Table         | Business Key | Result                    |
+| ------------- | ------------ | ------------------------- |
+| customers     | customer_id  | Unique                    |
+| orders        | order_id     | Unique                    |
+| products      | product_id   | Unique                    |
+| sellers       | seller_id    | Unique                    |
+| order_reviews | review_id    | Duplicate values detected |
 
-| Table | Grain |
-|---------|---------|
-| customers | 1 row per customer |
-| orders | 1 row per order |
-| products | 1 row per product |
-| sellers | 1 row per seller |
-| order_items | 1 row per order line item |
-| order_payments | 1 row per payment transaction |
-| order_reviews | 1 row per review |
-| geolocation | Geographic lookup grain |
+Finding:
+
+* 814 duplicate review_id values identified.
+
+Modeling Decision:
+
+* review_id will not be treated as a guaranteed unique business key.
+* Review modeling will rely primarily on order-level relationships.
+
+Result:
+
+PASS_WITH_NOTES
+
+---
+
+#### Grain Documentation
+
+| Table                             | Grain                             |
+| --------------------------------- | --------------------------------- |
+| customers                         | One row per customer              |
+| orders                            | One row per order                 |
+| products                          | One row per product               |
+| sellers                           | One row per seller                |
+| order_items                       | One row per order line item       |
+| order_payments                    | One row per payment transaction   |
+| order_reviews                     | One row per review record         |
+| geolocation                       | Geographic lookup grain           |
 | product_category_name_translation | Category translation lookup grain |
 
----
+Result:
 
-##### 5. Fact vs Dimension Classification
-
-Classified datasets for future dimensional modeling.
-
-Dimension Tables:
-
-- customers
-- products
-- sellers
-- geolocation
-- product_category_name_translation
-
-Fact Tables:
-
-- orders
-- order_items
-- order_payments
-- order_reviews
+PASS
 
 ---
 
-##### 6. Relationship Discovery
+#### Fact vs Dimension Classification
 
-Documented expected relationships between Olist entities.
+##### Candidate Dimensions
 
-Validated relationships:
+* customers
+* products
+* sellers
+* geolocation
+* product_category_name_translation
 
-- orders → customers
-- order_items → orders
-- order_items → products
-- order_items → sellers
-- order_payments → orders
-- order_reviews → orders
-- products → product_category_name_translation
+##### Candidate Facts
 
----
+* orders
+* order_items
+* order_payments
+* order_reviews
 
-##### 7. Relationship Coverage Validation
+Result:
 
-Performed anti-join relationship testing.
-
-Results:
-
-| Relationship | Match Rate |
-|-------------|------------:|
-| orders → customers | 100.00% |
-| order_items → orders | 100.00% |
-| order_items → products | 100.00% |
-| order_items → sellers | 100.00% |
-| order_payments → orders | 100.00% |
-| order_reviews → orders | 100.00% |
-| products → category translation | 98.11% |
-
-Observation:
-
-- 623 product categories do not have a matching translation record.
-- This is a known Olist data quality limitation.
-- Future joins should use LEFT JOIN logic to avoid record loss.
+PASS
 
 ---
 
-#### Data Quality Observations
+#### Relationship Discovery
 
-1. geolocation contains duplicate rows by design and represents repeated geographic ZIP/city/state combinations.
+Validated expected entity relationships:
 
-2. order_reviews contains duplicate review_id values (814 records).
+* orders → customers
+* order_items → orders
+* order_items → products
+* order_items → sellers
+* order_payments → orders
+* order_reviews → orders
+* products → product_category_name_translation
 
-3. products contains category values that do not exist in the translation lookup table.
+Result:
 
-4. No critical relationship integrity issues were detected.
-
-5. Core business entities maintain expected referential integrity.
-
----
-
-#### Screenshots
-
-| Validation Step | Screenshot |
-|-----------------|------------|
-| Business key validation | ../bi/screenshots/olist/phase_3b_raw_validation/01_primary_key_validation.png |
-| Grain documentation | ../bi/screenshots/olist/phase_3b_raw_validation/02_grain_definition.png |
-| Fact vs Dimension classification | ../bi/screenshots/olist/phase_3b_raw_validation/03_fact_dimension_classification.png |
-| Expected relationships | ../bi/screenshots/olist/phase_3b_raw_validation/04_expected_relationships.png |
-| Relationship coverage validation | ../bi/screenshots/olist/phase_3b_raw_validation/05_relationship_validation.png |
-| Phase 3B completion status | ../bi/screenshots/olist/phase_3b_raw_validation/06_phase_3b_completion_status.png |
+PASS
 
 ---
 
-#### Completion Criteria
+#### Relationship Coverage Validation
 
-Phase 3B is complete because:
+| Relationship                    | Match Rate |
+| ------------------------------- | ---------: |
+| orders → customers              |    100.00% |
+| order_items → orders            |    100.00% |
+| order_items → products          |    100.00% |
+| order_items → sellers           |    100.00% |
+| order_payments → orders         |    100.00% |
+| order_reviews → orders          |    100.00% |
+| products → category translation |     98.11% |
 
-- All Parquet datasets were successfully validated.
-- Business keys were documented and checked.
-- Table grain was documented.
-- Fact and Dimension classifications were documented.
-- Inter-table relationships were identified and validated.
-- Referential integrity checks were completed.
-- Raw layer is ready for dimensional modeling.
+Finding:
+
+* 623 products do not have matching category translation records.
+
+Modeling Decision:
+
+Future category joins should use LEFT JOIN logic to prevent product loss.
+
+Result:
+
+PASS_WITH_NOTES
 
 ---
 
-### Status
+#### Data Quality Findings
 
-✅ Phase 3B Completed
+| Dataset       | Finding                          | Action                                |
+| ------------- | -------------------------------- | ------------------------------------- |
+| geolocation   | Duplicate geographic rows        | Preserve and document                 |
+| order_reviews | Duplicate review_id values       | Model using order-level relationships |
+| products      | Missing category translations    | Use LEFT JOIN logic                   |
+| orders        | Referential integrity maintained | Continue                              |
 
-### Next Phase
+---
 
-Phase 3C — Olist Data Model Documentation
-______________________________________________________________________________________________
+#### Validation Summary
+
+| Validation Check                 | Status          |
+| -------------------------------- | --------------- |
+| Raw Layer Availability           | PASS            |
+| Row Count Validation             | PASS            |
+| Business Key Validation          | PASS_WITH_NOTES |
+| Grain Documentation              | PASS            |
+| Fact vs Dimension Classification | PASS            |
+| Relationship Discovery           | PASS            |
+| Relationship Coverage Validation | PASS_WITH_NOTES |
+| Data Quality Assessment          | PASS            |
+
+Overall Result:
+
+PASS
+
+---
+
+#### Evidence
+
+| Validation Step                  | Screenshot                                                                                 |
+| -------------------------------- | ------------------------------------------------------------------------------------------ |
+| Business key validation          | ../bi/screenshots/olist/phase_3b_raw_layer_validation/01_primary_key_validation.png        |
+| Grain documentation              | ../bi/screenshots/olist/phase_3b_raw_layer_validation/02_grain_definition.png              |
+| Fact vs Dimension classification | ../bi/screenshots/olist/phase_3b_raw_layer_validation/03_fact_dimension_classification.png |
+| Expected relationships           | ../bi/screenshots/olist/phase_3b_raw_layer_validation/04_expected_relationships.png        |
+| Relationship coverage validation | ../bi/screenshots/olist/phase_3b_raw_layer_validation/05_relationship_validation.png       |
+| Phase completion status          | ../bi/screenshots/olist/phase_3b_raw_layer_validation/06_phase_3b_completion_status.png    |
+
+---
+
+#### Phase Result
+
+PASS
+
+---
+
+#### Next Phase
+
+Phase 3C — Olist Source Documentation
+
+---
+
 ### Phase 3C — Olist Source Documentation
 
-**Status:** Completed  
-**Environment:** Databricks  
-**Layer:** Source documentation / modeling preparation  
-**Notebook:** `03_olist_source_documentation.ipynb`
+#### Status
 
-#### Purpose
+✅ Completed
 
-Document the Olist raw Parquet source layer to prepare for downstream dimensional modeling, star schema design, KPI development, and BI reporting.
+#### Objective
 
-This phase focuses on understanding and documenting the structure, purpose, and modeling role of each Olist dataset before building transformation logic.
-
-#### Key Activities Completed
-
-- Loaded the Olist Parquet datasets from the raw landing layer.
-- Created a schema inventory across all Olist tables.
-- Documented column names and inferred data types.
-- Counted columns by source table.
-- Documented the business purpose of each dataset.
-- Identified candidate dimension tables.
-- Identified candidate fact tables.
-- Confirmed readiness for Phase 3D.
-
-#### Source Tables Documented
-
-| Table | Business Purpose |
-|---|---|
-| `customers` | Customer master data |
-| `orders` | Order lifecycle information |
-| `order_items` | Order line items |
-| `order_payments` | Payment transactions |
-| `order_reviews` | Customer reviews |
-| `products` | Product catalog |
-| `sellers` | Seller master data |
-| `geolocation` | Geographic lookup table |
-| `product_category_name_translation` | Portuguese to English category mapping |
-
-#### Column Summary
-
-| Table | Column Count |
-|---|---:|
-| `customers` | 5 |
-| `geolocation` | 5 |
-| `order_items` | 7 |
-| `order_payments` | 5 |
-| `order_reviews` | 7 |
-| `orders` | 8 |
-| `product_category_name_translation` | 2 |
-| `products` | 9 |
-| `sellers` | 4 |
-
-#### Candidate Dimensions
-
-| Source Table | Future Dimension |
-|---|---|
-| `customers` | Customer Dimension |
-| `products` | Product Dimension |
-| `sellers` | Seller Dimension |
-| `geolocation` | Geography Dimension |
-
-#### Candidate Facts
-
-| Source Table | Future Fact |
-|---|---|
-| `orders` | Order Fact |
-| `order_items` | Sales Fact |
-| `order_payments` | Payment Fact |
-| `order_reviews` | Review Fact |
-
-#### Evidence Screenshots
-
-| Evidence | Screenshot |
-|---|---|
-| Schema inventory | `../bi/screenshots/olist/phase_3c_source_documentation/01_schema_inventory.png` |
-| Column summary | `../bi/screenshots/olist/phase_3c_source_documentation/02_column_summary.png` |
-| Table purpose documentation | `../bi/screenshots/olist/phase_3c_source_documentation/03_table_purpose_documentation.png` |
-| Candidate dimensions | `../bi/screenshots/olist/phase_3c_source_documentation/04_candidate_dimensions.png` |
-| Candidate facts | `../bi/screenshots/olist/phase_3c_source_documentation/05_candidate_facts.png` |
-| Phase 3C completion status | `../bi/screenshots/olist/phase_3c_source_documentation/06_phase_3c_completion.png` |
-
-#### Completion Criteria
-
-Phase 3C is complete because:
-
-- Source schema was documented.
-- Column inventory was documented.
-- Table purposes were documented.
-- Candidate dimensions were identified.
-- Candidate facts were identified.
-- The Olist raw layer is ready for dimensional design.
-
-**Phase 3C Result:** PASS
+Document the Olist raw source layer and establish the metadata foundation required for dimensional modeling, KPI development, executive reporting, and BI delivery.
 
 ---
 
-### Next Phase
+#### Documentation Scope
 
-### Phase 3D — Olist Star Schema Design
+The following source-documentation activities were completed:
 
-**Status:** Not Started
+* Schema inventory
+* Column inventory
+* Table purpose documentation
+* Candidate dimension identification
+* Candidate fact identification
+* Modeling-readiness review
 
-#### Purpose
+---
 
-Design the Olist dimensional model, including target fact and dimension tables, table grain, primary business keys, and join paths required for mart construction.
-__________________________________________________________________
+#### Source Dataset Documentation
+
+| Table                             | Business Purpose            |
+| --------------------------------- | --------------------------- |
+| customers                         | Customer master data        |
+| orders                            | Order lifecycle information |
+| order_items                       | Order line items            |
+| order_payments                    | Payment transactions        |
+| order_reviews                     | Customer reviews            |
+| products                          | Product catalog             |
+| sellers                           | Seller master data          |
+| geolocation                       | Geographic lookup table     |
+| product_category_name_translation | Category translation lookup |
+
+---
+
+#### Column Inventory Summary
+
+| Table                             | Column Count |
+| --------------------------------- | -----------: |
+| customers                         |            5 |
+| geolocation                       |            5 |
+| order_items                       |            7 |
+| order_payments                    |            5 |
+| order_reviews                     |            7 |
+| orders                            |            8 |
+| product_category_name_translation |            2 |
+| products                          |            9 |
+| sellers                           |            4 |
+
+Result:
+
+PASS
+
+---
+
+#### Candidate Dimension Identification
+
+* Customer Dimension
+* Product Dimension
+* Seller Dimension
+* Geography Dimension
+
+Result:
+
+PASS
+
+---
+
+#### Candidate Fact Identification
+
+* Order Fact
+* Sales Fact
+* Payment Fact
+* Review Fact
+
+Result:
+
+PASS
+
+---
+
+#### Modeling Readiness Assessment
+
+The source layer now contains:
+
+* Documented schemas
+* Column inventory
+* Business purpose documentation
+* Candidate dimensions
+* Candidate facts
+* Relationship definitions
+
+Result:
+
+READY FOR DIMENSIONAL DESIGN
+
+---
+
+#### Validation Summary
+
+| Check                       | Status |
+| --------------------------- | ------ |
+| Schema Inventory            | PASS   |
+| Column Documentation        | PASS   |
+| Table Purpose Documentation | PASS   |
+| Candidate Dimensions        | PASS   |
+| Candidate Facts             | PASS   |
+| Modeling Readiness Review   | PASS   |
+
+Overall Result:
+
+PASS
+
+---
+
+#### Evidence
+
+| Evidence                    | Screenshot                                                                               |
+| --------------------------- | ---------------------------------------------------------------------------------------- |
+| Schema inventory            | ../bi/screenshots/olist/phase_3c_source_documentation/01_schema_inventory.png            |
+| Column summary              | ../bi/screenshots/olist/phase_3c_source_documentation/02_column_summary.png              |
+| Table purpose documentation | ../bi/screenshots/olist/phase_3c_source_documentation/03_table_purpose_documentation.png |
+| Candidate dimensions        | ../bi/screenshots/olist/phase_3c_source_documentation/04_candidate_dimensions.png        |
+| Candidate facts             | ../bi/screenshots/olist/phase_3c_source_documentation/05_candidate_facts.png             |
+| Phase completion status     | ../bi/screenshots/olist/phase_3c_source_documentation/06_phase_3c_completion.png         |
+
+---
+
+#### Phase Result
+
+PASS
+
+---
+
+#### Next Phase
+
+Phase 3D — Olist Star Schema Design
+
 # Phase 3D — Olist Star Schema Design
+
+## Status
+
+✅ Completed
 
 ## Objective
 
-Design the target dimensional model for the Olist commercial analytics layer before physical mart construction.
+Design the target dimensional model for the Olist commercial analytics layer prior to physical table construction.
 
-The goal of this phase was to:
+The purpose of this phase was to:
 
-- Define target fact tables
-- Define target dimension tables
-- Establish business grain for each analytical table
-- Document fact-to-dimension join paths
-- Design the initial star schema architecture
-- Identify the primary commercial fact table for downstream KPI development
+* Define target fact tables
+* Define target dimension tables
+* Establish analytical grain
+* Document business keys
+* Define join paths
+* Design the initial star schema
+* Select the primary commercial fact table
 
 ---
 
 ## Source Inputs
 
-Validated Olist source tables from previous phases:
+Validated Olist source tables from Phase 3B.
 
-| Source Table | Status |
-|-------------|---------|
-| customers | Validated |
-| orders | Validated |
-| order_items | Validated |
-| order_payments | Validated |
-| order_reviews | Validated |
-| products | Validated |
-| sellers | Validated |
-| geolocation | Validated |
+| Source Table                      | Status    |
+| --------------------------------- | --------- |
+| customers                         | Validated |
+| orders                            | Validated |
+| order_items                       | Validated |
+| order_payments                    | Validated |
+| order_reviews                     | Validated |
+| products                          | Validated |
+| sellers                           | Validated |
+| geolocation                       | Validated |
 | product_category_name_translation | Validated |
 
-All source relationships were previously validated during Phase 3B.
+All source relationships were previously validated.
 
 ---
 
 ## Target Fact Table Design
 
-The following fact tables were identified for analytical modeling.
+| Fact Table       | Grain                           | Business Key                  | Purpose                         |
+| ---------------- | ------------------------------- | ----------------------------- | ------------------------------- |
+| fact_orders      | One row per order               | order_id                      | Order lifecycle analytics       |
+| fact_order_items | One row per order item          | order_id + order_item_id      | Revenue and sales analytics     |
+| fact_payments    | One row per payment transaction | order_id + payment_sequential | Payment analytics               |
+| fact_reviews     | One row per review record       | review_id (non-unique)        | Customer satisfaction analytics |
 
-| Fact Table | Grain | Business Key | Purpose |
-|------------|---------|-------------|----------|
-| fact_orders | 1 row per order | order_id | Order lifecycle analytics |
-| fact_order_items | 1 row per order item | order_id + order_item_id | Revenue and sales analytics |
-| fact_payments | 1 row per payment transaction | order_id + payment_sequential | Payment analytics |
-| fact_reviews | 1 row per review | review_id | Customer satisfaction analytics |
+---
 
-### Key Design Decision
+## Modeling Decisions
 
-`fact_order_items` was selected as the primary commercial fact table because it contains:
+### Decision 1 — Primary Commercial Fact Selection
 
-- Revenue metrics
-- Product relationships
-- Seller relationships
-- Order-level commercial activity
+Selected:
 
-This table provides the most detailed sales grain available within the Olist dataset.
+```text
+fact_order_items
+```
+
+Reason:
+
+* Contains revenue metrics
+* Contains product relationships
+* Contains seller relationships
+* Represents the lowest commercial sales grain available
+* Supports product-level, seller-level, and revenue-level analysis
+
+This table will serve as the primary analytical foundation for KPI development and executive reporting.
+
+---
+
+### Decision 2 — Review Fact Handling
+
+Validation in Phase 3B identified duplicate review_id values.
+
+Therefore:
+
+* review_id is not treated as a guaranteed unique business key
+* review modeling relies on order-level relationships
+* duplicate review behavior is preserved as a source-level characteristic
 
 ---
 
 ## Target Dimension Table Design
 
-The following dimensions were identified.
-
-| Dimension Table | Business Key | Purpose |
-|----------------|-------------|----------|
-| dim_customers | customer_id | Customer attributes |
-| dim_products | product_id | Product attributes |
-| dim_sellers | seller_id | Seller attributes |
-| dim_geography | zip_code_prefix | Geographic attributes |
+| Dimension Table | Business Key    | Purpose               |
+| --------------- | --------------- | --------------------- |
+| dim_customers   | customer_id     | Customer attributes   |
+| dim_products    | product_id      | Product attributes    |
+| dim_sellers     | seller_id       | Seller attributes     |
+| dim_geography   | zip_code_prefix | Geographic attributes |
 
 ### Supporting Lookup Table
 
-| Lookup Table | Purpose |
-|-------------|----------|
-| product_category_name_translation | Portuguese to English category mapping |
+| Lookup Table                      | Purpose                                |
+| --------------------------------- | -------------------------------------- |
+| product_category_name_translation | Portuguese-to-English category mapping |
 
 ---
 
 ## Star Schema Join Paths
 
-The following analytical relationships were defined.
+| Fact Table       | Fact Key    | Dimension Table | Dimension Key |
+| ---------------- | ----------- | --------------- | ------------- |
+| fact_orders      | customer_id | dim_customers   | customer_id   |
+| fact_order_items | product_id  | dim_products    | product_id    |
+| fact_order_items | seller_id   | dim_sellers     | seller_id     |
 
-| Fact Table | Fact Key | Dimension Table | Dimension Key |
-|------------|----------|------------------|---------------|
-| fact_orders | customer_id | dim_customers | customer_id |
-| fact_order_items | product_id | dim_products | product_id |
-| fact_order_items | seller_id | dim_sellers | seller_id |
+### Future Enhancement
 
-### Additional Future Enhancement
-
-A geography dimension may later be connected through customer geographic attributes if additional regional analysis is required.
+Geographic relationships may be expanded through customer geographic attributes for regional analytics.
 
 ---
 
-## Proposed Star Schema
+## Proposed Analytical Model
 
 ### Dimensions
 
-- dim_customers
-- dim_products
-- dim_sellers
-- dim_geography
+* dim_customers
+* dim_products
+* dim_sellers
+* dim_geography
 
 ### Facts
 
-- fact_orders
-- fact_order_items
-- fact_payments
-- fact_reviews
+* fact_orders
+* fact_order_items
+* fact_payments
+* fact_reviews
 
 ### Primary Commercial Fact
 
-- fact_order_items
+* fact_order_items
 
 ---
 
-## Validation Results
+## Validation Summary
 
-Star schema design completed successfully.
+| Validation Check                 | Status |
+| -------------------------------- | ------ |
+| Fact Tables Identified           | PASS   |
+| Dimension Tables Identified      | PASS   |
+| Analytical Grain Defined         | PASS   |
+| Business Keys Defined            | PASS   |
+| Join Paths Documented            | PASS   |
+| Primary Commercial Fact Selected | PASS   |
+| Star Schema Documented           | PASS   |
 
-### Validation Checklist
+Overall Result:
 
-| Check | Result |
-|---------|---------|
-| Fact tables identified | PASS |
-| Dimension tables identified | PASS |
-| Business grain documented | PASS |
-| Business keys documented | PASS |
-| Join paths documented | PASS |
-| Primary commercial fact selected | PASS |
-| Initial star schema documented | PASS |
-
----
-
-## Observations
-
-### Observation 1
-
-The Olist dataset naturally supports a dimensional model structure.
-
-Core dimensions:
-
-- Customers
-- Products
-- Sellers
-- Geography
-
-Core facts:
-
-- Orders
-- Order Items
-- Payments
-- Reviews
-
-### Observation 2
-
-The commercial center of the model is `fact_order_items`.
-
-This table provides the most detailed revenue grain and will serve as the foundation for:
-
-- Revenue KPIs
-- Product performance
-- Seller performance
-- Commercial dashboards
-
-### Observation 3
-
-The star schema design confirms that the Olist dataset is suitable for downstream dimensional modeling and BI reporting.
+PASS
 
 ---
 
-## Evidence Retention
+## Evidence
 
-### Keep
-
-1. Star schema fact table design
-
-```text
-phase_3d_star_schema_design/01_fact_design.png
-```
-
-Reason:
-Documents final fact table structure and grain decisions.
-
-2. Star schema dimension table design
-
-```text
-phase_3d_star_schema_design/02_dimension_design.png
-```
-
-Reason:
-Documents final dimension structure.
-
-3. Join path design
-
-```text
-phase_3d_star_schema_design/03_join_paths.png
-```
-
-Reason:
-Documents fact-to-dimension relationships.
-
-4. Phase completion evidence
-
-```text
-phase_3d_star_schema_design/05_phase_3d_complete.png
-```
-
-Reason:
-Formal completion checkpoint.
-
-### Do Not Retain
-
-```text
-04_star_schema_summary.png
-```
-
-Reason:
-
-This screenshot contains information already documented by:
-
-- Fact Design
-- Dimension Design
-- Join Path Design
-
-and therefore provides no additional audit value.
+| Evidence                | Screenshot                                                                   |
+| ----------------------- | ---------------------------------------------------------------------------- |
+| Fact table design       | ../bi/screenshots/olist/phase_3d_star_schema_design/01_fact_design.png       |
+| Dimension table design  | ../bi/screenshots/olist/phase_3d_star_schema_design/02_dimension_design.png  |
+| Join path design        | ../bi/screenshots/olist/phase_3d_star_schema_design/03_join_paths.png        |
+| Phase completion status | ../bi/screenshots/olist/phase_3d_star_schema_design/05_phase_3d_complete.png |
 
 ---
 
 ## Deliverables Produced
 
-- Star schema blueprint
-- Fact table definitions
-- Dimension table definitions
-- Business grain definitions
-- Join path definitions
-- Primary commercial fact selection
-- Modeling design documentation
+* Star schema blueprint
+* Fact table definitions
+* Dimension table definitions
+* Analytical grain definitions
+* Join path definitions
+* Primary commercial fact selection
 
 ---
 
-## Phase Status
+## Phase Result
 
 PASS
 
-Phase 3D completed successfully.
+---
 
-Next Phase:
+## Next Phase
 
-Phase 4A — Dimension Mart Construction
-________________________________________________________________
-### Phase 4A — Olist Dimension Construction
-
-**Status:** Completed  
-**Environment:** Databricks  
-**Layer:** Dimension construction  
-**Notebook:** `05_olist_dimension_construction`
-
-#### Purpose
-
-Build the initial Olist dimension tables from the validated raw Parquet layer.
-
-This phase creates the foundational dimension datasets required for downstream fact modeling, mart construction, and BI reporting.
-
-#### Dimensions Built
-
-| Dimension | Source Table | Business Key | Description |
-|---|---|---|---|
-| `dim_customers` | `customers` | `customer_id` | Customer-level attributes |
-| `dim_products` | `products` + `product_category_name_translation` | `product_id` | Product-level attributes with English category mapping |
-| `dim_sellers` | `sellers` | `seller_id` | Seller-level attributes |
-| `dim_geography` | `geolocation` | `geolocation_zip_code_prefix` | Deduplicated geographic lookup |
-
-#### Validation Results
-
-| Dimension | Row Count | Key Validation |
-|---|---:|---|
-| `dim_customers` | 99,441 | `customer_id` is unique |
-| `dim_products` | 32,951 | `product_id` is unique |
-| `dim_sellers` | 3,095 | `seller_id` is unique |
-| `dim_geography` | 27,912 | Deduplicated geography records |
-
-#### Key Observations
-
-- `dim_customers` preserves one row per `customer_id`.
-- `dim_products` successfully includes English product category mapping through a left join.
-- `dim_sellers` preserves one row per `seller_id`.
-- `dim_geography` is deduplicated from the raw geolocation dataset to reduce repeated geographic records.
-- All core dimension tables were constructed and validated successfully.
-
-#### Evidence Screenshots
-
-| Evidence | Screenshot |
-|---|---|
-| Customer dimension validation | `../bi/screenshots/olist/phase_4a_dimension_construction/01_dim_customers_validation.png` |
-| Product dimension validation | `../bi/screenshots/olist/phase_4a_dimension_construction/02_dim_products_validation.png` |
-| Seller dimension validation | `../bi/screenshots/olist/phase_4a_dimension_construction/03_dim_sellers_validation.png` |
-| Geography dimension validation | `../bi/screenshots/olist/phase_4a_dimension_construction/04_dim_geography_validation.png` |
-| Phase 4A completion status | `../bi/screenshots/olist/phase_4a_dimension_construction/05_phase_4a_completion_status.png` |
-
-#### Completion Criteria
-
-Phase 4A is complete because:
-
-- `dim_customers` was built and validated.
-- `dim_products` was built and validated.
-- `dim_sellers` was built and validated.
-- `dim_geography` was built and validated.
-- Dimension row counts and business keys were checked.
-- The Olist dimension layer is ready for formal validation.
-
-**Phase 4A Result:** PASS
+Phase 4A — Olist Dimension Construction
 
 ---
 
-### Next Phase
+### Phase 4A — Olist Dimension Construction
 
-### Phase 4B — Olist Dimension Validation
+#### Status
 
-**Status:** Not Started
+✅ Completed
 
-#### Purpose
+#### Objective
 
-Perform formal data quality validation on the constructed Olist dimension tables, including uniqueness checks, null checks, duplicate checks, and readiness for fact table joins.
+Construct the foundational Olist dimension layer required for fact modeling, KPI development, executive reporting, and BI consumption.
+
+---
+
+#### Dimensions Constructed
+
+| Dimension     | Source Table                    | Business Key                | Description                        |
+| ------------- | ------------------------------- | --------------------------- | ---------------------------------- |
+| dim_customers | customers                       | customer_id                 | Customer-level attributes          |
+| dim_products  | products + category translation | product_id                  | Product-level attributes           |
+| dim_sellers   | sellers                         | seller_id                   | Seller-level attributes            |
+| dim_geography | geolocation                     | geolocation_zip_code_prefix | Deduplicated geographic attributes |
+
+---
+
+#### Construction Results
+
+| Dimension     | Row Count | Validation Result         |
+| ------------- | --------: | ------------------------- |
+| dim_customers |    99,441 | customer_id unique        |
+| dim_products  |    32,951 | product_id unique         |
+| dim_sellers   |     3,095 | seller_id unique          |
+| dim_geography |    27,912 | deduplicated successfully |
+
+---
+
+#### Construction Findings
+
+##### Customer Dimension
+
+* One row preserved per customer_id
+* No duplicate customer keys detected
+
+##### Product Dimension
+
+* Category translation successfully applied
+* LEFT JOIN logic preserved unmatched products
+
+##### Seller Dimension
+
+* One row preserved per seller_id
+* No duplicate seller keys detected
+
+##### Geography Dimension
+
+* Raw geolocation duplicates removed
+* Geographic lookup optimized for analytical joins
+
+---
+
+#### Validation Summary
+
+| Validation Check                 | Status |
+| -------------------------------- | ------ |
+| Customer Dimension Construction  | PASS   |
+| Product Dimension Construction   | PASS   |
+| Seller Dimension Construction    | PASS   |
+| Geography Dimension Construction | PASS   |
+| Business Key Validation          | PASS   |
+| Dimension Readiness Review       | PASS   |
+
+Overall Result:
+
+PASS
+
+---
+
+#### Evidence
+
+| Evidence                       | Screenshot                                                                                |
+| ------------------------------ | ----------------------------------------------------------------------------------------- |
+| Customer dimension validation  | ../bi/screenshots/olist/phase_4a_dimension_construction/01_dim_customers_validation.png   |
+| Product dimension validation   | ../bi/screenshots/olist/phase_4a_dimension_construction/02_dim_products_validation.png    |
+| Seller dimension validation    | ../bi/screenshots/olist/phase_4a_dimension_construction/03_dim_sellers_validation.png     |
+| Geography dimension validation | ../bi/screenshots/olist/phase_4a_dimension_construction/04_dim_geography_validation.png   |
+| Phase completion status        | ../bi/screenshots/olist/phase_4a_dimension_construction/05_phase_4a_completion_status.png |
+
+---
+
+#### Deliverables Produced
+
+* dim_customers
+* dim_products
+* dim_sellers
+* dim_geography
+
+---
+
+#### Phase Result
+
+PASS
+
+---
+
+#### Next Phase
+
+Phase 4B — Olist Dimension Validation
+
 ___________________________________________________________
 # Phase 4B — Olist Dimension Validation
 
