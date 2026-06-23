@@ -6875,6 +6875,172 @@ Ready for:
 Phase 9B — BI Export Validation
 
 ___________________________________________
+# Phase 9B — BI Export Validation
+
+## Objective
+
+Validate the BI Export layer before dashboard consumption.
+
+The purpose of this phase is to ensure that the exported BI-ready dataset is complete, accurate, reconciled against upstream reporting layers, and suitable for Power BI or Tableau reporting.
+
+---
+
+## Source Layer
+
+Input dataset:
+
+bi_orders_daily
+
+Location:
+
+dbfs:/Volumes/workspace/default/olist_uploads/bi_exports/olist/bi_orders_daily
+
+---
+
+## Validation Checks Performed
+
+### 1. Row and Column Validation
+
+Validated the final shape of the BI export dataset.
+
+Results:
+
+- Rows: 634
+- Columns: 15
+
+Status:
+
+PASS
+
+Evidence:
+
+evidence/phase_09b_bi_export_validation/02_bi_export_row_count_validation.png
+
+---
+
+### 2. Date Range Validation
+
+Validated reporting coverage.
+
+Results:
+
+- Minimum Order Date: 2016-09-04
+- Maximum Order Date: 2018-10-17
+
+Status:
+
+PASS
+
+Notes:
+
+The exported BI dataset covers the full reporting period expected from the Executive layer.
+
+---
+
+### 3. Revenue Reconciliation
+
+Validated total revenue consistency between:
+
+- Executive Layer
+- BI Export Layer
+
+Results:
+
+Executive Revenue:
+
+16008872.12
+
+BI Export Revenue:
+
+16008872.12
+
+Status:
+
+PASS
+
+Evidence:
+
+evidence/phase_09b_bi_export_validation/05_bi_export_reconciliation.png
+
+---
+
+### 4. Null Metric Review
+
+Reviewed critical business metrics for unexpected null values.
+
+Results:
+
+| Metric | Null Count |
+|----------|----------:|
+| order_date | 0 |
+| orders | 0 |
+| customers | 0 |
+| revenue | 1 |
+| avg_order_value | 1 |
+| revenue_growth_pct | 3 |
+
+Status:
+
+PASS WITH NOTES
+
+Explanation:
+
+Expected null values exist because:
+
+- The first reporting date has no previous day for growth comparison.
+- Average Order Value cannot be calculated when revenue is null.
+
+No data quality issues were identified.
+
+---
+
+## Validation Summary
+
+| Validation Check | Status |
+|------------------|---------|
+| Row Count Validation | PASS |
+| Date Range Validation | PASS |
+| Revenue Reconciliation | PASS |
+| Null Metric Review | PASS_WITH_NOTES |
+
+Overall Result:
+
+PASS
+
+The BI Export layer is approved for dashboard consumption.
+
+Evidence:
+
+evidence/phase_09b_bi_export_validation/06_bi_export_validation_summary.png
+
+---
+
+## Deliverables Produced
+
+Notebook:
+
+16_olist_bi_export_validation
+
+Validated Dataset:
+
+bi_orders_daily
+
+Validation Status:
+
+PASS
+
+---
+
+## Phase Completion
+
+Phase 9B completed successfully.
+
+The BI Export layer has been validated and approved as the reporting dataset for downstream dashboard development.
+
+Next Phase:
+
+Phase 10 — Dashboard Development
+________________________________________________
 ## Planned SQL Files
 
 ```text
