@@ -6671,6 +6671,210 @@ Known null values are documented and accepted because they reflect expected sour
 
 **Ready for Phase 9A.**
 _____________________________________________________________
+# Phase 9A — BI Export Construction
+
+## Objective
+
+Build a BI-ready export layer from the validated Executive Mart.
+
+The purpose of this phase is to create a clean reporting dataset optimized for downstream BI consumption in Power BI and Tableau.
+
+---
+
+## Source Layer
+
+### Executive Mart
+
+Storage Location:
+
+dbfs:/Volumes/workspace/default/olist_uploads/executive/olist/executive_daily
+
+Validation Status:
+
+PASS
+
+Validated in:
+
+Phase 8B – Executive Mart Validation
+
+---
+
+## Target Layer
+
+### BI Export Layer
+
+Storage Location:
+
+dbfs:/Volumes/workspace/default/olist_uploads/bi_exports/olist/bi_orders_daily
+
+---
+
+## Business Purpose
+
+The BI Export layer serves as the final reporting dataset consumed by dashboarding and visualization tools.
+
+This layer removes unnecessary engineering complexity and exposes business-ready metrics for executive reporting.
+
+---
+
+## Exported Reporting Fields
+
+| Field              |
+| ------------------ |
+| order_date         |
+| order_year         |
+| order_month        |
+| order_week         |
+| orders             |
+| customers          |
+| revenue            |
+| avg_order_value    |
+| revenue_7d         |
+| orders_7d          |
+| customers_7d       |
+| items_sold_7d      |
+| avg_order_value_7d |
+| prev_day_revenue   |
+| revenue_growth_pct |
+
+Total Columns:
+
+15
+
+---
+
+## Data Validation
+
+### Executive Layer Validation
+
+| Metric       | Value |
+| ------------ | ----- |
+| Row Count    | 634   |
+| Column Count | 15    |
+
+Status:
+
+PASS
+
+---
+
+### KPI Layer Validation
+
+| Metric       | Value |
+| ------------ | ----- |
+| Row Count    | 634   |
+| Column Count | 18    |
+
+Status:
+
+PASS
+
+---
+
+### BI Export Layer Validation
+
+| Metric       | Value |
+| ------------ | ----- |
+| Row Count    | 634   |
+| Column Count | 15    |
+
+Status:
+
+PASS
+
+---
+
+## Formatting Rules Applied
+
+The following reporting standards were applied:
+
+* Revenue metrics rounded for dashboard presentation
+* Average Order Value rounded for reporting consistency
+* Rolling-window metrics formatted for BI consumption
+* Growth metrics prepared for executive reporting
+
+---
+
+## Persistence Validation
+
+The BI Export layer was successfully written to storage and reloaded for validation.
+
+Storage Path:
+
+dbfs:/Volumes/workspace/default/olist_uploads/bi_exports/olist/bi_orders_daily
+
+Validation Result:
+
+PASS
+
+---
+
+## Deliverables Produced
+
+### BI Export Dataset
+
+bi_orders_daily
+
+### Reporting Layer
+
+Business-ready dataset prepared for:
+
+* Power BI
+* Tableau
+* Executive KPI Dashboards
+* Commercial Analytics Reporting
+
+---
+
+## Evidence
+
+### Screenshot 1
+
+03_bi_export_preview.png
+
+Purpose:
+
+BI export dataset preview and schema verification
+
+---
+
+### Screenshot 2
+
+04_save_bi_export_layer.png
+
+Purpose:
+
+Persistence validation of BI export layer
+
+---
+
+### Screenshot 3
+
+06_phase_9a_completion_status.png
+
+Purpose:
+
+Phase completion confirmation
+
+---
+
+## Phase Outcome
+
+A validated BI export layer was successfully created from the Executive Mart.
+
+The dataset is persisted, validated, and approved for dashboard development.
+
+---
+
+## Status
+
+PASS
+
+Ready for:
+
+Phase 9B — BI Export Validation
+
+___________________________________________
 ## Planned SQL Files
 
 ```text
