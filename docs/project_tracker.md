@@ -5362,640 +5362,782 @@ PASS
 
 Phase 4B — Olist Dimension Validation
 
-___________________________________________________________
 # Phase 4B — Olist Dimension Validation
+
+## Status
+
+✅ Completed
 
 ## Objective
 
-Validate all dimension tables created during Phase 4A before beginning fact table construction.
+Validate all dimension tables created during Phase 4A before proceeding to fact-table construction.
 
-Validation scope:
+Validation scope included:
 
-- Row count validation
-- Business key validation
-- Duplicate key validation
-- Null key validation
-- Attribute null analysis
-- Product category translation coverage
-- Dimension readiness assessment
-
----
-
-# Validation Results
-
-## 1. Dimension Row Count Validation
-
-Validated row counts and column counts for each dimension.
-
-| Dimension | Rows | Columns |
-|------------|---------:|---------:|
-| dim_customers | 99,441 | 5 |
-| dim_products | 32,951 | 10 |
-| dim_sellers | 3,095 | 4 |
-| dim_geography | 27,912 | 3 |
-
-Result:
-
-- All dimensions successfully created.
-- Row counts align with source datasets and Phase 4A outputs.
-
-Screenshot:
-
-`01_dimension_row_count_validation.png`
+* Row count validation
+* Business key validation
+* Duplicate key validation
+* Null key validation
+* Attribute null analysis
+* Category translation coverage review
+* Dimension readiness assessment
 
 ---
 
-## 2. Business Key Validation
+## Validation Scope
 
-Validated uniqueness and completeness of business keys.
-
-| Dimension | Business Key | Null Keys | Duplicate Keys |
-|------------|-------------|-----------:|---------------:|
-| dim_customers | customer_id | 0 | 0 |
-| dim_products | product_id | 0 | 0 |
-| dim_sellers | seller_id | 0 | 0 |
-| dim_geography | geolocation_zip_code_prefix | 0 | 8,897 |
-
-Result:
-
-- Customer dimension passed.
-- Product dimension passed.
-- Seller dimension passed.
-- Geography dimension requires review.
-
-Observation:
-
-The geography dataset contains multiple city/state combinations for the same ZIP prefix.
-
-Therefore:
-
-- ZIP prefix is not a unique business key.
-- Geography dimension behaves more like a reference lookup table than a traditional dimension.
-
-Screenshot:
-
-`02_dimension_key_validation.png`
-
----
-
-## 3. Null Attribute Validation
-
-Checked all dimension attributes for missing values.
-
-Findings:
-
-### Product Dimension
-
-Translation-related attributes contain limited missing values.
-
-| Column | Null Count | Null % |
-|----------|------------:|--------:|
-| product_category_name_english | 623 | 1.89% |
-| product_category_name | 610 | 1.85% |
-| product_description_lenght | 610 | 1.85% |
-| product_name_lenght | 610 | 1.85% |
-| product_photos_qty | 610 | 1.85% |
-
-Physical measurements contain almost no missing values.
-
-| Column | Null Count |
-|----------|-----------:|
-| product_height_cm | 2 |
-| product_length_cm | 2 |
-| product_weight_g | 2 |
-| product_width_cm | 2 |
-
-Interpretation:
-
-- Missing values are limited.
-- Data quality remains suitable for analytics use cases.
-- No remediation required at this stage.
-
-Screenshot:
-
-`03_dimension_null_validation.png`
-
----
-
-## 4. Product Translation Coverage Validation
-
-Validated Portuguese-to-English category translation coverage.
-
-Results:
-
-| Translation Status | Product Count |
-|-------------------|--------------:|
-| Translation Available | 32,328 |
-| Translation Missing | 623 |
-
-Coverage Rate:
-
-97.11%
-
-Interpretation:
-
-- Translation coverage is very high.
-- Missing translations affect only a small fraction of products.
-- English category field remains appropriate for BI reporting.
-
-Screenshot:
-
-`04_product_translation_coverage.png`
-
----
-
-## 5. Dimension Validation Summary
-
-| Dimension | Status |
-|------------|--------|
-| dim_customers | PASS |
-| dim_products | PASS |
-| dim_sellers | PASS |
-| dim_geography | REVIEW |
-
-Interpretation:
-
-dim_geography requires review because ZIP prefixes are not unique.
-
-This is a source data characteristic rather than a transformation error.
-
-Current decision:
-
-- Retain geography dimension unchanged.
-- Document limitation.
-- Continue project execution.
-
-Screenshot:
-
-`05_dimension_validation_summary.png`
-
----
-
-# Key Findings
-
-### Finding 1
-
-Customer dimension contains:
-
-99,441 unique customers.
-
-No duplicate business keys detected.
-
----
-
-### Finding 2
-
-Product dimension contains:
-
-32,951 products.
-
-Translation coverage exceeds 97%.
-
----
-
-### Finding 3
-
-Seller dimension contains:
-
-3,095 sellers.
-
-No key quality issues detected.
-
----
-
-### Finding 4
-
-Geography dimension contains:
-
-27,912 rows.
-
-ZIP prefix cannot be treated as a unique business key because multiple locations may share the same ZIP prefix.
-
-This limitation is inherited from the Olist source dataset.
-
----
-
-# Conclusion
-
-Phase 4B completed successfully.
-
-Validation confirms:
-
-- Dimension construction logic is correct.
-- Customer dimension is production-ready.
-- Product dimension is production-ready.
-- Seller dimension is production-ready.
-- Geography dimension is usable with documented limitations.
-- Translation coverage is sufficient for downstream reporting.
-
-Project status:
-
-✓ Phase 4A Complete
-
-✓ Phase 4B Complete
-
-Next phase:
-
-→ Phase 5A — Fact Table Construction
-
----
-
-# Evidence
-
-Retained screenshots:
-
-1. 01_dimension_row_count_validation.png
-2. 02_dimension_key_validation.png
-3. 03_dimension_null_validation.png
-4. 04_product_translation_coverage.png
-5. 05_dimension_validation_summary.png
-6. 06_phase_4b_completion_status.png
-
-_______________________________________________
-### Phase 5A — Olist Fact Table Construction
-
-**Status:** Completed
-
-**Environment:** Databricks
-
-**Notebook:** `07_olist_fact_construction`
-
----
-
-### Objective
-
-Construct the transactional fact layer for the Olist analytics warehouse.
-
-The objective of this phase was to transform validated Olist datasets into analytics-ready fact tables that support commercial reporting, KPI calculations, customer analysis, seller performance analysis, payment analysis, and future BI dashboards.
-
----
-
-### Fact Tables Constructed
-
-| Table              | Grain                           | Purpose                                      |
-| ------------------ | ------------------------------- | -------------------------------------------- |
-| `fact_orders`      | One row per order               | Order lifecycle and fulfillment analysis     |
-| `fact_order_items` | One row per order item          | Revenue, product and seller analytics        |
-| `fact_payments`    | One row per payment transaction | Payment method and payment behavior analysis |
-| `fact_reviews`     | One row per review              | Customer satisfaction and review analysis    |
-
----
-
-### Construction Summary
-
-#### fact_orders
-
-Created the primary order-level fact table containing:
-
-* Order identifiers
-* Customer identifiers
-* Order status
-* Purchase timestamps
-* Approval timestamps
-* Delivery timestamps
-* Estimated delivery timestamps
-
-This table serves as the foundation for order lifecycle reporting and fulfillment analysis.
-
----
-
-#### fact_order_items
-
-Created the item-level revenue fact table containing:
-
-* Order identifiers
-* Product identifiers
-* Seller identifiers
-* Item price
-* Freight value
-* Shipping limit timestamps
-
-This table provides the core sales and revenue foundation for downstream analytics.
-
----
-
-#### fact_payments
-
-Created the payment transaction fact table containing:
-
-* Order identifiers
-* Payment sequence
-* Payment type
-* Installment count
-* Payment value
-
-This table enables payment-method analysis, installment behavior analysis, and payment performance reporting.
-
----
-
-#### fact_reviews
-
-Created the customer review fact table containing:
-
-* Review identifiers
-* Order identifiers
-* Review scores
-* Review creation dates
-* Review response timestamps
-
-This table supports customer experience and satisfaction analytics.
-
----
-
-### Storage Layer
-
-All fact tables were successfully persisted to the Olist mart layer:
-
-```text
-dbfs:/Volumes/workspace/default/olist_uploads/marts/olist
-```
-
----
-
-### Evidence Retained
-
-| Evidence                         | Screenshot                          |
-| -------------------------------- | ----------------------------------- |
-| fact_orders sample output        | `01_fact_orders_sample.png`         |
-| fact_order_items sample output   | `02_fact_order_items_sample.png`    |
-| fact_payments sample output      | `03_fact_payments_sample.png`       |
-| fact_reviews sample output       | `04_fact_reviews_sample.png`        |
-| Phase 5A completion confirmation | `06_phase_5a_completion_status.png` |
-
----
-
-### Key Outcome
-
-The warehouse now contains:
-
-#### Dimension Layer
+The following dimensions were validated:
 
 * dim_customers
 * dim_products
 * dim_sellers
 * dim_geography
 
-#### Fact Layer
+---
+
+## Row Count Validation
+
+| Dimension     |   Rows | Columns |
+| ------------- | -----: | ------: |
+| dim_customers | 99,441 |       5 |
+| dim_products  | 32,951 |      10 |
+| dim_sellers   |  3,095 |       4 |
+| dim_geography | 27,912 |       3 |
+
+Result:
+
+PASS
+
+All dimensions were successfully created and row counts align with Phase 4A construction outputs.
+
+---
+
+## Business Key Validation
+
+| Dimension     | Business Key                | Null Keys | Duplicate Keys |
+| ------------- | --------------------------- | --------: | -------------: |
+| dim_customers | customer_id                 |         0 |              0 |
+| dim_products  | product_id                  |         0 |              0 |
+| dim_sellers   | seller_id                   |         0 |              0 |
+| dim_geography | geolocation_zip_code_prefix |         0 |          8,897 |
+
+---
+
+### Modeling Decision — Geography Dimension
+
+Validation confirmed that ZIP prefixes are not unique within the Olist source dataset.
+
+Observed behavior:
+
+* Multiple city/state combinations may share the same ZIP prefix.
+* This behavior originates from the source data.
+
+Decision:
+
+* Preserve dim_geography unchanged.
+* Treat the table as a geographic reference dimension.
+* Document the limitation rather than forcing artificial deduplication.
+
+Result:
+
+PASS_WITH_NOTES
+
+---
+
+## Null Attribute Validation
+
+### Product Dimension
+
+| Column                        | Null Count | Null % |
+| ----------------------------- | ---------: | -----: |
+| product_category_name_english |        623 |  1.89% |
+| product_category_name         |        610 |  1.85% |
+| product_description_lenght    |        610 |  1.85% |
+| product_name_lenght           |        610 |  1.85% |
+| product_photos_qty            |        610 |  1.85% |
+
+---
+
+### Physical Attribute Review
+
+| Column            | Null Count |
+| ----------------- | ---------: |
+| product_height_cm |          2 |
+| product_length_cm |          2 |
+| product_weight_g  |          2 |
+| product_width_cm  |          2 |
+
+Finding:
+
+Missing values remain limited and do not materially impact analytical usability.
+
+Result:
+
+PASS
+
+---
+
+## Product Translation Coverage Validation
+
+| Translation Status    | Product Count |
+| --------------------- | ------------: |
+| Translation Available |        32,328 |
+| Translation Missing   |           623 |
+
+Coverage Rate:
+
+97.11%
+
+---
+
+### Modeling Decision — Category Translation
+
+Translation coverage exceeds 97%.
+
+Decision:
+
+* English category translation remains the primary reporting category.
+* Untranslated products remain available through LEFT JOIN logic.
+* No remediation required.
+
+Result:
+
+PASS
+
+---
+
+## Dimension Readiness Assessment
+
+| Dimension     | Status          |
+| ------------- | --------------- |
+| dim_customers | PASS            |
+| dim_products  | PASS            |
+| dim_sellers   | PASS            |
+| dim_geography | PASS_WITH_NOTES |
+
+---
+
+## Validation Summary
+
+| Validation Check                | Status          |
+| ------------------------------- | --------------- |
+| Row Count Validation            | PASS            |
+| Business Key Validation         | PASS_WITH_NOTES |
+| Null Attribute Validation       | PASS            |
+| Translation Coverage Validation | PASS            |
+| Dimension Readiness Assessment  | PASS            |
+
+Overall Result:
+
+PASS
+
+---
+
+## Key Findings
+
+### Customer Dimension
+
+* 99,441 unique customers
+* No duplicate customer keys
+
+### Product Dimension
+
+* 32,951 products
+* Translation coverage exceeds 97%
+
+### Seller Dimension
+
+* 3,095 sellers
+* No key-quality concerns
+
+### Geography Dimension
+
+* 27,912 geographic records
+* ZIP prefix uniqueness cannot be guaranteed
+* Limitation documented and accepted
+
+---
+
+## Evidence
+
+| Evidence                        | Screenshot                                                                                  |
+| ------------------------------- | ------------------------------------------------------------------------------------------- |
+| Dimension row count validation  | ../bi/screenshots/olist/phase_4b_dimension_validation/01_dimension_row_count_validation.png |
+| Business key validation         | ../bi/screenshots/olist/phase_4b_dimension_validation/02_dimension_key_validation.png       |
+| Null attribute validation       | ../bi/screenshots/olist/phase_4b_dimension_validation/03_dimension_null_validation.png      |
+| Translation coverage validation | ../bi/screenshots/olist/phase_4b_dimension_validation/04_product_translation_coverage.png   |
+| Validation summary              | ../bi/screenshots/olist/phase_4b_dimension_validation/05_dimension_validation_summary.png   |
+| Phase completion status         | ../bi/screenshots/olist/phase_4b_dimension_validation/06_phase_4b_completion_status.png     |
+
+---
+
+## Phase Result
+
+PASS
+
+---
+
+## Next Phase
+
+Phase 5A — Olist Fact Table Construction
+
+---
+
+# Phase 5A — Olist Fact Table Construction
+
+## Status
+
+✅ Completed
+
+## Environment
+
+Databricks
+
+## Notebook
+
+07_olist_fact_construction
+
+---
+
+## Objective
+
+Construct the transactional fact layer for the Olist analytics warehouse.
+
+This phase transforms validated Olist source entities into analytics-ready fact tables supporting:
+
+* Commercial reporting
+* KPI development
+* Customer analytics
+* Seller analytics
+* Payment analytics
+* Executive reporting
+* BI dashboards
+
+---
+
+## Fact Tables Constructed
+
+| Fact Table       | Grain                           | Purpose                         |
+| ---------------- | ------------------------------- | ------------------------------- |
+| fact_orders      | One row per order               | Order lifecycle analytics       |
+| fact_order_items | One row per order item          | Revenue and sales analytics     |
+| fact_payments    | One row per payment transaction | Payment analytics               |
+| fact_reviews     | One row per review record       | Customer satisfaction analytics |
+
+---
+
+## Construction Summary
+
+### fact_orders
+
+Constructed using order lifecycle attributes including:
+
+* order_id
+* customer_id
+* order_status
+* purchase timestamps
+* approval timestamps
+* delivery timestamps
+* estimated delivery timestamps
+
+Purpose:
+
+Order lifecycle and fulfillment reporting.
+
+---
+
+### fact_order_items
+
+Constructed using:
+
+* order_id
+* product_id
+* seller_id
+* item price
+* freight value
+* shipping limit timestamps
+
+Purpose:
+
+Primary commercial revenue fact.
+
+---
+
+### Modeling Decision — Primary Commercial Fact
+
+Selected:
+
+fact_order_items
+
+Reason:
+
+* Lowest commercial sales grain
+* Revenue metrics available
+* Product relationships available
+* Seller relationships available
+* Supports KPI development and executive reporting
+
+---
+
+### fact_payments
+
+Constructed using:
+
+* payment sequence
+* payment type
+* installment count
+* payment value
+
+Purpose:
+
+Payment behavior analytics.
+
+---
+
+### fact_reviews
+
+Constructed using:
+
+* review identifiers
+* review scores
+* review timestamps
+* review response timestamps
+
+Purpose:
+
+Customer satisfaction analytics.
+
+---
+
+## Storage Layer
+
+Persisted to:
+
+```text
+dbfs:/Volumes/workspace/default/olist_uploads/marts/olist
+```
+
+Result:
+
+PASS
+
+---
+
+## Warehouse State After Construction
+
+### Dimension Layer
+
+* dim_customers
+* dim_products
+* dim_sellers
+* dim_geography
+
+### Fact Layer
 
 * fact_orders
 * fact_order_items
 * fact_payments
 * fact_reviews
 
-The core warehouse foundation is now complete and ready for formal fact-table validation.
+The foundational warehouse model is now complete.
 
 ---
 
-### Phase Result
+## Construction Validation Summary
 
-**PASS**
+| Check                         | Status |
+| ----------------------------- | ------ |
+| fact_orders Construction      | PASS   |
+| fact_order_items Construction | PASS   |
+| fact_payments Construction    | PASS   |
+| fact_reviews Construction     | PASS   |
+| Storage Persistence           | PASS   |
+| Warehouse Readiness Review    | PASS   |
+
+Overall Result:
+
+PASS
 
 ---
 
-### Next Phase
+## Evidence
+
+| Evidence                       | Screenshot                                                                           |
+| ------------------------------ | ------------------------------------------------------------------------------------ |
+| fact_orders sample output      | ../bi/screenshots/olist/phase_5a_fact_construction/01_fact_orders_sample.png         |
+| fact_order_items sample output | ../bi/screenshots/olist/phase_5a_fact_construction/02_fact_order_items_sample.png    |
+| fact_payments sample output    | ../bi/screenshots/olist/phase_5a_fact_construction/03_fact_payments_sample.png       |
+| fact_reviews sample output     | ../bi/screenshots/olist/phase_5a_fact_construction/04_fact_reviews_sample.png        |
+| Phase completion status        | ../bi/screenshots/olist/phase_5a_fact_construction/06_phase_5a_completion_status.png |
+
+---
+
+## Deliverables Produced
+
+* fact_orders
+* fact_order_items
+* fact_payments
+* fact_reviews
+
+---
+
+## Phase Result
+
+PASS
+
+---
+
+## Next Phase
+
+Phase 5B — Olist Fact Table Validation
 
 ### Phase 5B — Olist Fact Table Validation
 
-Planned validation activities:
+#### Status
 
-* Row count validation
+✅ Completed
+
+#### Objective
+
+Validate the Olist fact layer created during Phase 5A before proceeding to analytical mart construction.
+
+Validation scope included:
+
+* Fact row count validation
 * Business key validation
-* Duplicate detection
 * Null key validation
 * Referential integrity validation
-* Fact-to-dimension relationship validation
-* Data quality assessment
-* Validation summary generation
-
-___________________________________________
-### Phase 5B — Olist Fact Table Validation
-
-**Status:** Completed with Review Notes  
-**Environment:** Databricks  
-**Notebook:** `08_olist_fact_validation`
+* Fact-layer readiness assessment
 
 ---
 
-### Objective
+#### Fact Row Count Validation
 
-Validate the Olist fact tables created in Phase 5A before building downstream analytical marts.
+| Fact Table       | Row Count |
+| ---------------- | --------: |
+| fact_orders      |    99,441 |
+| fact_order_items |   112,650 |
+| fact_payments    |   103,886 |
+| fact_reviews     |    99,224 |
 
-This phase checks row counts, business key behavior, null keys, and referential integrity between fact and dimension/source entities.
+Result:
 
----
+PASS
 
-### Fact Row Count Validation
-
-| Fact Table | Row Count |
-|---|---:|
-| `fact_orders` | 99,441 |
-| `fact_order_items` | 112,650 |
-| `fact_payments` | 103,886 |
-| `fact_reviews` | 99,224 |
+All fact tables were successfully persisted and row counts align with source-layer expectations.
 
 ---
 
-### Business Key Validation
+#### Business Key Validation
 
-| Fact Table | Row Count | Distinct Key Count | Result |
-|---|---:|---:|---|
-| `fact_orders` | 99,441 | 99,441 | PASS |
-| `fact_order_items` | 112,650 | 112,650 | PASS |
-| `fact_payments` | 103,886 | 103,886 | PASS |
-| `fact_reviews` | 99,224 | 98,410 | REVIEW |
-
-#### Review Note
-
-`fact_reviews` contains repeated `review_id` values.  
-This was already observed in the raw layer and should be treated as a known source-data behavior rather than a pipeline failure.
-
-Further handling may be required before using reviews for detailed review-level analysis.
+| Fact Table       | Row Count | Distinct Key Count | Result          |
+| ---------------- | --------: | -----------------: | --------------- |
+| fact_orders      |    99,441 |             99,441 | PASS            |
+| fact_order_items |   112,650 |            112,650 | PASS            |
+| fact_payments    |   103,886 |            103,886 | PASS            |
+| fact_reviews     |    99,224 |             98,410 | PASS_WITH_NOTES |
 
 ---
 
-### Null Key Validation
+##### Modeling Decision — Review Fact Uniqueness
 
-| Fact Table | Null Key Count |
-|---|---:|
-| `fact_orders` | 0 |
-| `fact_order_items` | 0 |
-| `fact_payments` | 0 |
-| `fact_reviews` | 0 |
+Validation confirmed repeated review_id values within the Olist source dataset.
 
-All fact tables passed null key validation.
+Observed Behavior:
 
----
+* review_id is not globally unique
+* duplicate review identifiers originate from source data
+* behavior was previously identified during raw-layer validation
 
-### Referential Integrity Validation
+Decision:
 
-| Relationship | Unmatched Rows |
-|---|---:|
-| `fact_orders → customers` | 0 |
-| `fact_order_items → products` | 0 |
-| `fact_order_items → sellers` | 0 |
+* Preserve source behavior unchanged
+* Do not treat duplicate review_id values as a pipeline defect
+* Use order-level relationships when performing review analysis
 
-All tested fact-to-dimension relationships passed referential integrity checks.
+Result:
+
+PASS_WITH_NOTES
 
 ---
 
-### Evidence Retained
+#### Null Key Validation
 
-| Evidence | Screenshot |
-|---|---|
-| Fact row count validation | `../bi/screenshots/olist/phase_5b_fact_validation/01_fact_row_count_validation.png` |
-| Fact business key validation | `../bi/screenshots/olist/phase_5b_fact_validation/02_fact_business_key_validation.png` |
-| Fact null key validation | `../bi/screenshots/olist/phase_5b_fact_validation/03_fact_null_key_validation.png` |
-| Fact-to-dimension integrity validation | `../bi/screenshots/olist/phase_5b_fact_validation/04_fact_dimension_integrity.png` |
-| Fact validation summary | `../bi/screenshots/olist/phase_5b_fact_validation/05_fact_validation_summary.png` |
-| Phase 5B completion status | `../bi/screenshots/olist/phase_5b_fact_validation/06_phase_5b_completion_status.png` |
+| Fact Table       | Null Key Count |
+| ---------------- | -------------: |
+| fact_orders      |              0 |
+| fact_order_items |              0 |
+| fact_payments    |              0 |
+| fact_reviews     |              0 |
 
----
+Result:
 
-### Completion Criteria
+PASS
 
-Phase 5B is complete because:
-
-- Fact row counts were validated.
-- Business key behavior was checked.
-- Null key checks passed for all fact tables.
-- Referential integrity checks passed.
-- Known review-level duplicate behavior was documented.
-
-**Phase 5B Result:** Completed with Review Notes
+All fact tables passed null-key validation.
 
 ---
 
-### Next Phase
+#### Referential Integrity Validation
+
+| Relationship                | Unmatched Rows |
+| --------------------------- | -------------: |
+| fact_orders → customers     |              0 |
+| fact_order_items → products |              0 |
+| fact_order_items → sellers  |              0 |
+
+Result:
+
+PASS
+
+All tested relationships passed referential integrity validation.
+
+---
+
+#### Fact Layer Readiness Assessment
+
+The fact layer now contains:
+
+* fact_orders
+* fact_order_items
+* fact_payments
+* fact_reviews
+
+All fact tables:
+
+* successfully persisted
+* contain valid business keys
+* contain no null business keys
+* support downstream mart construction
+
+Result:
+
+READY FOR MART CONSTRUCTION
+
+---
+
+#### Validation Summary
+
+| Validation Check                 | Status          |
+| -------------------------------- | --------------- |
+| Fact Row Count Validation        | PASS            |
+| Business Key Validation          | PASS_WITH_NOTES |
+| Null Key Validation              | PASS            |
+| Referential Integrity Validation | PASS            |
+| Fact Readiness Assessment        | PASS            |
+
+Overall Result:
+
+PASS
+
+---
+
+#### Key Findings
+
+##### fact_orders
+
+* 99,441 orders validated
+* No business key issues detected
+
+##### fact_order_items
+
+* 112,650 order items validated
+* Primary commercial fact remains suitable for KPI development
+
+##### fact_payments
+
+* 103,886 payment records validated
+* No key-quality concerns detected
+
+##### fact_reviews
+
+* Duplicate review_id values confirmed
+* Behavior accepted as a documented source-data characteristic
+
+---
+
+#### Evidence
+
+| Evidence                               | Screenshot                                                                           |
+| -------------------------------------- | ------------------------------------------------------------------------------------ |
+| Fact row count validation              | ../bi/screenshots/olist/phase_5b_fact_validation/01_fact_row_count_validation.png    |
+| Fact business key validation           | ../bi/screenshots/olist/phase_5b_fact_validation/02_fact_business_key_validation.png |
+| Fact null key validation               | ../bi/screenshots/olist/phase_5b_fact_validation/03_fact_null_key_validation.png     |
+| Fact-to-dimension integrity validation | ../bi/screenshots/olist/phase_5b_fact_validation/04_fact_dimension_integrity.png     |
+| Fact validation summary                | ../bi/screenshots/olist/phase_5b_fact_validation/05_fact_validation_summary.png      |
+| Phase completion status                | ../bi/screenshots/olist/phase_5b_fact_validation/06_phase_5b_completion_status.png   |
+
+---
+
+#### Phase Result
+
+PASS
+
+---
+
+#### Next Phase
+
+Phase 6A — Olist Analytical Mart Construction
 
 ### Phase 6A — Olist Analytical Mart Construction
 
-**Status:** Not Started
+#### Status
 
-#### Purpose
+✅ Completed
 
-Build business-facing analytical marts from the validated fact and dimension layers.
-___________________________________________________________
-### Phase 6A — Olist Analytical Mart Construction
+#### Environment
 
-**Status:** Completed with Validation Pending  
-**Environment:** Databricks  
-**Notebook:** `09_olist_mart_construction`
+Databricks
 
----
+#### Notebook
 
-### Objective
-
-Build the first business-facing analytical mart from the validated Olist fact layer.
-
-This phase creates a daily order-level mart designed for commercial reporting, KPI analysis, and future BI dashboard development.
+09_olist_mart_construction
 
 ---
 
-### Mart Built
+#### Objective
 
-| Mart | Grain | Purpose |
-|---|---|---|
-| `mart_orders_daily` | One row per order date | Daily commercial performance reporting |
+Construct the first business-facing analytical mart from the validated Olist fact layer.
 
----
+This mart serves as the foundation for:
 
-### Metrics Included
-
-| Metric | Description |
-|---|---|
-| `order_date` | Order purchase date |
-| `orders` | Number of distinct orders |
-| `customers` | Number of distinct customers |
-| `revenue` | Total daily payment value |
-| `avg_order_value` | Average revenue per order |
-| `items_sold` | Total number of order items sold |
+* Commercial reporting
+* KPI development
+* Executive reporting
+* BI dashboard consumption
 
 ---
 
-### Construction Notes
+#### Mart Constructed
 
-`mart_orders_daily` was built by combining:
-
-- `fact_orders`
-- `fact_order_items`
-- `fact_payments`
-
-The mart aggregates order, customer, revenue, and item-level metrics at daily grain.
+| Mart              | Grain                  | Purpose                                |
+| ----------------- | ---------------------- | -------------------------------------- |
+| mart_orders_daily | One row per order date | Daily commercial performance reporting |
 
 ---
 
-### Observations
+#### Metrics Included
 
-The mart contains **634 daily rows**.
-
-Early preview rows show some `null` values in revenue-related or item-related metrics for specific dates. These should be reviewed in Phase 6B to confirm whether they come from missing payment records, missing item records, or historical edge cases in the source data.
-
----
-
-### Evidence Retained
-
-| Evidence | Screenshot |
-|---|---|
-| Daily mart preview | `../bi/screenshots/olist/phase_6a_mart_construction/01_mart_orders_daily_preview.png` |
-| Phase 6A completion status | `../bi/screenshots/olist/phase_6a_mart_construction/02_phase_6a_completion_status.png` |
+| Metric          | Description             |
+| --------------- | ----------------------- |
+| order_date      | Order purchase date     |
+| orders          | Distinct order count    |
+| customers       | Distinct customer count |
+| revenue         | Daily payment value     |
+| avg_order_value | Revenue per order       |
+| items_sold      | Daily item count        |
 
 ---
 
-### Completion Criteria
+#### Construction Summary
 
-Phase 6A is complete because:
+The mart was built by integrating:
 
-- Daily order mart was built.
-- Revenue metrics were aggregated.
-- Customer metrics were aggregated.
-- Item metrics were aggregated.
-- Mart was persisted to the Olist mart layer.
+* fact_orders
+* fact_order_items
+* fact_payments
 
-**Phase 6A Result:** Completed with Validation Pending
+The resulting analytical layer aggregates commercial activity at daily grain.
 
 ---
 
-### Next Phase
+#### Construction Findings
 
-### Phase 6B — Olist Analytical Mart Validation
+##### Daily Coverage
 
-**Status:** Not Started
+The mart contains:
 
-#### Purpose
+```text
+634 daily rows
+```
 
-Validate `mart_orders_daily` before it is used for KPI reporting or BI dashboards.
+representing the complete available Olist business period.
 
-Planned checks:
+##### Metric Completeness Review
 
-- Mart row count validation
-- Date range validation
-- Null metric validation
-- Revenue consistency checks
-- Order count consistency checks
-- Item count consistency checks
-- Final mart approval
-____________________________________________________
+Initial preview identified limited null values in revenue-related and item-related metrics.
+
+These observations were intentionally deferred to Phase 6B for formal validation and reconciliation.
+
+---
+
+#### Storage Layer
+
+Persisted to:
+
+```text
+dbfs:/Volumes/workspace/default/olist_uploads/marts/olist
+```
+
+Result:
+
+PASS
+
+---
+
+#### Construction Validation Summary
+
+| Check                  | Status |
+| ---------------------- | ------ |
+| Mart Construction      | PASS   |
+| Metric Aggregation     | PASS   |
+| Daily Grain Validation | PASS   |
+| Persistence Validation | PASS   |
+
+Overall Result:
+
+PASS
+
+---
+
+#### Evidence
+
+| Evidence                | Screenshot                                                                           |
+| ----------------------- | ------------------------------------------------------------------------------------ |
+| Daily mart preview      | ../bi/screenshots/olist/phase_6a_mart_construction/01_mart_orders_daily_preview.png  |
+| Phase completion status | ../bi/screenshots/olist/phase_6a_mart_construction/02_phase_6a_completion_status.png |
+
+---
+
+#### Deliverables Produced
+
+* mart_orders_daily
+
+---
+
+#### Phase Result
+
+PASS
+
+---
+
+#### Next Phase
+
+Phase 6B — Olist Analytical Mart Validation
+
+---
+
 ## Phase 6B — Olist Analytical Mart Validation
 
-**Status:** Complete
+### Status
 
-### Purpose
+✅ Completed
 
-Validate the daily analytical mart before exposing it to BI reporting and dashboard layers.
+### Objective
 
-The validation focused on:
+Validate the analytical mart before exposing it to KPI development, executive reporting, and BI dashboard layers.
 
-- Row count consistency
-- Date coverage
-- Null metric assessment
-- Revenue reconciliation against source facts
-- Reporting readiness approval
+Validation scope included:
+
+* Row count validation
+* Date range validation
+* Null metric validation
+* Revenue reconciliation
+* Reporting readiness assessment
 
 ---
 
-### Validation Results
-
-#### 1. Mart Row Count Validation
+### Mart Row Count Validation
 
 The mart contains:
 
@@ -6003,46 +6145,32 @@ The mart contains:
 634 rows
 ```
 
-representing daily aggregated business activity.
+representing daily aggregated commercial activity.
 
 Result:
 
-```text
 PASS
-```
-
-**Evidence**
-
-`bi/screenshots/olist/phase_6b_mart_validation/01_mart_row_count_validation.png`
 
 ---
 
-#### 2. Date Coverage Validation
+### Date Coverage Validation
 
-Validated the minimum and maximum reporting dates.
+Validated reporting period:
 
 ```text
 Min Date: 2016-09-04
 Max Date: 2018-10-17
 ```
 
-The mart covers the complete available Olist business period.
-
 Result:
 
-```text
 PASS
-```
 
-**Evidence**
-
-`bi/screenshots/olist/phase_6b_mart_validation/02_date_range_validation.png`
+The mart covers the complete available Olist business period.
 
 ---
 
-#### 3. Null Metric Validation
-
-Validated business metrics for missing values.
+### Null Metric Validation
 
 Results:
 
@@ -6052,66 +6180,83 @@ Null AOV Days: 1
 Null Items Sold Days: 18
 ```
 
-Observation:
+---
 
-A small number of null values were identified. These are attributable to source-level transactional behavior and are considered acceptable for analytical reporting.
+#### Modeling Decision — Null Metric Handling
+
+Validation confirmed that a limited number of null metric values exist.
+
+Investigation indicated these null values originate from source-level transactional behavior rather than transformation defects.
+
+Decision:
+
+* Preserve null behavior unchanged.
+* Do not force artificial imputation.
+* Document the limitation for reporting consumers.
 
 Result:
 
-```text
-PASS
-```
-
-**Evidence**
-
-`bi/screenshots/olist/phase_6b_mart_validation/03_null_metric_validation.png`
+PASS_WITH_NOTES
 
 ---
 
-#### 4. Revenue Reconciliation Validation
+### Revenue Reconciliation Validation
 
-Compared total mart revenue against the source payment fact table.
+Comparison:
 
 ```text
 Mart Revenue: 16,008,872.12
-
 Fact Revenue: 16,008,872.12
 ```
 
-Observed difference is limited to floating-point precision and is operationally zero.
+Observed difference is operationally zero.
 
 Result:
 
-```text
 PASS
-```
-
-**Evidence**
-
-`bi/screenshots/olist/phase_6b_mart_validation/04_metric_reconciliation_validation.png`
 
 ---
 
-### Validation Conclusion
+### Reporting Readiness Assessment
 
-The analytical mart successfully passed all validation checks.
+The analytical mart is approved for:
 
-Approved for:
-
-- Executive reporting
-- KPI development
-- Dashboard consumption
-- Business analytics use cases
+* KPI development
+* Executive reporting
+* Dashboard consumption
+* Commercial analytics
 
 Result:
 
-```text
-PHASE 6B PASSED
-```
+READY FOR KPI LAYER
 
-**Evidence**
+---
 
-`bi/screenshots/olist/phase_6b_mart_validation/05_phase_6b_completion_status.png`
+### Validation Summary
+
+| Validation Check               | Status          |
+| ------------------------------ | --------------- |
+| Row Count Validation           | PASS            |
+| Date Coverage Validation       | PASS            |
+| Null Metric Validation         | PASS_WITH_NOTES |
+| Revenue Reconciliation         | PASS            |
+| Reporting Readiness Assessment | PASS            |
+
+Overall Result:
+
+PASS
+
+---
+
+### Evidence
+
+| Evidence                          | Screenshot                                                                               |
+| --------------------------------- | ---------------------------------------------------------------------------------------- |
+| Mart row count validation         | ../bi/screenshots/olist/phase_6b_mart_validation/01_mart_row_count_validation.png        |
+| Date range validation             | ../bi/screenshots/olist/phase_6b_mart_validation/02_date_range_validation.png            |
+| Null metric validation            | ../bi/screenshots/olist/phase_6b_mart_validation/03_null_metric_validation.png           |
+| Revenue reconciliation validation | ../bi/screenshots/olist/phase_6b_mart_validation/04_metric_reconciliation_validation.png |
+| Phase completion status           | ../bi/screenshots/olist/phase_6b_mart_validation/05_phase_6b_completion_status.png       |
 
 ---
 
@@ -6120,7 +6265,7 @@ PHASE 6B PASSED
 #### Notebook
 
 ```text
-notebooks/databricks/10_olist_mart_validation
+10_olist_mart_validation
 ```
 
 #### Analytical Mart
@@ -6129,37 +6274,39 @@ notebooks/databricks/10_olist_mart_validation
 mart_orders_daily
 ```
 
-#### Validation Evidence Folder
+---
 
-```text
-bi/screenshots/olist/phase_6b_mart_validation
-```
+### Phase Result
+
+PASS
 
 ---
 
 ### Next Phase
 
-## Phase 7A — Commercial KPI Layer Construction
-_______________________________________________________
----
+Phase 7A — Commercial KPI Layer Construction
 
 ## Phase 7A — Olist Commercial KPI Layer Construction
 
-**Status:** Complete
+### Status
 
-### Purpose
+✅ Completed
 
-Build a business-facing KPI layer from the validated Olist analytical mart to support executive reporting, trend analysis, dashboard consumption, and commercial performance monitoring.
+### Objective
+
+Construct a business-facing KPI layer from the validated analytical mart to support:
+
+* Executive reporting
+* Commercial performance monitoring
+* Trend analysis
+* Dashboard consumption
+* Future BI reporting
+
+The KPI layer introduces derived commercial metrics, rolling performance indicators, and reporting calendar dimensions commonly used within production analytics environments.
 
 ---
 
-## Business Objective
-
-Transform the validated daily mart into a reporting-ready KPI layer by introducing derived commercial metrics, rolling performance indicators, and reporting dimensions commonly used by business stakeholders and BI teams.
-
----
-
-## Source Layer
+### Source Layer
 
 Input Mart:
 
@@ -6181,14 +6328,14 @@ dbfs:/Volumes/workspace/default/olist_uploads/kpis/olist/kpi_orders_daily
 
 ---
 
-## KPI Enhancements Added
+### KPI Enhancements Constructed
 
-### Customer Value Metrics
+#### Customer Value Metrics
 
-Calculated:
+Added:
 
-- Revenue Per Customer
-- Revenue Presence Flag
+* Revenue Per Customer
+* Revenue Presence Flag
 
 Formula:
 
@@ -6198,12 +6345,12 @@ Revenue Per Customer = Revenue / Customers
 
 ---
 
-### Order Efficiency Metrics
+#### Order Efficiency Metrics
 
-Calculated:
+Added:
 
-- Items Per Order
-- Revenue Per Item
+* Items Per Order
+* Revenue Per Item
 
 Formulas:
 
@@ -6215,23 +6362,23 @@ Revenue Per Item = Revenue / Items Sold
 
 ---
 
-### Rolling Commercial KPIs
+#### Rolling Commercial KPIs
 
-Added rolling 7-day aggregations:
+Added:
 
-- Revenue 7D
-- Orders 7D
-- Customers 7D
-- Items Sold 7D
-- Average Order Value 7D
+* Revenue 7D
+* Orders 7D
+* Customers 7D
+* Items Sold 7D
+* Average Order Value 7D
 
 Purpose:
 
-Provide trend monitoring capability similar to production commercial reporting environments.
+Provide short-term commercial trend monitoring comparable to executive reporting environments.
 
 ---
 
-### Reporting Calendar Dimensions
+#### Reporting Calendar Dimensions
 
 Added:
 
@@ -6243,299 +6390,260 @@ order_week
 
 Purpose:
 
-Support dashboard filtering, aggregation, and period-over-period analysis.
+Support dashboard filtering, period aggregation, and time-series reporting.
 
 ---
 
-## KPI Summary Results
+### Modeling Decisions
 
-| Metric | Value |
-|----------|----------|
-| Reporting Days | 634 |
-| Total Orders | 99,441 |
-| Total Customers | 99,441 |
-| Total Revenue | 16,008,872.12 |
-| Average Daily AOV | 162.62 |
-| Average Items Per Order | 1.13 |
-| Min Order Date | 2016-09-04 |
-| Max Order Date | 2018-10-17 |
+#### Decision 1 — Revenue Presence Flag
 
----
+A revenue presence indicator was introduced to support reporting scenarios where revenue-producing days must be distinguished from days without commercial activity.
 
-## Key Validation Observations
+Purpose:
 
-### Revenue Consistency
-
-Revenue values remain consistent with the validated analytical mart.
-
-### KPI Logic
-
-Derived metrics successfully generated:
-
-- Revenue Per Customer
-- Items Per Order
-- Revenue Per Item
-
-without calculation failures.
-
-### Trend Layer
-
-Rolling 7-day KPIs generated successfully and support future executive dashboard trend analysis.
-
-### Calendar Layer
-
-Reporting dimensions successfully added and validated.
+* Dashboard filtering
+* Commercial activity monitoring
+* Reporting completeness checks
 
 ---
 
-## Evidence
+#### Decision 2 — Rolling KPI Window Logic
 
-### Screenshot 01
+Rolling KPI calculations were implemented using a constant partition window strategy.
 
-File:
+Purpose:
 
-```text
-01_load_validated_daily_mart.png
-```
+* Preserve a single continuous business timeline
+* Avoid Databricks window execution warnings
+* Maintain deterministic rolling KPI calculations
 
-Description:
-
-Validated analytical mart successfully loaded from storage and ready for KPI layer construction.
+This approach preserves analytical correctness while improving execution behavior.
 
 ---
 
-### Screenshot 02
+### KPI Layer Findings
 
-File:
-
-```text
-02_commercial_kpi_layer_preview.png
-```
-
-Description:
-
-Commercial KPI layer preview displaying derived metrics:
-
-- Revenue Per Customer
-- Items Per Order
-- Revenue Per Item
-- Revenue Presence Flag
+| Metric                  | Value         |
+| ----------------------- | ------------- |
+| Reporting Days          | 634           |
+| Total Orders            | 99,441        |
+| Total Customers         | 99,441        |
+| Total Revenue           | 16,008,872.12 |
+| Average Daily AOV       | 162.62        |
+| Average Items Per Order | 1.13          |
+| Min Order Date          | 2016-09-04    |
+| Max Order Date          | 2018-10-17    |
 
 ---
 
-### Screenshot 03
+### Construction Review
 
-File:
+#### Revenue Consistency
 
-```text
-03_rolling_7d_kpis.png
-```
+Revenue values remain aligned with the validated analytical mart.
 
-Description:
-
-Rolling 7-day commercial KPIs successfully generated including revenue, orders, customers, items sold, and rolling AOV.
-* The 7-day rolling KPI window was explicitly partitioned with a constant partition to avoid Databricks window execution warnings while preserving a single overall daily time series calculation.
-
----
-
-### Screenshot 04
-
-File:
-
-```text
-04_reporting_date_fields.png
-```
-
-Description:
-
-Reporting calendar dimensions added:
-
-- Year
-- Month
-- Week
-
-to support dashboard consumption and time-series analysis.
-
----
-
-### Screenshot 05
-
-File:
-
-```text
-05_kpi_summary.png
-```
-
-Description:
-
-KPI summary output showing total orders, customers, revenue, reporting days, average order value, and reporting date range.
-
----
-
-### Screenshot 06
-
-File:
-
-```text
-06_phase_7a_completion_status.png
-```
-
-Description:
-
-Successful completion of KPI layer construction and readiness for validation phase.
-
----
-
-## Completion Criteria
-
-- [x] KPI layer built
-- [x] Customer metrics calculated
-- [x] Order efficiency metrics calculated
-- [x] Revenue metrics calculated
-- [x] Rolling 7-day KPIs added
-- [x] Reporting calendar dimensions added
-- [x] KPI summary generated
-- [x] KPI layer persisted
-- [x] Ready for validation
-
----
-
-## Next Phase
-
-### Phase 7B — Olist Commercial KPI Layer Validation
-
-Validate:
-
-- KPI row counts
-- KPI null rates
-- Rolling KPI calculations
-- Date dimension integrity
-- Business metric consistency
-- Persisted KPI layer quality
-
-before promoting the KPI layer to dashboard-serving status.
-
-_____________________________________________________
-این Markdown را می‌توانی مستقیماً داخل فایل Tracker مرحله Validation کپی کنی.
-
-````markdown
-# Phase 7B — KPI Layer Validation
-
-## Objective
-Validate the KPI layer generated in Phase 7A to ensure:
-
-- Row counts are preserved from source mart
-- KPI calculations are accurate
-- Rolling metrics are generated correctly
-- Reporting date fields are valid
-- Dataset is ready for BI consumption
-
----
-
-## Validation 1 — KPI Layer Row Count Validation
-
-### Validation Logic
-
-Compare source mart row count against KPI layer row count.
-
-### Result
-
-| Table | Row Count | Column Count |
-|---------|-----------:|------------:|
-| mart_orders_daily | 634 | 6 |
-| kpi_orders_daily_enhanced | 634 | 18 |
-
-### Outcome
+Result:
 
 PASS
 
-### Validation Notes
-
-- No rows lost during KPI enrichment.
-- KPI layer preserves the original daily grain.
-- Additional KPI columns successfully added.
-
-### Evidence
-
-`docs/screenshots/phase_7b/01_kpi_layer_row_count_validation.png`
-
 ---
 
-## Validation 2 — KPI Null Value Validation
+#### Derived KPI Generation
 
-### Validation Logic
+Successfully generated:
 
-Validate critical KPI fields for unexpected null values.
+* Revenue Per Customer
+* Items Per Order
+* Revenue Per Item
+* Revenue Presence Flag
 
-Fields reviewed:
-
-- order_date
-- orders
-- customers
-- revenue
-- avg_order_value
-- items_sold
-- revenue_per_customer
-- items_per_order
-- revenue_per_item
-- revenue_7d
-- orders_7d
-- customers_7d
-- items_sold_7d
-- avg_order_value_7d
-
-### Result
-
-Observed null values:
-
-| Column | Null Count |
-|----------|-----------:|
-| revenue | 1 |
-| avg_order_value | 1 |
-| items_sold | 18 |
-| revenue_per_customer | 1 |
-| items_per_order | 18 |
-| revenue_per_item | 19 |
-| items_sold_7d | 8 |
-
-### Assessment
+Result:
 
 PASS
 
-### Validation Notes
+---
 
-Null values are expected and originate from source transactional data:
+#### Rolling KPI Generation
 
-- Some orders have no associated payment information.
-- Some orders have no item-level records.
-- Derived KPI fields inherit nulls from source attributes.
+Successfully generated:
 
-No unexpected nulls detected in primary grain fields:
+* Revenue 7D
+* Orders 7D
+* Customers 7D
+* Items Sold 7D
+* Average Order Value 7D
 
-- order_date
-- orders
-- customers
+Result:
 
-### Evidence
-
-`docs/screenshots/phase_7b/02_kpi_layer_null_validation.png`
+PASS
 
 ---
 
-## Validation 3 — KPI Formula Validation
+#### Calendar Dimension Generation
 
-### Validation Logic
+Successfully generated:
 
-Manually verify KPI calculations against expected formulas.
+* order_year
+* order_month
+* order_week
 
-Reviewed metrics:
+Result:
 
-- avg_order_value
-- revenue_per_customer
-- items_per_order
-- revenue_per_item
+PASS
 
-### Expected Formulas
+---
+
+### Construction Validation Summary
+
+| Validation Check                | Status |
+| ------------------------------- | ------ |
+| KPI Layer Construction          | PASS   |
+| Customer KPI Generation         | PASS   |
+| Order Efficiency KPI Generation | PASS   |
+| Rolling KPI Generation          | PASS   |
+| Calendar Dimension Generation   | PASS   |
+| KPI Persistence Validation      | PASS   |
+
+Overall Result:
+
+PASS
+
+---
+
+### Evidence
+
+| Evidence                      | Screenshot                                                                                  |
+| ----------------------------- | ------------------------------------------------------------------------------------------- |
+| Daily mart load validation    | ../bi/screenshots/olist/phase_7a_kpi_layer_construction/01_load_validated_daily_mart.png    |
+| KPI layer preview             | ../bi/screenshots/olist/phase_7a_kpi_layer_construction/02_commercial_kpi_layer_preview.png |
+| Rolling KPI generation        | ../bi/screenshots/olist/phase_7a_kpi_layer_construction/03_rolling_7d_kpis.png              |
+| Reporting calendar dimensions | ../bi/screenshots/olist/phase_7a_kpi_layer_construction/04_reporting_date_fields.png        |
+| KPI summary results           | ../bi/screenshots/olist/phase_7a_kpi_layer_construction/05_kpi_summary.png                  |
+| Phase completion status       | ../bi/screenshots/olist/phase_7a_kpi_layer_construction/06_phase_7a_completion_status.png   |
+
+---
+
+### Deliverables Produced
+
+* kpi_orders_daily
+
+---
+
+### Phase Result
+
+PASS
+
+---
+
+### Next Phase
+
+Phase 7B — Olist Commercial KPI Layer Validation
+## Phase 7B — Commercial KPI Layer Validation
+
+### Status
+
+✅ Completed
+
+### Objective
+
+Validate the KPI layer generated during Phase 7A before promoting it to executive reporting and dashboard-serving status.
+
+Validation scope included:
+
+* Row count validation
+* Null value validation
+* KPI formula validation
+* Rolling KPI validation
+* Reporting calendar validation
+* Business readiness assessment
+
+---
+
+### KPI Layer Row Count Validation
+
+| Table             | Row Count | Column Count |
+| ----------------- | --------: | -----------: |
+| mart_orders_daily |       634 |            6 |
+| kpi_orders_daily  |       634 |           18 |
+
+Result:
+
+PASS
+
+Validation Findings:
+
+* No rows lost during KPI enrichment.
+* Original daily grain preserved.
+* KPI columns successfully added.
+
+---
+
+### KPI Null Value Validation
+
+Reviewed fields:
+
+* order_date
+* orders
+* customers
+* revenue
+* avg_order_value
+* items_sold
+* revenue_per_customer
+* items_per_order
+* revenue_per_item
+* revenue_7d
+* orders_7d
+* customers_7d
+* items_sold_7d
+* avg_order_value_7d
+
+Results:
+
+| Column               | Null Count |
+| -------------------- | ---------: |
+| revenue              |          1 |
+| avg_order_value      |          1 |
+| items_sold           |         18 |
+| revenue_per_customer |          1 |
+| items_per_order      |         18 |
+| revenue_per_item     |         19 |
+| items_sold_7d        |          8 |
+
+---
+
+#### Modeling Decision — KPI Null Handling
+
+Validation confirmed that KPI-layer null values originate from upstream source behavior.
+
+Observed Causes:
+
+* Missing payment activity
+* Missing item-level activity
+* Derived KPI inheritance from source null values
+
+Decision:
+
+* Preserve null values.
+* Do not apply artificial imputation.
+* Document behavior for reporting consumers.
+
+Result:
+
+PASS_WITH_NOTES
+
+---
+
+### KPI Formula Validation
+
+Reviewed Metrics:
+
+* avg_order_value
+* revenue_per_customer
+* items_per_order
+* revenue_per_item
+
+Expected Formulas:
 
 ```text
 avg_order_value = revenue / orders
@@ -6545,34 +6653,21 @@ revenue_per_customer = revenue / customers
 items_per_order = items_sold / orders
 
 revenue_per_item = revenue / items_sold
-````
+```
 
-### Result
+Validation Result:
 
-Calculated KPI values matched expected values across sampled records.
+Generated KPI values matched expected manual calculations across sampled records.
 
-### Outcome
+Result:
 
 PASS
 
-### Validation Notes
-
-No discrepancies observed between:
-
-* generated KPI columns
-* manually calculated expected values
-
-### Evidence
-
-`docs/screenshots/phase_7b/03_kpi_formula_validation.png`
-
 ---
 
-## Validation 4 — Rolling 7-Day KPI Validation
+### Rolling KPI Validation
 
-### Validation Logic
-
-Review rolling KPI fields:
+Validated:
 
 * revenue_7d
 * orders_7d
@@ -6580,72 +6675,55 @@ Review rolling KPI fields:
 * items_sold_7d
 * avg_order_value_7d
 
-Verify cumulative behavior across sequential dates.
+Validation Findings:
 
-### Result
+* Rolling metrics increase and decrease consistently with source activity.
+* No unexpected resets detected.
+* Historical accumulation behaves correctly.
 
-Rolling metrics increase and decrease consistently according to underlying transactional activity.
-
-### Outcome
+Result:
 
 PASS
 
-### Validation Notes
-
-* Rolling calculations correctly include historical observations.
-* No unexpected resets detected.
-* Window logic behaves as intended.
-
-### Evidence
-
-`docs/screenshots/phase_7b/04_rolling_7d_validation.png`
-
 ---
 
-## Validation 5 — Reporting Date Field Validation
+### Reporting Calendar Validation
 
-### Validation Logic
-
-Validate derived reporting fields:
+Validated:
 
 * order_year
 * order_month
 * order_week
 
-### Result
+Validation Findings:
 
-Sample records confirmed:
+* Year extraction correct
+* Month formatting correct
+* Week assignment correct
 
-* Correct year extraction
-* Correct month formatting (YYYY-MM)
-* Correct ISO week assignment
-
-### Outcome
+Result:
 
 PASS
-
-### Validation Notes
-
-Date attributes are suitable for:
-
-* dashboard filtering
-* monthly aggregation
-* weekly trend analysis
-* executive reporting
-
-### Evidence
-
-`docs/screenshots/phase_7b/05_reporting_date_fields_validation.png`
 
 ---
 
-## Final Validation Assessment
+### Business Readiness Assessment
 
-### KPI Layer Status
+The KPI layer is approved for:
 
-PASS
+* Executive reporting
+* Commercial dashboards
+* Trend analysis
+* Revenue monitoring
+* Customer performance reporting
 
-### Dataset Summary
+Result:
+
+READY FOR EXECUTIVE REPORTING LAYER
+
+---
+
+### KPI Layer Summary
 
 | Metric            |         Value |
 | ----------------- | ------------: |
@@ -6655,120 +6733,186 @@ PASS
 | Total Revenue     | 16,008,872.12 |
 | Average Daily AOV |        162.62 |
 
-### Business Readiness Assessment
+---
 
-The KPI layer has been successfully validated and approved for:
+### Validation Summary
 
-* Executive reporting
-* Commercial dashboards
-* Trend analysis
-* Revenue monitoring
-* Customer performance reporting
+| Validation Check              | Status          |
+| ----------------------------- | --------------- |
+| KPI Row Count Validation      | PASS            |
+| KPI Null Validation           | PASS_WITH_NOTES |
+| KPI Formula Validation        | PASS            |
+| Rolling KPI Validation        | PASS            |
+| Reporting Calendar Validation | PASS            |
+| Business Readiness Assessment | PASS            |
 
-### Validation Conclusion
+Overall Result:
 
 PASS
 
-Phase 7B completed successfully.
+---
 
 ### Evidence
 
-`docs/screenshots/phase_7b/06_kpi_layer_completion_status.png`
+| Evidence                      | Screenshot                                                                                    |
+| ----------------------------- | --------------------------------------------------------------------------------------------- |
+| KPI row count validation      | ../bi/screenshots/olist/phase_7b_kpi_layer_validation/01_kpi_layer_row_count_validation.png   |
+| KPI null validation           | ../bi/screenshots/olist/phase_7b_kpi_layer_validation/02_kpi_layer_null_validation.png        |
+| KPI formula validation        | ../bi/screenshots/olist/phase_7b_kpi_layer_validation/03_kpi_formula_validation.png           |
+| Rolling KPI validation        | ../bi/screenshots/olist/phase_7b_kpi_layer_validation/04_rolling_7d_validation.png            |
+| Reporting calendar validation | ../bi/screenshots/olist/phase_7b_kpi_layer_validation/05_reporting_date_fields_validation.png |
+| Phase completion status       | ../bi/screenshots/olist/phase_7b_kpi_layer_validation/06_kpi_layer_completion_status.png      |
 
 ---
 
-## Phase Status
+### Deliverables Produced
 
-| Phase                             | Status   |
-| --------------------------------- | -------- |
-| Phase 7A — KPI Layer Construction | Complete |
-| Phase 7B — KPI Layer Validation   | Complete |
+#### KPI Layer
+
+```text
+kpi_orders_daily
+```
+
+#### Validation Notebook
+
+```text
+11_olist_kpi_layer_validation
+```
+
+---
+
+### Phase Result
+
+PASS
+
+---
 
 ### Next Phase
 
-Phase 8A — Executive Reporting Mart Construction
+Phase 8A — Executive Reporting Layer Construction
+## Phase 8A — Executive Reporting Layer Construction
 
-```
+### Status
 
+✅ Completed
 
-_______________________________________________________________________
+### Objective
 
-حتماً. این نسخه را کامل کپی کن داخل `docs/project_tracker.md`.
+Construct an executive-facing reporting layer from the validated KPI layer.
 
-````markdown
-### Phase 8A — Olist Executive Mart Construction
+The executive layer is designed to provide:
 
-**Status:** Completed
+* Executive reporting
+* Commercial performance monitoring
+* Revenue trend analysis
+* Growth analysis
+* Dashboard-ready metrics
 
-#### Purpose
+in a simplified business-facing dataset.
 
-Build an executive-facing daily mart from the validated KPI layer.  
-This layer is designed to support high-level commercial reporting by exposing revenue, order, customer, rolling performance, and growth metrics in a simplified reporting-ready table.
+---
 
-#### Notebook
+### Source Layer
+
+Input Dataset:
 
 ```text
-13_olist_executive_mart_construction
-````
+kpi_orders_daily
+```
 
-#### Output Dataset Path
+Output Dataset:
+
+```text
+executive_daily
+```
+
+Persisted Location:
 
 ```text
 dbfs:/Volumes/workspace/default/olist_uploads/executive/olist/executive_daily
 ```
 
-#### Source Layer
+---
 
-```text
-dbfs:/Volumes/workspace/default/olist_uploads/kpis/olist/kpi_orders_daily
-```
+### Executive Metrics Constructed
 
-#### Construction Summary
+The executive reporting layer includes:
 
-The executive mart was created from the validated KPI layer and focused on a smaller set of business-facing metrics suitable for executive reporting.
+#### Core Commercial Metrics
 
-The mart includes:
+* orders
+* customers
+* revenue
+* avg_order_value
 
-* Daily order date
-* Reporting date fields
-* Order volume
-* Customer count
-* Revenue
-* Average order value
-* 7-day rolling revenue
-* 7-day rolling orders
-* 7-day rolling customers
-* Previous-day revenue
-* Daily revenue growth percentage
+#### Rolling Executive Metrics
 
-#### Key Results Observed
+* revenue_7d
+* orders_7d
+* customers_7d
 
-The executive mart base was successfully created from the KPI layer.
+#### Growth Metrics
 
-The mart preview confirmed that the daily KPI fields were available, including:
+* prev_day_revenue
+* revenue_growth_pct
 
-* `order_date`
-* `order_year`
-* `order_month`
-* `order_week`
-* `orders`
-* `customers`
-* `revenue`
-* `avg_order_value`
-* `revenue_7d`
-* `orders_7d`
-* `customers_7d`
-* `items_sold_7d`
-* `avg_order_value_7d`
+#### Reporting Calendar Attributes
 
-Growth metrics were added successfully:
+* order_year
+* order_month
+* order_week
 
-* `prev_day_revenue`
-* `revenue_growth_pct`
+---
 
-The growth metric calculation produced expected null values where prior-day revenue was unavailable or where revenue comparison was not meaningful. This is expected behavior and not a pipeline error.
+### Construction Summary
 
-An executive summary was generated with the following results:
+The executive layer was constructed from the validated KPI layer and optimized for business-facing reporting.
+
+The resulting dataset provides a concise reporting structure suitable for:
+
+* executive dashboards
+* commercial reporting
+* performance monitoring
+* trend analysis
+
+---
+
+### Construction Findings
+
+#### Executive Metric Availability
+
+The executive dataset successfully exposes:
+
+* revenue metrics
+* customer metrics
+* order metrics
+* rolling performance metrics
+* growth metrics
+
+Result:
+
+PASS
+
+---
+
+#### Growth Metric Generation
+
+Successfully generated:
+
+* prev_day_revenue
+* revenue_growth_pct
+
+Result:
+
+PASS
+
+Expected null values remain present where previous-day revenue is unavailable.
+
+These values represent valid business behavior and are not considered data-quality defects.
+
+---
+
+#### Executive Summary Results
 
 | Metric          |         Value |
 | --------------- | ------------: |
@@ -6777,273 +6921,365 @@ An executive summary was generated with the following results:
 | Total Customers |        99,441 |
 | Average AOV     |        162.62 |
 
-The executive mart was successfully persisted to:
+Result:
+
+PASS
+
+---
+
+### Modeling Decision — Executive Growth Window
+
+Executive growth metrics were generated using a continuous date-ordered window.
+
+Purpose:
+
+* Preserve a single business timeline
+* Support daily growth calculations
+* Maintain executive-level reporting consistency
+
+The Databricks warning associated with non-partitioned windows is accepted because:
+
+* The dataset remains small
+* The reporting grain is daily
+* The calculation is analytically correct
+
+Future large-scale implementations may introduce partitioning by business entity where appropriate.
+
+---
+
+### Persistence Validation
+
+The executive layer was successfully persisted and reloaded from storage.
+
+Persisted Location:
 
 ```text
 dbfs:/Volumes/workspace/default/olist_uploads/executive/olist/executive_daily
 ```
 
-A saved executive mart preview was reloaded from the persisted path, confirming that the mart was written successfully and can be reused by downstream reporting layers.
+Result:
 
-#### Technical Note
+PASS
 
-A Databricks warning appeared during the window calculation:
+---
+
+### Construction Validation Summary
+
+| Validation Check             | Status |
+| ---------------------------- | ------ |
+| Executive Layer Construction | PASS   |
+| Executive Metric Generation  | PASS   |
+| Rolling KPI Integration      | PASS   |
+| Growth Metric Generation     | PASS   |
+| Persistence Validation       | PASS   |
+| Executive Readiness Review   | PASS   |
+
+Overall Result:
+
+PASS
+
+---
+
+### Evidence
+
+| Evidence                   | Screenshot                                                                                       |
+| -------------------------- | ------------------------------------------------------------------------------------------------ |
+| Executive mart base        | ../bi/screenshots/olist/phase_8a_executive_mart_construction/01_executive_mart_base.png          |
+| Growth metrics             | ../bi/screenshots/olist/phase_8a_executive_mart_construction/02_executive_growth_metrics.png     |
+| Executive summary          | ../bi/screenshots/olist/phase_8a_executive_mart_construction/03_executive_summary.png            |
+| Executive mart persistence | ../bi/screenshots/olist/phase_8a_executive_mart_construction/04_executive_mart_saved.png         |
+| Persisted mart preview     | ../bi/screenshots/olist/phase_8a_executive_mart_construction/05_saved_executive_mart_preview.png |
+| Phase completion status    | ../bi/screenshots/olist/phase_8a_executive_mart_construction/06_phase_8a_completion_status.png   |
+
+---
+
+### Deliverables Produced
+
+#### Executive Reporting Layer
 
 ```text
-WARN WindowExpression: No Partition Defined for Window operation
+executive_daily
 ```
 
-This is not a pipeline failure.
-The warning appears because the executive mart uses a global time-based window ordered by `order_date`. Since this mart is small and daily-grain, the warning is acceptable for the current project scope. In a production environment with larger data volume, this calculation could be optimized by partitioning by a reporting entity such as country, channel, or business unit.
-
-#### Evidence Screenshots
-
-The following screenshots were retained as project evidence:
+#### Construction Notebook
 
 ```text
-bi/screenshots/olist/phase_8a_executive_mart_construction/01_executive_mart_base.png
-bi/screenshots/olist/phase_8a_executive_mart_construction/02_executive_growth_metrics.png
-bi/screenshots/olist/phase_8a_executive_mart_construction/03_executive_summary.png
-bi/screenshots/olist/phase_8a_executive_mart_construction/04_executive_mart_saved.png
-bi/screenshots/olist/phase_8a_executive_mart_construction/05_saved_executive_mart_preview.png
-bi/screenshots/olist/phase_8a_executive_mart_construction/06_phase_8a_completion_status.png
+13_olist_executive_mart_construction
 ```
 
-#### Screenshot Notes
+---
 
-* `01_executive_mart_base.png` shows the initial executive mart structure created from the KPI layer.
-* `02_executive_growth_metrics.png` shows the added growth metrics, including previous-day revenue and revenue growth percentage.
-* `03_executive_summary.png` shows the executive-level aggregate metrics.
-* `04_executive_mart_saved.png` confirms that the executive mart was persisted to DBFS.
-* `05_saved_executive_mart_preview.png` confirms that the saved mart can be reloaded successfully.
-* `06_phase_8a_completion_status.png` confirms successful completion of Phase 8A.
+### Phase Result
 
-#### Completion Criteria
-
-* Executive mart created from validated KPI layer.
-* Revenue, order, customer, rolling, and growth metrics prepared.
-* Executive summary generated.
-* Executive mart persisted to DBFS.
-* Persisted executive mart reloaded successfully.
-* Evidence screenshots saved.
-
-#### Outcome
-
-Phase 8A was completed successfully.
-
-The Olist executive mart is now ready for validation in Phase 8B.
+PASS
 
 ---
 
 ### Next Phase
 
-### Phase 8B — Olist Executive Mart Validation
+Phase 8B — Executive Reporting Layer Validation
 
-**Status:** Not Started
+## Phase 8B — Executive Reporting Layer Validation
 
-_______________________________________________________________
-### Phase 8B — Olist Executive Mart Validation
+### Status
 
-**Status:** Complete  
-**Notebook:** `14_olist_executive_mart_validation`  
-**Layer:** Executive / BI-ready reporting layer  
-**Output validated:** `executive_daily`
+✅ Completed
 
-#### Purpose
+### Notebook
 
-This phase validated the Olist executive mart created in Phase 8A before approving it for BI and reporting use.  
-The validation focused on row counts, reporting date coverage, revenue reconciliation, expected null behavior, formula consistency, and final reporting readiness.
+14_olist_executive_mart_validation
 
-#### Validation Scope
+### Layer
 
-The following checks were completed:
+Executive / BI-ready reporting layer
 
-- Executive mart row and column count validation
-- Reporting date range validation
-- Null metric validation
-- Revenue reconciliation against the KPI layer
-- Executive KPI formula logic validation
-- Final validation summary generation
-- Phase completion confirmation
+### Output Validated
+
+```text
+executive_daily
+```
 
 ---
 
-#### 1. Row and Column Count Validation
+### Objective
 
-The executive mart contains **634 reporting rows** and **15 columns**.
+Validate the executive reporting layer created during Phase 8A before approving it for BI consumption, executive reporting, and dashboard delivery.
 
-This confirms that the executive layer preserves the same daily reporting grain as the validated KPI layer while adding executive-level fields for reporting and dashboard consumption.
+Validation scope included:
 
-**Evidence:**  
-`bi/screenshots/olist/phase_8b_executive_mart_validation/02_executive_row_column_count.png`
-
-**Result:**
-
-| table_name | row_count | column_count |
-|---|---:|---:|
-| executive_daily | 634 | 15 |
-
-**Status:** PASS
+* Row and column count validation
+* Reporting date range validation
+* Null metric validation
+* Revenue reconciliation
+* Executive KPI validation
+* Reporting readiness assessment
 
 ---
 
-#### 2. Date Range Validation
+### Row and Column Count Validation
 
-The executive mart covers the expected Olist reporting period.
+| Table           | Row Count | Column Count |
+| --------------- | --------: | -----------: |
+| executive_daily |       634 |           15 |
 
-**Evidence:**  
-`bi/screenshots/olist/phase_8b_executive_mart_validation/03_executive_date_range_validation.png`
+Result:
 
-**Result:**
+PASS
 
-| min_order_date | max_order_date |
-|---|---|
-| 2016-09-04 | 2018-10-17 |
+Validation Findings:
 
-**Status:** PASS
-
----
-
-#### 3. Null Metric Validation
-
-Null checks were performed across key executive metrics.
-
-**Evidence:**  
-`bi/screenshots/olist/phase_8b_executive_mart_validation/04_executive_null_metric_validation.png`
-
-**Observed results:**
-
-| metric | null_count |
-|---|---:|
-| null_order_date | 0 |
-| null_orders | 0 |
-| null_customers | 0 |
-| null_revenue | 1 |
-| null_avg_order_value | 1 |
-| null_revenue_7d | 0 |
-| null_orders_7d | 0 |
-| null_customers_7d | 0 |
-| null_prev_day_revenue | 2 |
-| null_revenue_growth_pct | 3 |
-
-The nulls in revenue-related and growth-related fields are expected because some dates either have incomplete raw Olist item/payment values or do not have a comparable previous revenue value. These nulls are documented as expected business/data behavior, not pipeline failure.
-
-**Status:** PASS_WITH_NOTES
+* Daily reporting grain preserved.
+* Executive reporting fields successfully added.
+* No reporting rows lost.
 
 ---
 
-#### 4. Revenue Reconciliation
+### Reporting Date Range Validation
 
-Executive-level revenue was reconciled against the validated KPI layer.
+| Min Order Date | Max Order Date |
+| -------------- | -------------- |
+| 2016-09-04     | 2018-10-17     |
 
-**Evidence:**  
-`bi/screenshots/olist/phase_8b_executive_mart_validation/05_executive_revenue_reconciliation.png`
+Result:
 
-**Result:**
+PASS
 
-| executive_total_revenue | kpi_total_revenue | reconciliation_status |
-|---:|---:|---|
-| 16008872.12 | 16008872.12 | PASS |
+Validation Findings:
 
-The executive mart revenue matches the KPI layer exactly after rounding to two decimal places.
-
-**Status:** PASS
+The executive layer covers the complete available Olist reporting period.
 
 ---
 
-#### 5. Formula Logic Validation
+### Null Metric Validation
 
-Executive KPI formulas were reviewed by comparing reported metrics against expected calculated values.
-
-**Evidence:**  
-`bi/screenshots/olist/phase_8b_executive_mart_validation/06_executive_formula_validation.png`
-
-The validation confirmed that:
-
-- `avg_order_value` aligns with expected revenue-per-order logic.
-- 7-day rolling metrics are populated.
-- `prev_day_revenue` supports revenue growth calculation.
-- `revenue_growth_pct` is calculated where a valid prior revenue value exists.
-- Null growth values are expected for rows where comparison is not valid.
-
-**Status:** PASS
+| Metric                  | Null Count |
+| ----------------------- | ---------: |
+| null_order_date         |          0 |
+| null_orders             |          0 |
+| null_customers          |          0 |
+| null_revenue            |          1 |
+| null_avg_order_value    |          1 |
+| null_revenue_7d         |          0 |
+| null_orders_7d          |          0 |
+| null_customers_7d       |          0 |
+| null_prev_day_revenue   |          2 |
+| null_revenue_growth_pct |          3 |
 
 ---
 
-#### 6. Executive Validation Summary
+#### Modeling Decision — Growth Metric Null Handling
 
-A structured validation summary was generated to document final approval status.
+Validation confirmed limited null values within revenue-growth calculations.
 
-**Evidence:**  
-`bi/screenshots/olist/phase_8b_executive_mart_validation/07_executive_validation_summary.png`
+Observed Causes:
 
-**Summary result:**
+* Missing comparable previous-day revenue
+* Revenue comparison not meaningful for selected dates
+* Source-level revenue gaps inherited from upstream layers
 
-| table_name | validation_check | validation_status |
-|---|---|---|
-| executive_daily | Row count validation | PASS |
-| executive_daily | Date range validation | PASS |
-| executive_daily | Revenue reconciliation | PASS |
-| executive_daily | Null metric review | PASS_WITH_NOTES |
-| executive_daily | Formula logic review | PASS |
+Decision:
 
-**Status:** PASS_WITH_NOTES
+* Preserve null values unchanged.
+* Do not apply artificial growth calculations.
+* Document expected behavior for reporting consumers.
 
----
+Result:
 
-#### 7. Completion Status
-
-The phase was completed successfully and the executive mart was approved for BI/reporting use.
-
-**Evidence:**  
-`bi/screenshots/olist/phase_8b_executive_mart_validation/08_phase_8b_completion_status.png`
-
-**Completion checklist:**
-
-- Executive mart loaded
-- Row and column counts validated
-- Date range validated
-- Revenue reconciled against KPI layer
-- Null metrics reviewed
-- KPI formulas reviewed
-- Executive mart approved for BI/reporting use
+PASS_WITH_NOTES
 
 ---
 
-#### Final Decision
+### Revenue Reconciliation Validation
 
-**Phase 8B is complete.**
+| Executive Revenue |   KPI Revenue | Status |
+| ----------------: | ------------: | ------ |
+|     16,008,872.12 | 16,008,872.12 | PASS   |
 
-The Olist executive mart is validated and approved as a BI-ready reporting layer.  
-Known null values are documented and accepted because they reflect expected source-data and comparison-window behavior rather than pipeline errors.
+Result:
 
-**Ready for Phase 9A.**
-_____________________________________________________________
-# Phase 9A — BI Export Construction
+PASS
+
+Validation Findings:
+
+Executive-layer revenue reconciles perfectly with the validated KPI layer.
+
+---
+
+### Executive KPI Validation
+
+Reviewed:
+
+* avg_order_value
+* revenue_7d
+* orders_7d
+* customers_7d
+* prev_day_revenue
+* revenue_growth_pct
+
+Validation Findings:
+
+* KPI logic behaves as expected.
+* Rolling metrics populated correctly.
+* Growth calculations generated correctly where valid comparison data exists.
+* Null growth values occur only where business comparison is unavailable.
+
+Result:
+
+PASS
+
+---
+
+### Reporting Readiness Assessment
+
+The executive reporting layer is approved for:
+
+* Executive dashboards
+* Commercial reporting
+* Revenue trend monitoring
+* Growth analysis
+* BI consumption
+
+Result:
+
+READY FOR BI DELIVERY
+
+---
+
+### Validation Summary
+
+| Validation Check               | Status          |
+| ------------------------------ | --------------- |
+| Row & Column Validation        | PASS            |
+| Date Range Validation          | PASS            |
+| Null Metric Validation         | PASS_WITH_NOTES |
+| Revenue Reconciliation         | PASS            |
+| Executive KPI Validation       | PASS            |
+| Reporting Readiness Assessment | PASS            |
+
+Overall Result:
+
+PASS
+
+---
+
+### Evidence
+
+| Evidence                        | Screenshot                                                                                         |
+| ------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Executive layer load validation | ../bi/screenshots/olist/phase_8b_executive_mart_validation/01_load_executive_mart.png              |
+| Row and column count validation | ../bi/screenshots/olist/phase_8b_executive_mart_validation/02_executive_row_column_count.png       |
+| Date range validation           | ../bi/screenshots/olist/phase_8b_executive_mart_validation/03_executive_date_range_validation.png  |
+| Null metric validation          | ../bi/screenshots/olist/phase_8b_executive_mart_validation/04_executive_null_metric_validation.png |
+| Revenue reconciliation          | ../bi/screenshots/olist/phase_8b_executive_mart_validation/05_executive_revenue_reconciliation.png |
+| Executive KPI validation        | ../bi/screenshots/olist/phase_8b_executive_mart_validation/06_executive_formula_validation.png     |
+| Validation summary              | ../bi/screenshots/olist/phase_8b_executive_mart_validation/07_executive_validation_summary.png     |
+| Phase completion status         | ../bi/screenshots/olist/phase_8b_executive_mart_validation/08_phase_8b_completion_status.png       |
+
+---
+
+### Deliverables Produced
+
+#### Executive Reporting Layer
+
+```text
+executive_daily
+```
+
+#### Validation Notebook
+
+```text
+14_olist_executive_mart_validation
+```
+
+---
+
+### Phase Result
+
+PASS
+
+---
+
+### Next Phase
+
+Phase 9A — BI Export Layer Construction
+
+# Phase 9A — BI Export Layer Construction
+
+## Status
+
+✅ Completed
 
 ## Objective
 
-Build a BI-ready export layer from the validated Executive Mart.
+Construct the final BI-serving dataset from the validated Executive Reporting Layer.
 
-The purpose of this phase is to create a clean reporting dataset optimized for downstream BI consumption in Power BI and Tableau.
+The BI Export Layer is designed to provide:
+
+* Power BI consumption
+* Tableau consumption
+* Executive dashboard reporting
+* Commercial performance monitoring
+* Business-facing analytics delivery
 
 ---
 
 ## Source Layer
 
-### Executive Mart
+### Executive Reporting Layer
 
 Storage Location:
 
+```text
 dbfs:/Volumes/workspace/default/olist_uploads/executive/olist/executive_daily
+```
 
 Validation Status:
 
 PASS
 
-Validated in:
+Validated During:
 
-Phase 8B – Executive Mart Validation
+Phase 8B — Executive Reporting Layer Validation
 
 ---
 
@@ -7053,15 +7289,17 @@ Phase 8B – Executive Mart Validation
 
 Storage Location:
 
+```text
 dbfs:/Volumes/workspace/default/olist_uploads/bi_exports/olist/bi_orders_daily
+```
 
 ---
 
 ## Business Purpose
 
-The BI Export layer serves as the final reporting dataset consumed by dashboarding and visualization tools.
+The BI Export Layer serves as the final reporting dataset consumed directly by visualization and reporting tools.
 
-This layer removes unnecessary engineering complexity and exposes business-ready metrics for executive reporting.
+This layer removes warehouse complexity and exposes business-facing metrics optimized for dashboard development and reporting consumption.
 
 ---
 
@@ -7087,71 +7325,76 @@ This layer removes unnecessary engineering complexity and exposes business-ready
 
 Total Columns:
 
+```text
 15
+```
 
 ---
 
-## Data Validation
+## Modeling Decision — Executive Layer Mirroring
 
-### Executive Layer Validation
+The BI Export Layer intentionally mirrors the validated Executive Reporting Layer.
 
-| Metric       | Value |
-| ------------ | ----- |
-| Row Count    | 634   |
-| Column Count | 15    |
+Reason:
 
-Status:
+* Avoid duplicate business logic
+* Preserve metric consistency
+* Minimize dashboard-side transformations
+* Maintain a single reporting source of truth
+
+The BI layer therefore exposes executive-approved metrics without introducing additional calculations.
+
+---
+
+## Export Validation
+
+| Dataset         | Row Count | Column Count | Status |
+| --------------- | --------: | -----------: | ------ |
+| executive_daily |       634 |           15 | PASS   |
+| bi_orders_daily |       634 |           15 | PASS   |
+
+Validation Findings:
+
+* No reporting rows lost during export.
+* Column structure preserved.
+* Executive reporting metrics transferred successfully.
+
+Result:
 
 PASS
 
 ---
 
-### KPI Layer Validation
-
-| Metric       | Value |
-| ------------ | ----- |
-| Row Count    | 634   |
-| Column Count | 18    |
-
-Status:
-
-PASS
-
----
-
-### BI Export Layer Validation
-
-| Metric       | Value |
-| ------------ | ----- |
-| Row Count    | 634   |
-| Column Count | 15    |
-
-Status:
-
-PASS
-
----
-
-## Formatting Rules Applied
+## Formatting Standards Applied
 
 The following reporting standards were applied:
 
-* Revenue metrics rounded for dashboard presentation
-* Average Order Value rounded for reporting consistency
-* Rolling-window metrics formatted for BI consumption
+* Revenue metrics formatted for dashboard consumption
+* Average Order Value standardized
+* Rolling KPI fields prepared for visualization
 * Growth metrics prepared for executive reporting
+
+Result:
+
+PASS
 
 ---
 
 ## Persistence Validation
 
-The BI Export layer was successfully written to storage and reloaded for validation.
+The BI Export Layer was successfully:
 
-Storage Path:
+* written to storage
+* reloaded
+* validated
 
+Storage Location:
+
+```text
 dbfs:/Volumes/workspace/default/olist_uploads/bi_exports/olist/bi_orders_daily
+```
 
-Validation Result:
+Result:
 
 PASS
 
@@ -7161,11 +7404,13 @@ PASS
 
 ### BI Export Dataset
 
+```text
 bi_orders_daily
+```
 
-### Reporting Layer
+### Reporting Consumption Layer
 
-Business-ready dataset prepared for:
+Approved for:
 
 * Power BI
 * Tableau
@@ -7174,362 +7419,364 @@ Business-ready dataset prepared for:
 
 ---
 
-## Evidence
-
-### Screenshot 1
-
-03_bi_export_preview.png
-
-Purpose:
-
-BI export dataset preview and schema verification
-
----
-
-### Screenshot 2
-
-04_save_bi_export_layer.png
-
-Purpose:
-
-Persistence validation of BI export layer
-
----
-
-### Screenshot 3
-
-06_phase_9a_completion_status.png
-
-Purpose:
-
-Phase completion confirmation
-
----
-
-## Phase Outcome
-
-A validated BI export layer was successfully created from the Executive Mart.
-
-The dataset is persisted, validated, and approved for dashboard development.
-
----
-
-## Status
-
-PASS
-
-Ready for:
-
-Phase 9B — BI Export Validation
-
-___________________________________________
-# Phase 9B — BI Export Validation
-
-## Objective
-
-Validate the BI Export layer before dashboard consumption.
-
-The purpose of this phase is to ensure that the exported BI-ready dataset is complete, accurate, reconciled against upstream reporting layers, and suitable for Power BI or Tableau reporting.
-
----
-
-## Source Layer
-
-Input dataset:
-
-bi_orders_daily
-
-Location:
-
-dbfs:/Volumes/workspace/default/olist_uploads/bi_exports/olist/bi_orders_daily
-
----
-
-## Validation Checks Performed
-
-### 1. Row and Column Validation
-
-Validated the final shape of the BI export dataset.
-
-Results:
-
-- Rows: 634
-- Columns: 15
-
-Status:
-
-PASS
-
-Evidence:
-
-evidence/phase_09b_bi_export_validation/02_bi_export_row_count_validation.png
-
----
-
-### 2. Date Range Validation
-
-Validated reporting coverage.
-
-Results:
-
-- Minimum Order Date: 2016-09-04
-- Maximum Order Date: 2018-10-17
-
-Status:
-
-PASS
-
-Notes:
-
-The exported BI dataset covers the full reporting period expected from the Executive layer.
-
----
-
-### 3. Revenue Reconciliation
-
-Validated total revenue consistency between:
-
-- Executive Layer
-- BI Export Layer
-
-Results:
-
-Executive Revenue:
-
-16008872.12
-
-BI Export Revenue:
-
-16008872.12
-
-Status:
-
-PASS
-
-Evidence:
-
-evidence/phase_09b_bi_export_validation/05_bi_export_reconciliation.png
-
----
-
-### 4. Null Metric Review
-
-Reviewed critical business metrics for unexpected null values.
-
-Results:
-
-| Metric | Null Count |
-|----------|----------:|
-| order_date | 0 |
-| orders | 0 |
-| customers | 0 |
-| revenue | 1 |
-| avg_order_value | 1 |
-| revenue_growth_pct | 3 |
-
-Status:
-
-PASS WITH NOTES
-
-Explanation:
-
-Expected null values exist because:
-
-- The first reporting date has no previous day for growth comparison.
-- Average Order Value cannot be calculated when revenue is null.
-
-No data quality issues were identified.
-
----
-
-## Validation Summary
-
-| Validation Check | Status |
-|------------------|---------|
-| Row Count Validation | PASS |
-| Date Range Validation | PASS |
-| Revenue Reconciliation | PASS |
-| Null Metric Review | PASS_WITH_NOTES |
+## Construction Validation Summary
+
+| Validation Check            | Status |
+| --------------------------- | ------ |
+| Executive Layer Export      | PASS   |
+| Row Count Validation        | PASS   |
+| Column Structure Validation | PASS   |
+| Formatting Validation       | PASS   |
+| Persistence Validation      | PASS   |
+| BI Readiness Assessment     | PASS   |
 
 Overall Result:
 
 PASS
 
-The BI Export layer is approved for dashboard consumption.
+---
 
-Evidence:
+## Evidence
 
-evidence/phase_09b_bi_export_validation/06_bi_export_validation_summary.png
+| Evidence                         | Screenshot                                                                                |
+| -------------------------------- | ----------------------------------------------------------------------------------------- |
+| BI export dataset preview        | ../bi/screenshots/olist/phase_9a_bi_export_construction/03_bi_export_preview.png          |
+| BI export persistence validation | ../bi/screenshots/olist/phase_9a_bi_export_construction/04_save_bi_export_layer.png       |
+| Phase completion status          | ../bi/screenshots/olist/phase_9a_bi_export_construction/06_phase_9a_completion_status.png |
 
 ---
 
 ## Deliverables Produced
 
-Notebook:
+### BI Export Layer
 
-16_olist_bi_export_validation
-
-Validated Dataset:
-
+```text
 bi_orders_daily
+```
 
-Validation Status:
+### Construction Notebook
+
+```text
+15_bi_export_construction
+```
+
+---
+
+## Phase Result
 
 PASS
 
 ---
 
-## Phase Completion
+## Next Phase
 
-Phase 9B completed successfully.
+Phase 9B — BI Export Layer Validation
 
-The BI Export layer has been validated and approved as the reporting dataset for downstream dashboard development.
+# Phase 9B — BI Export Layer Validation
 
-Next Phase:
+## Status
 
-Phase 10 — Dashboard Development
-________________________________________________
-## Planned SQL Files
+✅ Completed
 
-```text
-To be defined in Phase 3A after raw Olist file inventory.
-```
+## Notebook
 
-## Planned Tasks
+16_olist_bi_export_validation
 
-* [ ] Create Olist raw data inventory
-* [ ] Inspect available CSV files
-* [ ] Define source tables and expected grains
-* [ ] Plan BigQuery ingestion approach
-* [ ] Create Olist staging folder structure if needed
-* [ ] Profile orders, customers, products, sellers, payments, and reviews
-* [ ] Validate transactional completeness before modeling
+## Output Validated
+
+bi_orders_daily
 
 ---
 
-# Future Phase Roadmap
+## Objective
 
-## Phase 3 — Olist Ingestion
+Validate the BI Export Layer before downstream commercial integration and dashboard development.
 
-⬜ Planned
+Validation scope included:
 
-* Ingest Olist ecommerce CSVs
-* Profile orders, customers, products, sellers, payments, and reviews
-* Convert raw CSVs into reusable warehouse tables
-* Document grain and join logic
-* Validate transactional completeness
-
-## Phase 4 — Multi-Source Commercial Mart
-
-⬜ Planned
-
-* Integrate GA4 behavioral/acquisition layer with Olist commercial data at an aggregate level
-* Document integration limitations
-* Avoid artificial row-level joins where no natural key exists
-* Build commercial KPI marts
-
-## Phase 5 — BI Layer
-
-⬜ Planned
-
-* Build Power BI dashboards
-* Create executive overview page
-* Create acquisition/channel performance page
-* Create ecommerce funnel page
-* Create revenue and transaction quality page
-* Add dashboard screenshots
-
-## Phase 6 — A/B Testing Layer
-
-⬜ Planned
-
-* Define experiment framework
-* Build assignment logic
-* Calculate treatment vs control KPIs
-* Evaluate absolute and relative lift
-* Document ship / no-ship recommendation
-
-## Phase 7 — Final Packaging
-
-⬜ Planned
-
-* Finalize README
-* Clean documentation
-* Validate repo navigation
-* Polish screenshots
-* Summarize business outcomes
-* Prepare project for resume and interview use
+* Row and column validation
+* Date range validation
+* Revenue reconciliation
+* Null metric validation
+* BI readiness assessment
 
 ---
 
-# Final Notes
+## Row and Column Validation
 
-## Current Project Health
+| Metric  | Value |
+| ------- | ----: |
+| Rows    |   634 |
+| Columns |    15 |
 
-### Technical Health
+Result:
+
+PASS
+
+---
+
+## Date Range Validation
+
+| Metric             | Value      |
+| ------------------ | ---------- |
+| Minimum Order Date | 2016-09-04 |
+| Maximum Order Date | 2018-10-17 |
+
+Result:
+
+PASS
+
+---
+
+## Revenue Reconciliation Validation
+
+| Metric            |         Value |
+| ----------------- | ------------: |
+| Executive Revenue | 16,008,872.12 |
+| BI Export Revenue | 16,008,872.12 |
+
+Result:
+
+PASS
+
+Revenue reconciles exactly with the Executive Reporting Layer.
+
+---
+
+## Null Metric Validation
+
+| Metric             | Null Count |
+| ------------------ | ---------: |
+| order_date         |          0 |
+| orders             |          0 |
+| customers          |          0 |
+| revenue            |          1 |
+| avg_order_value    |          1 |
+| revenue_growth_pct |          3 |
+
+### Modeling Decision — Reporting Null Preservation
+
+Observed Causes:
+
+* Missing previous-day comparison values
+* Revenue inheritance from validated upstream layers
+
+Decision:
+
+* Preserve null values unchanged.
+* Do not perform artificial imputation.
+* Maintain consistency with upstream reporting layers.
+
+Result:
+
+PASS_WITH_NOTES
+
+---
+
+## BI Readiness Assessment
+
+The BI Export Layer is approved for:
+
+* Commercial analytics reporting
+* Power BI consumption
+* Tableau consumption
+* Executive reporting
+
+Result:
+
+PASS
+
+---
+
+## Validation Summary
+
+| Validation Check        | Status          |
+| ----------------------- | --------------- |
+| Row & Column Validation | PASS            |
+| Date Range Validation   | PASS            |
+| Revenue Reconciliation  | PASS            |
+| Null Metric Validation  | PASS_WITH_NOTES |
+| BI Readiness Assessment | PASS            |
+
+Overall Result:
+
+PASS
+
+---
+
+## Evidence
+
+| Evidence                  | Screenshot                                                                                   |
+| ------------------------- | -------------------------------------------------------------------------------------------- |
+| BI export load validation | ../bi/screenshots/olist/phase_9b_bi_export_validation/01_load_bi_export_layer.png            |
+| Row and column validation | ../bi/screenshots/olist/phase_9b_bi_export_validation/02_bi_export_row_count_validation.png  |
+| Date range validation     | ../bi/screenshots/olist/phase_9b_bi_export_validation/03_bi_export_date_range_validation.png |
+| Null metric validation    | ../bi/screenshots/olist/phase_9b_bi_export_validation/04_bi_export_null_validation.png       |
+| Revenue reconciliation    | ../bi/screenshots/olist/phase_9b_bi_export_validation/05_bi_export_reconciliation.png        |
+| Validation summary        | ../bi/screenshots/olist/phase_9b_bi_export_validation/06_bi_export_validation_summary.png    |
+
+---
+
+## Deliverables Produced
+
+### BI Export Layer
+
+bi_orders_daily
+
+### Validation Notebook
+
+16_olist_bi_export_validation
+
+---
+
+## Phase Result
+
+PASS
+
+---
+
+# Remaining Project Roadmap
+
+## Phase 10 — Commercial Integration Layer
+
+⬜ Planned
+
+Objective:
+
+Integrate the GA4 behavioral layer with the Olist commercial layer using documented aggregate-level integration logic.
+
+Planned Deliverables:
+
+* Commercial integration design
+* Integration assumptions documentation
+* Aggregate-level join strategy
+* Commercial executive mart
+* Commercial KPI layer
+* Cross-source validation
+
+Expected Outputs:
+
+* mart_commercial_daily
+* mart_commercial_executive
+* commercial_kpi_daily
+
+---
+
+## Phase 11 — Power BI Dashboard Development
+
+⬜ Planned
+
+Objective:
+
+Build business-facing dashboards using the integrated commercial analytics layer.
+
+Planned Deliverables:
+
+* Executive Overview Dashboard
+* Acquisition Performance Dashboard
+* Revenue Performance Dashboard
+* Customer Performance Dashboard
+* Commercial KPI Dashboard
+* Dashboard screenshots and documentation
+
+---
+
+## Phase 12 — A/B Testing Layer
+
+⬜ Planned
+
+Objective:
+
+Add experimentation and measurement capabilities to the commercial analytics platform.
+
+Planned Deliverables:
+
+* Experiment design framework
+* Treatment vs Control KPI analysis
+* Absolute lift calculations
+* Relative lift calculations
+* Statistical evaluation
+* Ship / No-Ship recommendation
+
+---
+
+## Phase 13 — Final Packaging & Portfolio Release
+
+⬜ Planned
+
+Objective:
+
+Prepare the project for GitHub publication, interviews, and portfolio presentation.
+
+Planned Deliverables:
+
+* Final README
+* Architecture documentation
+* Repository cleanup
+* Screenshot audit
+* Business narrative
+* Interview talking points
+* Portfolio release package
+
+---
+
+# Current Project Health
+
+## Technical Health
 
 ✅ Strong
 
-Reasons:
+Completed:
 
-* Repository structure is clear.
-* GA4 raw profiling is complete.
-* GA4 staging view is complete.
-* GA4 staging validation suite is complete.
-* Session fact table is complete.
-* Session fact validation suite is complete.
-* Date dimension is complete and validated.
-* Channel dimension is complete and validated.
-* Channel daily mart is complete and validated.
-* Executive daily mart is complete and validated.
-* Executive enhanced mart is complete and validated.
-* Selected screenshots are organized by workflow area.
-* BigQuery work is backed by GitHub documentation.
+* GA4 Warehouse Layer
+* GA4 Executive Layer
+* Olist Warehouse Layer
+* Olist KPI Layer
+* Olist Executive Layer
+* Olist BI Export Layer
 
-### Analytics Engineering Health
+All major engineering layers have been documented, validated, and version controlled.
+
+---
+
+## Analytics Engineering Health
 
 ✅ Strong
 
-Reasons:
+Completed:
 
-* Table grains are documented.
-* Validation checks are explicit.
-* Data quality risks are surfaced.
-* Revenue deduplication is implemented.
-* Attribution sparsity is documented.
-* Non-additive user logic is handled correctly.
-* Rolling KPI logic is documented.
-* Week-over-week comparison logic is validated.
-* Fact-to-mart reconciliation is implemented.
-* Downstream modeling requirements are clear.
+* Grain documentation
+* Validation framework
+* Fact-to-mart reconciliation
+* Revenue consistency validation
+* Rolling KPI implementation
+* Executive reporting layer
+* BI-serving layer
 
-### Portfolio Readiness
+---
+
+## Portfolio Readiness
 
 🟡 In Progress
 
-Reason:
+Remaining Work:
 
-The GA4 analytics foundation is strong and complete, but the project still needs:
+* Commercial integration layer
+* Power BI dashboards
+* A/B testing layer
+* Final packaging and documentation
 
-* Olist ingestion
-* multi-source commercial modeling
-* BI dashboard layer
-* final README polish
-* business narrative
-* final GitHub packaging
+---
 
-## Most Important Data Risks to Preserve in Future Work
+## Most Important Risks To Preserve
 
-Future marts and dashboards must continue to explicitly handle:
+Future phases must continue to explicitly handle:
 
-* high attribution sparsity
-* invalid transaction IDs
-* missing purchase revenue
-* duplicate purchase transaction rows
-* transaction-level revenue deduplication
-* non-additive distinct user metrics
-* non-additive rolling user metrics
-* strict separation between event, session, item, transaction, dimension, and mart grains
-
-```
-
+* Attribution sparsity
+* Missing revenue records
+* Duplicate transaction behavior
+* Duplicate review behavior
+* Non-additive user metrics
+* Rolling KPI interpretation
+* Aggregate-level GA4 ↔ Olist integration limitations
+* Strict grain separation across all layers
